@@ -1,0 +1,87 @@
+# Source files (compiled versions are in dist/)
+src/**
+!src/webview/**/*.html
+
+# Node modules (dependencies bundled in dist/)
+node_modules/**
+
+# TypeScript source files
+*.ts
+!*.d.ts
+tsconfig*.json
+
+# Test files and directories
+.vscode-test/**
+src/test/**
+src/tests/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+vitest.config.ts
+coverage/**
+
+# Development configuration files
+.eslintrc*
+.prettierrc*
+.editorconfig
+vite.config.ts
+tailwind.config.*
+postcss.config.*
+
+# Build tools and caches
+.vscode/**
+.idea/**
+*.log
+*.map
+.cache/**
+
+# Git files
+.git/**
+.gitignore
+.gitattributes
+
+# Documentation (except README)
+docs/**
+CONTRIBUTING.md
+DEVELOPMENT.md
+
+# CI/CD files
+.github/**
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Misc development files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Memory and hive-mind directories (development only)
+memory/**
+.hive-mind/**
+.claude/**
+
+# Swarm and Claude Flow data
+.swarm/**
+.claude-flow/**
+*.db
+*.db-shm
+*.db-wal
+
+# Build scripts and config
+esbuild.config.js
+eslint.config.js
+config/**
+scripts/**
+claude-flow
+
+# MCP configuration (user-specific)
+.mcp.json

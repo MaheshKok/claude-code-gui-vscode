@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "noEmit": false,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node", "vscode"]
+  },
+  "include": [
+    "src/extension/**/*.ts",
+    "src/shared/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/webview/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}
