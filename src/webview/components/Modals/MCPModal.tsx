@@ -84,19 +84,19 @@ const POPULAR_SERVERS: PopularServer[] = [
 export interface MCPModalProps {
   isOpen: boolean;
   onClose: () => void;
-  servers: MCPServer[];
-  onToggleServer: (id: string, enabled: boolean) => void;
-  onDeleteServer: (id: string) => void;
-  onAddServer: (server: Omit<MCPServer, 'id'>) => void;
+  servers?: MCPServer[];
+  onToggleServer?: (id: string, enabled: boolean) => void;
+  onDeleteServer?: (id: string) => void;
+  onAddServer?: (server: Omit<MCPServer, 'id'>) => void;
 }
 
 export const MCPModal: React.FC<MCPModalProps> = ({
   isOpen,
   onClose,
-  servers,
-  onToggleServer,
-  onDeleteServer,
-  onAddServer,
+  servers = [],
+  onToggleServer = () => {},
+  onDeleteServer = () => {},
+  onAddServer = () => {},
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState<{

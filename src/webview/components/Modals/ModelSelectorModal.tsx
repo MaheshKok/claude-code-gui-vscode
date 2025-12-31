@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Modal } from './Modal';
 
-export type ModelOption = 'opus' | 'sonnet' | 'default';
+export type ModelOption = 'opus' | 'sonnet' | 'haiku' | 'default';
 
 export interface ModelInfo {
   id: ModelOption;

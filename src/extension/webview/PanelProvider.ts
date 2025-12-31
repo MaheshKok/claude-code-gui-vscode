@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for message handling where types are dynamic from webview/CLI
+
 import * as vscode from 'vscode';
 import { ClaudeService } from '../services/ClaudeService';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';

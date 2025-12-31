@@ -59,7 +59,7 @@ export type {
 
   // User events
   UserEvent,
-  UserMessage,
+  UserMessage as ClaudeUserMessage,
   UserContentBlock,
   ToolResultContentBlock,
   ToolResultContent,

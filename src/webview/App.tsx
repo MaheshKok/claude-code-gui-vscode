@@ -130,7 +130,7 @@ export const App: React.FC = () => {
   const resolvePending = usePermissionStore((s) => s.resolvePending);
 
   // MCP store (unused but available)
-  useMCPStore((s) => s.updateServerStatus);
+  const _mcpStore = useMCPStore((s) => s.setServerStatus);
 
   // Conversation store (unused but available)
   useConversationStore((s) => s.setCurrentConversation);
@@ -163,8 +163,10 @@ export const App: React.FC = () => {
         const currentMsg = useChatStore.getState().messages.find(
           (m) => m.id === streamingMessageId
         );
+        // Get content from message - all message types have content property
+        const currentContent = currentMsg && 'content' in currentMsg ? (currentMsg as { content: string }).content : '';
         useChatStore.getState().updateMessage(streamingMessageId, {
-          content: (currentMsg?.content || '') + msg.text,
+          content: currentContent + msg.text,
         });
 
         if (msg.isFinal) {
@@ -209,10 +211,10 @@ export const App: React.FC = () => {
       const toolMessage = {
         id: msg.toolUseId,
         type: 'tool_use' as const,
-        content: msg.toolInfo,
+        toolUseId: msg.toolUseId,
         timestamp: Date.now(),
         toolName: msg.toolName,
-        rawInput: msg.rawInput,
+        rawInput: msg.rawInput as Record<string, unknown>,
         toolInfo: msg.toolInfo,
         status: 'executing' as const,
       };
@@ -268,7 +270,7 @@ export const App: React.FC = () => {
         requestId: msg.requestId,
         toolUseId: msg.toolUseId,
         toolName: msg.toolName,
-        input: msg.input,
+        input: msg.input as Record<string, unknown>,
         description: msg.description,
         suggestions: msg.suggestions as PermissionRequest['suggestions'],
         status: 'pending',
@@ -405,7 +407,7 @@ export const App: React.FC = () => {
       message: content,
       planMode,
       thinkingMode,
-      attachments,
+      attachments: attachments as Array<{ type: 'file' | 'image'; path: string; name: string }> | undefined,
     });
   }, [addMessage, setProcessing, postMessage, planMode, thinkingMode]);
 
@@ -440,10 +442,14 @@ export const App: React.FC = () => {
   }, [postMessage, showSuccess]);
 
   const handleModelChange = useCallback((model: string) => {
-    setSelectedModel(model as Parameters<typeof setSelectedModel>[0]);
+    const typedModel = model as Parameters<typeof setSelectedModel>[0];
+    setSelectedModel(typedModel);
+    // Send model change - use claude.defaultModel to match SettingsState structure
     postMessage({
       type: 'saveSettings',
-      settings: { selectedModel: model },
+      settings: {
+        claude: { defaultModel: typedModel },
+      } as Partial<import('./types/state').SettingsState>,
     });
   }, [setSelectedModel, postMessage]);
 
@@ -532,7 +538,7 @@ export const App: React.FC = () => {
         messages={messages.map(m => ({
           id: m.id,
           role: m.type === 'user' ? 'user' : m.type === 'assistant' ? 'assistant' : m.type === 'error' ? 'error' : 'tool',
-          content: m.content,
+          content: 'content' in m ? (m as { content: string }).content : '',
           timestamp: new Date(m.timestamp),
           toolName: 'toolName' in m ? (m as { toolName?: string }).toolName : undefined,
           isStreaming: m.isStreaming,
@@ -577,8 +583,16 @@ export const App: React.FC = () => {
         <ModelSelectorModal
           isOpen={true}
           onClose={closeModal}
-          currentModel={selectedModel}
-          onModelSelect={handleModelChange}
+          selectedModel={selectedModel === 'claude-opus-4-5-20251101' ? 'opus' : selectedModel === 'claude-haiku-4-5-20251001' ? 'haiku' : 'sonnet'}
+          onSelectModel={(model) => {
+            const modelMap: Record<string, string> = {
+              'opus': 'claude-opus-4-5-20251101',
+              'sonnet': 'claude-sonnet-4-5-20250929',
+              'haiku': 'claude-haiku-4-5-20251001',
+            };
+            handleModelChange(modelMap[model] || 'claude-sonnet-4-5-20250929');
+          }}
+          onConfigure={() => openModal('settings')}
         />
       )}
 
@@ -590,14 +604,13 @@ export const App: React.FC = () => {
             id: pendingPermission.requestId,
             toolName: pendingPermission.toolName,
             description: pendingPermission.description,
-            path: typeof pendingPermission.input === 'object' && pendingPermission.input !== null
-              ? (pendingPermission.input as Record<string, unknown>).file_path as string || ''
-              : '',
+            input: typeof pendingPermission.input === 'object' && pendingPermission.input !== null
+              ? pendingPermission.input as Record<string, unknown>
+              : {},
           }}
           onAllow={() => handlePermissionResponse(pendingPermission.requestId, 'allow')}
           onDeny={() => handlePermissionResponse(pendingPermission.requestId, 'deny')}
-          onAllowSession={() => handlePermissionResponse(pendingPermission.requestId, 'allow')}
-          onAllowAlways={() => handlePermissionResponse(pendingPermission.requestId, 'allow')}
+          onAlwaysAllow={() => handlePermissionResponse(pendingPermission.requestId, 'allow')}
         />
       )}
 
@@ -612,13 +625,18 @@ export const App: React.FC = () => {
         <SlashCommandsModal
           isOpen={true}
           onClose={closeModal}
-          commands={[
-            { command: '/help', description: 'Show available commands' },
-            { command: '/clear', description: 'Clear conversation' },
-            { command: '/settings', description: 'Open settings' },
-            { command: '/model', description: 'Change model' },
-          ]}
-          onCommandSelect={(cmd) => {
+          customCommands={[]}
+          onExecuteCommand={(cmd) => {
+            closeModal();
+            if (cmd.prompt) {
+              handleSendMessage(cmd.prompt);
+            } else {
+              handleSendMessage(cmd.name);
+            }
+          }}
+          onAddCustomCommand={() => {}}
+          onDeleteCustomCommand={() => {}}
+          onQuickCommand={(cmd: string) => {
             closeModal();
             handleSendMessage(cmd);
           }}

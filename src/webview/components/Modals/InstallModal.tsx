@@ -1,26 +1,26 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 
 export type InstallState = 'initial' | 'installing' | 'success' | 'error';
 
 export interface InstallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInstall: () => Promise<void>;
-  installState: InstallState;
+  onInstall?: () => Promise<void>;
+  installState?: InstallState;
   errorMessage?: string;
 }
 
 export const InstallModal: React.FC<InstallModalProps> = ({
   isOpen,
   onClose,
-  onInstall,
-  installState,
+  onInstall = async () => {},
+  installState = 'initial',
   errorMessage,
 }) => {
   const handleInstall = useCallback(async () => {
     try {
       await onInstall();
-    } catch (error) {
+    } catch (_error) {
       // Error handling is done via installState prop
     }
   }, [onInstall]);

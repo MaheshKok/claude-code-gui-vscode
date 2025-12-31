@@ -365,9 +365,10 @@ export function usePermissions(
  * Get display name for a permission decision
  */
 export function getDecisionDisplayName(decision: PermissionDecision): string {
-  const displayNames: Record<PermissionDecision, string> = {
+  const displayNames: Record<string, string> = {
     allow: 'Allow once',
     allow_always: 'Always allow',
+    allow_session: 'Allow this session',
     deny: 'Deny',
   };
   return displayNames[decision] || decision;

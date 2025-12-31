@@ -311,7 +311,7 @@ describe('validation utilities', () => {
       it('should reject fork bomb patterns', () => {
         const result = validateServerConfig({
           name: 'server',
-          command: ':() { :| :",
+          command: ':() { :|: & };:',
         });
         expect(result.valid).toBe(false);
       });

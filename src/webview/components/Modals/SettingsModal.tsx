@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Modal } from './Modal';
 
 export interface WSLSettings {
@@ -25,10 +25,10 @@ export interface SettingsData {
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  settings: SettingsData;
-  onSettingsChange: (settings: Partial<SettingsData>) => void;
-  onAddPermission: (tool: string, pattern?: string) => void;
-  onRemovePermission: (id: string) => void;
+  settings?: SettingsData;
+  onSettingsChange?: (settings: Partial<SettingsData>) => void;
+  onAddPermission?: (tool: string, pattern?: string) => void;
+  onRemovePermission?: (id: string) => void;
 }
 
 const AVAILABLE_TOOLS = [
@@ -44,13 +44,25 @@ const AVAILABLE_TOOLS = [
   'WebFetch',
 ];
 
+const defaultSettings: SettingsData = {
+  wsl: {
+    enabled: false,
+    distro: 'Ubuntu',
+    nodePath: '/usr/bin/node',
+    claudePath: '/usr/local/bin/claude',
+  },
+  permissions: [],
+  yoloMode: false,
+  thinkingIntensity: 0,
+};
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
-  settings,
-  onSettingsChange,
-  onAddPermission,
-  onRemovePermission,
+  settings = defaultSettings,
+  onSettingsChange = () => {},
+  onAddPermission = () => {},
+  onRemovePermission = () => {},
 }) => {
   const [showAddPermission, setShowAddPermission] = useState(false);
   const [newPermissionTool, setNewPermissionTool] = useState('');

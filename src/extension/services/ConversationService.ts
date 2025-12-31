@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for conversation message data where types are dynamic
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 

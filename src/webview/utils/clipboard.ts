@@ -358,7 +358,11 @@ export function isClipboardSupported(): boolean {
  * Check if async clipboard API is available
  */
 export function isAsyncClipboardSupported(): boolean {
-  return !!(navigator.clipboard && navigator.clipboard.read && navigator.clipboard.write);
+  return !!(
+    navigator.clipboard &&
+    typeof navigator.clipboard.read === 'function' &&
+    typeof navigator.clipboard.write === 'function'
+  );
 }
 
 // ============================================================================

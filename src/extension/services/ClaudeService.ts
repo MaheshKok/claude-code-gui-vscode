@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for Claude CLI responses where types are dynamic
+
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import { EventEmitter } from 'events';

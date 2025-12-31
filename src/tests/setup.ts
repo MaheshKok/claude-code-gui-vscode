@@ -66,8 +66,8 @@ const mockVscodeApi = {
   setState: vi.fn(),
 };
 
-// @ts-expect-error - Adding to global for webview tests
-globalThis.acquireVsCodeApi = vi.fn(() => mockVscodeApi);
+// Adding to global for webview tests
+(globalThis as Record<string, unknown>).acquireVsCodeApi = vi.fn(() => mockVscodeApi);
 
 // Setup DOM for React tests
 beforeAll(() => {
