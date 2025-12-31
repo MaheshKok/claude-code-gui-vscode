@@ -105,6 +105,7 @@ interface RestoreStatePayload {
     output: number;
   };
   conversationId?: string;
+  isProcessing?: boolean;
 }
 
 const toTimestamp = (value: unknown): number => {
@@ -137,12 +138,12 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
   const toolUseIndex = new Map<string, number>();
   let activeAssistantIndex: number | null = null;
 
-  const finalizeAssistant = () => {
+  const finalizeAssistant = (forceClose: boolean = true) => {
     if (activeAssistantIndex === null) {
       return;
     }
     const current = chatMessages[activeAssistantIndex];
-    if (current && current.type === 'assistant') {
+    if (forceClose && current && current.type === 'assistant') {
       current.isStreaming = false;
     }
     activeAssistantIndex = null;
@@ -226,10 +227,10 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
             ? String(data.toolName)
             : 'Tool';
         const rawInput = typeof message.rawInput === 'object' && message.rawInput !== null
-          ? message.rawInput
+          ? message.rawInput as Record<string, unknown>
           : data && 'rawInput' in data
             ? data.rawInput as Record<string, unknown>
-            : {};
+            : {} as Record<string, unknown>;
         const toolInfo = typeof message.toolInfo === 'string'
           ? message.toolInfo
           : data && 'toolInfo' in data
@@ -313,7 +314,9 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
     }
   }
 
-  finalizeAssistant();
+  if (activeAssistantIndex !== null) {
+    activeAssistantIndex = null;
+  }
   return chatMessages;
 };
 
@@ -628,13 +631,22 @@ export const App: React.FC = () => {
           && typeof state.totalTokens.output === 'number'
           ? state.totalTokens
           : undefined;
-        setStreamingMessageId(null);
+        const lastMessage = restoredMessages[restoredMessages.length - 1];
+        const streamingId = lastMessage
+          && lastMessage.type === 'assistant'
+          && lastMessage.isStreaming
+          ? lastMessage.id
+          : null;
+        setStreamingMessageId(state.isProcessing === false ? null : streamingId);
         hydrateConversation({
           messages: restoredMessages,
           sessionId: state.sessionId ?? null,
           totalCost,
           totalTokens,
         });
+        if (typeof state.isProcessing === 'boolean') {
+          setProcessing(state.isProcessing);
+        }
       }
     },
 
@@ -885,6 +897,8 @@ export const App: React.FC = () => {
           timestamp: new Date(m.timestamp),
           toolName: 'toolName' in m ? (m as { toolName?: string }).toolName : undefined,
           isStreaming: m.isStreaming,
+          duration: 'duration' in m ? (m as { duration?: number }).duration : undefined,
+          tokens: 'usage' in m ? (m as { usage?: { input_tokens?: number; output_tokens?: number } }).usage?.input_tokens : undefined,
         }))}
         isProcessing={isProcessing}
         currentModel={selectedModel}

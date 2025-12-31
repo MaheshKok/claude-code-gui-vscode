@@ -17,6 +17,7 @@ src/
     ├── state.ts            # Application state types
     ├── claude-events.ts    # Claude CLI event types
     ├── webview-api.ts      # Extension communication types
+    ├── history.ts          # Conversation history types
     └── vscode.d.ts         # VS Code API declarations
 ```
 
@@ -464,6 +465,38 @@ type ModalType =
 
 ---
 
+## Conversation History Types
+
+**File:** `src/webview/types/history.ts`
+
+### ConversationListItem
+
+```typescript
+interface ConversationListItem {
+  id: string;
+  title: string;
+  preview: string;
+  updatedAt: number;
+  messageCount: number;
+  sessionId?: string;
+  totalCost?: number;
+  tags?: string[];
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique conversation identifier |
+| `title` | `string` | Display title for the conversation |
+| `preview` | `string` | Preview text (first message or summary) |
+| `updatedAt` | `number` | Unix timestamp of last update |
+| `messageCount` | `number` | Total messages in conversation |
+| `sessionId` | `string?` | Associated Claude session ID |
+| `totalCost` | `number?` | Total API cost in USD |
+| `tags` | `string[]?` | User-defined tags for organization |
+
+---
+
 ## Extension Communication Types
 
 **File:** `src/webview/types/webview-api.ts`
@@ -491,7 +524,9 @@ type ExtensionToWebviewMessageType =
   | 'showLoginModal'
   | 'settingsUpdate'
   | 'themeUpdate'
-  | 'restoreState';
+  | 'restoreState'
+  | 'conversationList'      // NEW
+  | 'conversationDeleted';  // NEW
 
 // Example messages
 interface SessionInfoMessage {
@@ -509,6 +544,33 @@ interface PermissionRequestMessage {
   input: ToolInput;
   description: string;
   suggestions: PermissionSuggestion[];
+}
+```
+
+### Conversation Management Messages (Extension → Webview)
+
+```typescript
+// Conversation summary item from extension
+interface ConversationListItem {
+  filename: string;
+  timestamp: string;
+  preview: string;
+  messageCount: number;
+  sessionId?: string;
+  totalCost?: number;
+}
+
+// List of saved conversations
+interface ConversationListMessage {
+  type: 'conversationList';
+  conversations: ConversationListItem[];
+  data?: ConversationListItem[];  // Alias for conversations
+}
+
+// Confirmation of conversation deletion
+interface ConversationDeletedMessage {
+  type: 'conversationDeleted';
+  filename: string;
 }
 ```
 
@@ -532,7 +594,14 @@ type WebviewToExtensionMessageType =
   | 'logout'
   | 'installClaude'
   | 'saveState'
-  | 'requestState';
+  | 'requestState'
+  | 'openExternal'          // NEW
+  | 'showInfo'              // NEW
+  | 'showError'             // NEW
+  | 'telemetry'             // NEW
+  | 'getConversationList'   // NEW
+  | 'loadConversation'      // NEW
+  | 'deleteConversation';   // NEW
 
 // Example messages
 interface SendMessageRequest {
@@ -549,6 +618,52 @@ interface PermissionResponseRequest {
   decision: PermissionDecision;
   toolName?: string;
   input?: unknown;
+}
+```
+
+### Conversation Management Messages (Webview → Extension)
+
+```typescript
+// Request list of saved conversations
+interface GetConversationListRequest {
+  type: 'getConversationList';
+}
+
+// Load a specific conversation
+interface LoadConversationRequest {
+  type: 'loadConversation';
+  filename: string;
+}
+
+// Delete a saved conversation
+interface DeleteConversationRequest {
+  type: 'deleteConversation';
+  filename: string;
+}
+
+// Open URL in external browser
+interface OpenExternalRequest {
+  type: 'openExternal';
+  url: string;
+}
+
+// Show info notification
+interface ShowInfoRequest {
+  type: 'showInfo';
+  message: string;
+}
+
+// Show error notification
+interface ShowErrorRequest {
+  type: 'showError';
+  message: string;
+}
+
+// Send telemetry event
+interface TelemetryRequest {
+  type: 'telemetry';
+  event: string;
+  properties?: Record<string, unknown>;
 }
 ```
 

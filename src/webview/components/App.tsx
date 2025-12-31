@@ -26,6 +26,10 @@ export interface Message {
   timestamp: Date;
   toolName?: string;
   isStreaming?: boolean;
+  /** Duration in milliseconds (for tool messages) */
+  duration?: number;
+  /** Token count (for tool messages) */
+  tokens?: number;
 }
 
 /**

@@ -9,6 +9,12 @@ export interface ToolUseCardProps {
   input: ToolInput;
   isExecuting?: boolean;
   onFilePathClick?: (filePath: string) => void;
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Token count for this tool use */
+  tokens?: number;
+  /** Whether to start collapsed (default: true) */
+  defaultCollapsed?: boolean;
 }
 
 const TOOL_ICONS: Record<string, string> = {
@@ -63,12 +69,31 @@ const formatValue = (value: unknown, maxLength = 200): string => {
   return String(value);
 };
 
+/** Format duration in human readable format */
+const formatDuration = (ms: number): string => {
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  return `${minutes}m ${seconds}s`;
+};
+
+/** Format tokens in human readable format */
+const formatTokens = (tokens: number): string => {
+  if (tokens < 1000) return `${tokens}`;
+  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+};
+
 export const ToolUseCard: React.FC<ToolUseCardProps> = ({
   toolName,
   input,
   isExecuting = false,
   onFilePathClick,
+  duration,
+  tokens,
+  defaultCollapsed = true,
 }) => {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleFileClick = useCallback(
@@ -82,6 +107,10 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((prev) => !prev);
   }, []);
 
   const renderInputValue = (key: string, value: unknown) => {
@@ -135,8 +164,26 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
 
   return (
     <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-inactiveSelectionBackground)]">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)]">
+      {/* Header - Clickable for collapse toggle */}
+      <div
+        className="flex items-center gap-2 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)] cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+        onClick={toggleCollapsed}
+      >
+        {/* Collapse/Expand chevron */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -154,18 +201,60 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         <span className="font-medium text-sm text-[var(--vscode-symbolIcon-methodForeground)]">
           {toolName}
         </span>
-        {isExecuting && (
-          <div className="ml-auto flex items-center gap-1.5">
-            <div className="spinner" />
-            <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-              Executing...
+
+        {/* Metadata badges */}
+        <div className="ml-auto flex items-center gap-2">
+          {duration !== undefined && (
+            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {formatDuration(duration)}
             </span>
-          </div>
-        )}
+          )}
+          {tokens !== undefined && (
+            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+              {formatTokens(tokens)}
+            </span>
+          )}
+          {isExecuting && (
+            <div className="flex items-center gap-1.5">
+              <div className="spinner" />
+              <span className="text-xs text-[var(--vscode-descriptionForeground)]">
+                Executing...
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Input Parameters */}
-      {hasContent && (
+      {/* Input Parameters - Only show when not collapsed */}
+      {!isCollapsed && hasContent && (
         <div className="px-3 py-2 font-mono text-xs space-y-1">
           {inputEntries.map(([key, value]) => (
             <div key={key} className="flex gap-2">
@@ -180,8 +269,8 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         </div>
       )}
 
-      {/* Expanded Raw Content */}
-      {isExpanded && hasContent && (
+      {/* Expanded Raw Content - Only show when not collapsed and expanded */}
+      {!isCollapsed && isExpanded && hasContent && (
         <div className="border-t border-[var(--vscode-panel-border)]">
           <div className="px-3 py-1 bg-[var(--vscode-sideBarSectionHeader-background)] flex items-center justify-between">
             <span className="text-xs text-[var(--vscode-descriptionForeground)]">
@@ -189,7 +278,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
             </span>
             <button
               className="text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
-              onClick={toggleExpanded}
+              onClick={(e) => { e.stopPropagation(); toggleExpanded(); }}
             >
               Collapse
             </button>

@@ -119,7 +119,7 @@ interface MessageListProps {
 
 ### Message (`src/webview/components/Chat/Message.tsx`)
 
-**Purpose:** Renders individual message with role-specific styling.
+**Purpose:** Renders individual message with role-specific styling and collapsible tool messages.
 
 ```typescript
 interface MessageProps {
@@ -130,16 +130,33 @@ interface MessageProps {
     timestamp: Date;
     toolName?: string;
     isStreaming?: boolean;
+    /** Duration in milliseconds (for tool messages) */
+    duration?: number;
+    /** Token count (for tool messages) */
+    tokens?: number;
   };
 }
 ```
 
 **Content Rendering:**
-- Markdown code block detection (```)
-- Inline code formatting
-- Streaming indicator
+- Markdown code block detection (``` with language tag)
+- Inline code formatting with backticks
+- Streaming indicator ("streaming..." pulse animation)
 - Role-based icons (User, Bot, Tool, Error)
-- Timestamps
+- Timestamps (12-hour format with AM/PM)
+
+**Tool Message Features:**
+- Collapsible layout with chevron toggle (default: collapsed)
+- Clickable header for expand/collapse
+- Duration badge (formatted as ms/s/m)
+- Token count badge (formatted with K suffix)
+- Monospace code block for content when expanded
+
+**Role Styling:**
+- User: Input background with border
+- Assistant: Editor background
+- Tool: Inactive selection background with border
+- Error: Error background with error border
 
 ---
 
@@ -229,7 +246,7 @@ interface StatusBarProps {
 
 ### ToolUseCard (`src/webview/components/Tools/ToolUseCard.tsx`)
 
-**Purpose:** Displays tool execution with input preview.
+**Purpose:** Displays tool execution with input preview and collapsible content.
 
 ```typescript
 interface ToolUseCardProps {
@@ -237,20 +254,30 @@ interface ToolUseCardProps {
   input: { [key: string]: unknown };
   isExecuting?: boolean;
   onFilePathClick?: (filePath: string) => void;
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Token count for this tool use */
+  tokens?: number;
+  /** Whether to start collapsed (default: true) */
+  defaultCollapsed?: boolean;
 }
 ```
 
 **Features:**
-- Tool icon based on name (Bash, Read, Write, Edit, etc.)
-- Expandable sections for long input
-- Clickable file paths
-- Execution spinner
+- Tool icon based on name (Read, Write, Edit, Bash, Glob, Grep, TodoWrite, WebFetch, WebSearch, Task, LSP, NotebookEdit)
+- Collapsible card with chevron toggle (default: collapsed)
+- Duration badge (formatted as ms/s/m)
+- Token count badge (formatted with K suffix)
+- Expandable sections for long input values
+- Clickable file paths with file icon
+- Execution spinner with "Executing..." text
+- Raw JSON input view (expandable)
 
 ---
 
 ### ToolResultCard (`src/webview/components/Tools/ToolResultCard.tsx`)
 
-**Purpose:** Displays tool execution results.
+**Purpose:** Displays tool execution results with collapsible content.
 
 ```typescript
 interface ToolResultCardProps {
@@ -259,14 +286,23 @@ interface ToolResultCardProps {
   toolName?: string;
   maxLines?: number;
   onCopy?: (content: string) => void;
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Token count for this tool result */
+  tokens?: number;
+  /** Whether to start collapsed (default: true) */
+  defaultCollapsed?: boolean;
 }
 ```
 
 **Features:**
-- Success/error styling
-- Copy button with feedback
-- Line truncation with "Show more"
-- Preserves whitespace
+- Collapsible card with chevron toggle (default: collapsed)
+- Success/error styling with appropriate icons
+- Duration badge (formatted as ms/s/m)
+- Token count badge (formatted with K suffix)
+- Copy button with "Copied" feedback (2s timeout)
+- Line truncation with "Show N more lines" button
+- Preserves whitespace in preformatted content
 
 ---
 
@@ -403,44 +439,94 @@ interface PermissionModalProps {
 
 ### ConversationHistory
 
-**Purpose:** Sidebar overlay for conversation history.
+**Purpose:** Sidebar overlay for conversation history with search and delete functionality.
 
 ```typescript
 interface ConversationHistoryProps {
+  /** Whether the panel is visible */
   isOpen: boolean;
+  /** Callback to close the panel */
   onClose: () => void;
+  /** Callback when a conversation is loaded */
   onConversationLoad?: (id: string) => void;
+  /** Conversations to display */
+  conversations: ConversationListItem[];
+  /** Whether conversations are loading */
+  isLoading?: boolean;
+  /** Active conversation id */
+  activeConversationId?: string | null;
+  /** Callback to delete a conversation */
+  onConversationDelete?: (id: string) => void;
 }
 ```
 
 **Features:**
-- Fixed sidebar (320px width)
-- Slide-in animation
-- Search with debouncing
+- Fixed sidebar (320px width, max-w-full)
+- Slide-in animation (`animate-slide-in-left`)
+- Header with conversation count and close button
+- Search input with filtering by title/preview
+- Loading state with spinner
+- Empty states (no results vs no conversations)
+- Sorted by updatedAt descending
+- Footer with filtered count
 - Keyboard shortcut (Esc to close)
+- ARIA labels for accessibility
+
+---
+
+### HistoryView
+
+**Purpose:** Standalone full-page history view component.
+
+```typescript
+// Uses Lucide icons: Clock, MessageSquare, Trash2, Search, FolderOpen
+interface ConversationSummary {
+  filename: string;
+  timestamp: Date;
+  preview: string;
+  messageCount: number;
+}
+```
+
+**Features:**
+- Header with conversation count
+- Search input with filtering
+- Conversation list with hover delete
+- Confirmation dialog for deletion
+- Loading spinner state
+- Empty state with icon
+- Date formatting (short month, day, year, time)
 
 ---
 
 ### ConversationItem
 
-**Purpose:** Single conversation in history list.
+**Purpose:** Single conversation in history list with inline delete confirmation.
 
 ```typescript
 interface ConversationItemProps {
-  conversation: ConversationSummary;
+  /** Conversation summary data */
+  conversation: ConversationListItem;
+  /** Whether this conversation is currently active */
   isActive?: boolean;
+  /** Callback when conversation is clicked */
   onClick: (id: string) => void;
+  /** Callback when delete is confirmed */
   onDelete: (id: string) => void;
+  /** Optional cost information */
   cost?: number;
 }
 ```
 
 **Features:**
-- Hover state with delete button
-- Relative timestamp ("2 hours ago")
+- Hover state with delete button (opacity transition)
+- Inline delete confirmation (checkmark/X buttons)
+- Relative timestamp formatting ("2 hours ago", "Yesterday", etc.)
 - Message count badge
-- Cost badge
-- Tag display (max 2 visible)
+- Cost badge (green, shows "$X.XX" or "<$0.01")
+- Tag display (max 2 visible with "+N" overflow)
+- Keyboard accessible (Enter/Space to select)
+- ARIA labels for accessibility
 
 ---
 

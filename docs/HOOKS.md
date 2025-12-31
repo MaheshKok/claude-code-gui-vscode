@@ -2,7 +2,7 @@
 
 ## Overview
 
-Claude Code GUI includes 10 custom React hooks for common functionality.
+Claude Code GUI includes 9 custom React hooks for common functionality.
 
 ## Hook Summary
 
@@ -17,6 +17,8 @@ Claude Code GUI includes 10 custom React hooks for common functionality.
 | `useAutoScroll` | Smart auto-scroll | User intent detection |
 | `useAutoResize` | Textarea auto-height | Min/max constraints |
 | `useFilePicker` | File selection UI | Search, keyboard nav |
+
+**Note:** The `useKeyboard` hook also exports `useChatKeyboard` as a specialized variant for chat input handling.
 
 ---
 

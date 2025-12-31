@@ -82,6 +82,7 @@ setSessionId(sessionId: string | null): void
 setProcessing(isProcessing: boolean): void
 startRequestTiming(): void
 stopRequestTiming(): void
+incrementTurns(): void
 
 // Token/Cost Updates
 updateTokens(usage: TokenUsage): void
@@ -91,6 +92,34 @@ resetTokenTracking(): void
 
 // State Reset
 resetChat(): void  // Keeps allTimeCostUsd
+
+// Conversation Hydration (NEW)
+hydrateConversation(payload: HydratePayload): void
+```
+
+### Hydrate Conversation Action
+
+```typescript
+// Restores chat state from a saved conversation
+interface HydratePayload {
+  messages: ChatMessage[];
+  sessionId?: string | null;
+  totalCost?: number;
+  totalTokens?: {
+    input: number;
+    output: number;
+  };
+}
+
+hydrateConversation(payload): void
+// - Sets messages directly from payload
+// - Restores sessionId if provided
+// - Resets isProcessing to false
+// - Resets requestStartTime to null
+// - Calculates numTurns from user messages
+// - Restores token cumulative totals
+// - Restores sessionCostUsd from totalCost
+// - Preserves allTimeCostUsd
 ```
 
 ### Persistence

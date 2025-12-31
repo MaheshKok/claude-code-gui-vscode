@@ -376,6 +376,7 @@ private _webviewView: vscode.WebviewView | undefined; // Sidebar view
 | `clearConversation` | `newSession()` |
 | `getConversationList` | `_sendConversationList()` |
 | `loadConversation` | `loadConversation(filename)` |
+| `deleteConversation` | `_deleteConversation(filename)` (NEW) |
 | `getSettings` | `_sendCurrentSettings()` |
 | `saveSettings` | `_updateSettings()` |
 | `selectModel` | `_setSelectedModel()` |
@@ -387,6 +388,10 @@ private _webviewView: vscode.WebviewView | undefined; // Sidebar view
 | `loadMCPServers` | `_loadMCPServers()` |
 | `saveMCPServer` | `mcpService.saveServer()` |
 | `deleteMCPServer` | `mcpService.deleteServer()` |
+| `openExternal` | `vscode.env.openExternal(url)` (NEW) |
+| `showInfo` | `vscode.window.showInformationMessage()` (NEW) |
+| `showError` | `vscode.window.showErrorMessage()` (NEW) |
+| `telemetry` | `_handleTelemetry()` (NEW) |
 
 **Extension → Webview:**
 
@@ -405,6 +410,45 @@ private _webviewView: vscode.WebviewView | undefined; // Sidebar view
 | `error` | Error message |
 | `settingsUpdate` | Settings changed |
 | `restoreState` | Restore saved state |
+| `conversationList` | List of saved conversations (NEW) |
+| `conversationDeleted` | Confirmation of deletion (NEW) |
+
+### Conversation Management Handlers
+
+```typescript
+// Send list of saved conversations to webview
+async _sendConversationList(): Promise<void> {
+  const index = this.conversationService.getConversationIndex();
+  const conversations = index.map(entry => ({
+    filename: entry.filename,
+    timestamp: entry.endTime,
+    preview: entry.firstUserMessage?.slice(0, 100) || 'No preview',
+    messageCount: entry.messageCount,
+    sessionId: entry.sessionId,
+    totalCost: entry.totalCost
+  }));
+  this._postMessage({ type: 'conversationList', conversations });
+}
+
+// Load a saved conversation and hydrate chat state
+async loadConversation(filename: string): Promise<void> {
+  const conversation = this.conversationService.loadConversation(filename);
+  if (conversation) {
+    // Convert to ChatMessage[] format
+    // Send to webview for hydration
+    this._postMessage({
+      type: 'restoreState',
+      state: { messages, sessionId, totalCost, totalTokens }
+    });
+  }
+}
+
+// Delete a saved conversation
+async _deleteConversation(filename: string): Promise<void> {
+  await this.conversationService.deleteConversation(filename);
+  this._postMessage({ type: 'conversationDeleted', filename });
+}
+```
 
 ### Thinking Mode
 

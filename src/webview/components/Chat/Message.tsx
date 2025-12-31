@@ -1,14 +1,35 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import type { Message as MessageType } from '../App';
 
 interface MessageProps {
   message: MessageType;
 }
 
+/** Format duration in human readable format */
+const formatDuration = (ms: number): string => {
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  return `${minutes}m ${seconds}s`;
+};
+
+/** Format tokens in human readable format */
+const formatTokens = (tokens: number): string => {
+  if (tokens < 1000) return `${tokens}`;
+  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+};
+
 export const Message: React.FC<MessageProps> = ({ message }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
   const isTool = message.role === 'tool';
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed(prev => !prev);
+  }, []);
 
   const getRoleLabel = () => {
     switch (message.role) {
@@ -87,6 +108,85 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     }).format(date);
   };
 
+  // For tool messages, use collapsible layout
+  if (isTool) {
+    // Extract metadata from message
+    const duration = message.duration;
+    const tokens = message.tokens;
+
+    return (
+      <div className={getContainerClasses()}>
+        {/* Clickable header for tool messages */}
+        <div
+          className="flex items-center gap-2 cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] -m-4 p-4 rounded-lg transition-colors"
+          onClick={toggleCollapsed}
+        >
+          {/* Collapse/Expand chevron */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`text-[var(--vscode-descriptionForeground)] transition-transform flex-shrink-0 ${isCollapsed ? '' : 'rotate-90'}`}
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <span className={`flex items-center justify-center w-6 h-6 rounded-full bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]`}>
+            {getRoleIcon()}
+          </span>
+          <span className="font-medium text-sm text-[var(--vscode-foreground)]">
+            {getRoleLabel()}
+          </span>
+          <span className="text-xs text-[var(--vscode-descriptionForeground)]">
+            {formatTimestamp(message.timestamp)}
+          </span>
+
+          {/* Metadata badges */}
+          <div className="ml-auto flex items-center gap-2">
+            {duration !== undefined && (
+              <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                {formatDuration(duration)}
+              </span>
+            )}
+            {tokens !== undefined && (
+              <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" />
+                </svg>
+                {formatTokens(tokens)}
+              </span>
+            )}
+            {message.isStreaming && (
+              <span className="text-xs text-[var(--vscode-descriptionForeground)] animate-pulse">
+                streaming...
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Content - only show when not collapsed */}
+        {!isCollapsed && (
+          <div className="pl-8 mt-3 text-sm text-[var(--vscode-foreground)] whitespace-pre-wrap break-words">
+            <div className="font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-2 rounded overflow-x-auto">
+              {message.content}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // For non-tool messages, use regular layout
   return (
     <div className={getContainerClasses()}>
       <div className="flex items-center gap-2 mb-2">
@@ -113,13 +213,7 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       </div>
 
       <div className="pl-8 text-sm text-[var(--vscode-foreground)] whitespace-pre-wrap break-words">
-        {isTool ? (
-          <div className="font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-2 rounded overflow-x-auto">
-            {message.content}
-          </div>
-        ) : (
-          <MessageContent content={message.content} />
-        )}
+        <MessageContent content={message.content} />
       </div>
     </div>
   );

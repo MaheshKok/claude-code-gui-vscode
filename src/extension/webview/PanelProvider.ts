@@ -284,6 +284,16 @@ export class PanelProvider {
     }
 
     private _initializeWebview(): void {
+        const restoreState = this._getRestoreState();
+        if (restoreState && typeof restoreState === 'object') {
+            this._postMessage({
+                type: 'restoreState',
+                state: restoreState
+            });
+            this._sendReadyMessage();
+            return;
+        }
+
         // Resume session from latest conversation
         const latestConversation = this._conversationService.getLatestConversation();
         if (latestConversation) {
@@ -294,6 +304,29 @@ export class PanelProvider {
                 this._sendReadyMessage();
             }, 100);
         }
+    }
+
+    private _getRestoreState(): Record<string, unknown> | undefined {
+        const storedState = this._context.workspaceState.get('claude.webviewState');
+        const currentMessages = this._conversationService.getCurrentConversation();
+
+        if (currentMessages.length > 0) {
+            const storedSessionId = storedState && typeof storedState === 'object'
+                ? (storedState as { sessionId?: string }).sessionId
+                : undefined;
+            return {
+                messages: currentMessages,
+                sessionId: this._claudeService.sessionId ?? storedSessionId ?? null,
+                totalCost: this._totalCost,
+                totalTokens: {
+                    input: this._totalTokensInput,
+                    output: this._totalTokensOutput
+                },
+                isProcessing: this._isProcessing
+            };
+        }
+
+        return storedState;
     }
 
     private _setupWebviewMessageHandler(webview: vscode.Webview): void {
@@ -437,7 +470,7 @@ export class PanelProvider {
             case 'requestState':
                 this._postMessage({
                     type: 'restoreState',
-                    state: this._context.workspaceState.get('claude.webviewState')
+                    state: this._getRestoreState()
                 });
                 break;
             case 'saveState':
