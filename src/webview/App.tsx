@@ -108,11 +108,15 @@ export const App: React.FC = () => {
   // Settings store
   const selectedModel = useSettingsStore((s) => s.selectedModel);
   const thinkingMode = useSettingsStore((s) => s.thinkingMode);
+  const thinkingIntensity = useSettingsStore((s) => s.thinkingIntensity);
   const planMode = useSettingsStore((s) => s.planMode);
+  const yoloMode = useSettingsStore((s) => s.yoloMode);
   const wsl = useSettingsStore(selectWSL);
   const setSelectedModel = useSettingsStore((s) => s.setSelectedModel);
   const toggleThinkingMode = useSettingsStore((s) => s.toggleThinkingMode);
+  const setThinkingIntensity = useSettingsStore((s) => s.setThinkingIntensity);
   const togglePlanMode = useSettingsStore((s) => s.togglePlanMode);
+  const toggleYoloMode = useSettingsStore((s) => s.toggleYoloMode);
   const loadFromVSCode = useSettingsStore((s) => s.loadFromVSCode);
 
   // UI store
@@ -461,6 +465,20 @@ export const App: React.FC = () => {
     toggleThinkingMode();
   }, [toggleThinkingMode]);
 
+  const handleThinkingIntensityChange = useCallback((intensity: 'think' | 'think-hard' | 'think-harder' | 'ultrathink') => {
+    setThinkingIntensity(intensity);
+  }, [setThinkingIntensity]);
+
+  const handleYoloModeToggle = useCallback(() => {
+    const newYoloMode = !yoloMode;
+    toggleYoloMode();
+    // Sync with VSCode settings so extension uses updated value
+    postMessage({
+      type: 'saveSettings',
+      settings: { yoloMode: newYoloMode } as Record<string, unknown>,
+    });
+  }, [toggleYoloMode, yoloMode, postMessage]);
+
   const handleFileSelect = useCallback(() => {
     openModal('model'); // Placeholder - would open file picker
   }, [openModal]);
@@ -547,10 +565,14 @@ export const App: React.FC = () => {
         currentModel={selectedModel}
         planMode={planMode}
         thinkingMode={thinkingMode}
+        thinkingIntensity={thinkingIntensity}
+        yoloMode={yoloMode}
         onSendMessage={handleSendMessage}
         onModelChange={handleModelChange}
         onPlanModeToggle={handlePlanModeToggle}
         onThinkingModeToggle={handleThinkingModeToggle}
+        onThinkingIntensityChange={handleThinkingIntensityChange}
+        onYoloModeToggle={handleYoloModeToggle}
         onFileSelect={handleFileSelect}
         onImageSelect={handleImageSelect}
         onSlashCommand={handleSlashCommand}

@@ -762,6 +762,9 @@ export class PanelProvider {
         if (message.subtype === 'success') {
             this._isProcessing = false;
 
+            // Use session_id from message if available, otherwise use the one from ClaudeService
+            const sessionId = message.session_id || this._claudeService.sessionId;
+
             if (message.session_id) {
                 this._claudeService.setSessionId(message.session_id);
                 this._sendAndSaveMessage({
@@ -792,20 +795,34 @@ export class PanelProvider {
                 numTurns: message.num_turns || 0
             });
 
-            // Save conversation
-            this._conversationService.saveCurrentConversation({
-                sessionId: message.session_id,
-                totalCost: this._totalCost,
-                totalTokens: {
-                    input: this._totalTokensInput,
-                    output: this._totalTokensOutput
-                }
-            });
+            // Save conversation - use sessionId from ClaudeService if not in message
+            if (sessionId) {
+                this._conversationService.saveCurrentConversation({
+                    sessionId: sessionId,
+                    totalCost: this._totalCost,
+                    totalTokens: {
+                        input: this._totalTokensInput,
+                        output: this._totalTokensOutput
+                    }
+                });
+                console.log('[PanelProvider] Saved conversation with sessionId:', sessionId);
+            } else {
+                console.warn('[PanelProvider] Could not save conversation: no sessionId available');
+            }
         }
     }
 
     private _sendConversationList(): void {
-        const conversations = this._conversationService.getConversationIndex();
+        const indexEntries = this._conversationService.getConversationIndex();
+        // Map to format expected by HistoryView
+        const conversations = indexEntries.map(entry => ({
+            filename: entry.filename,
+            timestamp: entry.startTime || entry.endTime,
+            preview: entry.firstUserMessage || entry.lastUserMessage || 'No preview',
+            messageCount: entry.messageCount,
+            sessionId: entry.sessionId,
+            totalCost: entry.totalCost
+        }));
         this._postMessage({
             type: 'conversationList',
             data: conversations,

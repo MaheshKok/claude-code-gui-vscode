@@ -1,19 +1,34 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 
+/** Thinking intensity levels matching Claude Code CLI */
+type ThinkingIntensity = 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
+
 interface MessageInputProps {
   disabled: boolean;
   currentModel: string;
   planMode: boolean;
   thinkingMode: boolean;
+  thinkingIntensity: ThinkingIntensity;
+  yoloMode: boolean;
   onSendMessage: (content: string) => void;
   onModelChange: (model: string) => void;
   onPlanModeToggle: () => void;
   onThinkingModeToggle: () => void;
+  onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
+  onYoloModeToggle: () => void;
   onFileSelect: () => void;
   onImageSelect: () => void;
   onSlashCommand: () => void;
   onMcpAction: () => void;
 }
+
+/** Thinking mode options with token budgets */
+const THINKING_MODES = [
+  { id: 'think' as const, label: 'Think', tokens: '4K tokens', description: 'Basic reasoning' },
+  { id: 'think-hard' as const, label: 'Think Hard', tokens: '10K tokens', description: 'Deeper analysis' },
+  { id: 'think-harder' as const, label: 'Think Harder', tokens: '20K tokens', description: 'Comprehensive reasoning' },
+  { id: 'ultrathink' as const, label: 'Ultrathink', tokens: '32K tokens', description: 'Maximum depth' },
+];
 
 const MODELS = [
   { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5', shortName: 'Sonnet 4.5' },
@@ -26,10 +41,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   currentModel,
   planMode,
   thinkingMode,
+  thinkingIntensity,
+  yoloMode,
   onSendMessage,
   onModelChange,
   onPlanModeToggle,
   onThinkingModeToggle,
+  onThinkingIntensityChange,
+  onYoloModeToggle,
   onFileSelect,
   onImageSelect,
   onSlashCommand,
@@ -37,8 +56,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 }) => {
   const [content, setContent] = useState('');
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showThinkingSelector, setShowThinkingSelector] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
+  const thinkingSelectorRef = useRef<HTMLDivElement>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -48,11 +69,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [content]);
 
-  // Close model selector when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modelSelectorRef.current && !modelSelectorRef.current.contains(event.target as Node)) {
         setShowModelSelector(false);
+      }
+      if (thinkingSelectorRef.current && !thinkingSelectorRef.current.contains(event.target as Node)) {
+        setShowThinkingSelector(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -82,7 +106,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     setShowModelSelector(false);
   }, [onModelChange]);
 
+  const handleThinkingSelect = useCallback((intensity: ThinkingIntensity) => {
+    onThinkingIntensityChange(intensity);
+    if (!thinkingMode) {
+      onThinkingModeToggle();
+    }
+    setShowThinkingSelector(false);
+  }, [onThinkingIntensityChange, thinkingMode, onThinkingModeToggle]);
+
   const currentModelName = MODELS.find((m) => m.id === currentModel)?.shortName || 'Model';
+  const currentThinkingMode = THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
   return (
     <div className="border-t border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBar-background)]">
@@ -128,14 +161,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         <div className="w-px h-4 bg-[var(--vscode-panel-border)] mx-1" />
 
-        {/* Mode Toggles */}
+        {/* Plan Mode Toggle */}
         <button
           onClick={onPlanModeToggle}
-          className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
-            planMode
-              ? 'bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]'
-              : 'hover:bg-[var(--vscode-toolbar-hoverBackground)]'
-          }`}
+          className="flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors hover:bg-[var(--vscode-toolbar-hoverBackground)]"
           title="Plan mode - Claude will plan before executing"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -143,26 +172,120 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             <polyline points="14 2 14 8 20 8" />
             <line x1="16" y1="13" x2="8" y2="13" />
             <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
           </svg>
-          Plan
+          <span>Plan</span>
+          {/* Modern Toggle Switch */}
+          <div
+            className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${
+              planMode ? 'bg-[var(--vscode-button-background)]' : 'bg-[var(--vscode-input-background)]'
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 ${
+                planMode ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
+          </div>
         </button>
 
+        <div className="w-px h-4 bg-[var(--vscode-panel-border)] mx-1" />
+
+        {/* Thinking Mode Dropdown */}
+        <div className="relative" ref={thinkingSelectorRef}>
+          <button
+            onClick={() => setShowThinkingSelector(!showThinkingSelector)}
+            className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
+              thinkingMode
+                ? 'bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]'
+                : 'hover:bg-[var(--vscode-toolbar-hoverBackground)]'
+            }`}
+            title="Extended thinking - Claude will think more deeply"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+            <span>{thinkingMode ? currentThinkingMode.label : 'Think'}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {showThinkingSelector && (
+            <div className="absolute bottom-full left-0 mb-1 py-1 bg-[var(--vscode-dropdown-background)] border border-[var(--vscode-dropdown-border)] rounded-lg shadow-lg z-10 min-w-[200px]">
+              {/* Toggle thinking on/off */}
+              <button
+                onClick={() => {
+                  onThinkingModeToggle();
+                  setShowThinkingSelector(false);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-[var(--vscode-list-hoverBackground)] border-b border-[var(--vscode-dropdown-border)]"
+              >
+                <span className="font-medium">Extended Thinking</span>
+                <div
+                  className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${
+                    thinkingMode ? 'bg-[var(--vscode-button-background)]' : 'bg-[var(--vscode-input-background)]'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 ${
+                      thinkingMode ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* Thinking levels */}
+              <div className="py-1">
+                {THINKING_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => handleThinkingSelect(mode.id)}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--vscode-list-hoverBackground)] ${
+                      thinkingIntensity === mode.id && thinkingMode ? 'bg-[var(--vscode-list-activeSelectionBackground)]' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{mode.label}</span>
+                      <span className="text-xs text-[var(--vscode-descriptionForeground)]">{mode.tokens}</span>
+                    </div>
+                    <p className="text-xs text-[var(--vscode-descriptionForeground)] mt-0.5">{mode.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="w-px h-4 bg-[var(--vscode-panel-border)] mx-1" />
+
+        {/* Yolo Mode Toggle */}
         <button
-          onClick={onThinkingModeToggle}
-          className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
-            thinkingMode
-              ? 'bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]'
+          onClick={onYoloModeToggle}
+          className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors ${
+            yoloMode
+              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
               : 'hover:bg-[var(--vscode-toolbar-hoverBackground)]'
           }`}
-          title="Extended thinking - Claude will think more deeply"
+          title="YOLO mode - Auto-approve all permissions (use with caution)"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
-          Thinking
+          <span>YOLO</span>
+          {/* Modern Toggle Switch */}
+          <div
+            className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${
+              yoloMode ? 'bg-amber-500' : 'bg-[var(--vscode-input-background)]'
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 ${
+                yoloMode ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
+          </div>
         </button>
 
         <div className="flex-1" />
