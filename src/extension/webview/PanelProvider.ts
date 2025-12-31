@@ -197,7 +197,8 @@ export class PanelProvider {
                     messages: conversation.messages,
                     sessionId: conversation.sessionId,
                     totalCost: conversation.totalCost,
-                    totalTokens: conversation.totalTokens
+                    totalTokens: conversation.totalTokens,
+                    conversationId: conversation.filename
                 }
             });
 
@@ -420,6 +421,15 @@ export class PanelProvider {
                 break;
             case 'loadConversation':
                 this.loadConversation(message.filename);
+                break;
+            case 'deleteConversation':
+                if (message.filename) {
+                    const deleted = await this._conversationService.deleteConversation(message.filename);
+                    if (deleted) {
+                        this._postMessage({ type: 'conversationDeleted', filename: message.filename });
+                        this._sendConversationList();
+                    }
+                }
                 break;
             case 'getSettings':
                 this._sendCurrentSettings();

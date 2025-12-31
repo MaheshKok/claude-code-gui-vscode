@@ -96,6 +96,16 @@ export interface ChatActions {
   incrementTurns: () => void;
   /** Reset chat state for new conversation */
   resetChat: () => void;
+  /** Hydrate chat state from saved conversation */
+  hydrateConversation: (payload: {
+    messages: ChatMessage[];
+    sessionId?: string | null;
+    totalCost?: number;
+    totalTokens?: {
+      input: number;
+      output: number;
+    };
+  }) => void;
 }
 
 export type ChatStore = ChatState & ChatActions;
@@ -248,6 +258,39 @@ export const useChatStore = create<ChatStore>()(
             allTimeCostUsd: get().costs.allTimeCostUsd,
           },
         }),
+
+      hydrateConversation: ({ messages, sessionId, totalCost, totalTokens }) =>
+        set((state) => ({
+          messages,
+          currentSessionId: sessionId ?? null,
+          isProcessing: false,
+          requestStartTime: null,
+          numTurns: messages.filter((message) => message.type === 'user').length,
+          tokens: {
+            current: {
+              input_tokens: 0,
+              output_tokens: 0,
+              cache_read_input_tokens: 0,
+              cache_creation_input_tokens: 0,
+            },
+            cumulative: {
+              totalInputTokens: totalTokens?.input ?? 0,
+              totalOutputTokens: totalTokens?.output ?? 0,
+              totalCacheReadTokens: 0,
+              totalCacheCreationTokens: 0,
+            },
+          },
+          costs: {
+            ...state.costs,
+            sessionCostUsd: totalCost ?? 0,
+            breakdown: {
+              inputCost: 0,
+              outputCost: 0,
+              cacheCost: 0,
+            },
+            lastUpdated: Date.now(),
+          },
+        })),
     }),
     {
       name: 'claude-code-gui-store',

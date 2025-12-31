@@ -50,7 +50,9 @@ export type ExtensionToWebviewMessageType =
   | 'showLoginModal'
   | 'settingsUpdate'
   | 'themeUpdate'
-  | 'restoreState';
+  | 'restoreState'
+  | 'conversationList'
+  | 'conversationDeleted';
 
 /**
  * Union type of all extension to webview messages
@@ -75,7 +77,9 @@ export type ExtensionToWebviewMessage =
   | ShowLoginModalMessage
   | SettingsUpdateMessage
   | ThemeUpdateMessage
-  | RestoreStateMessage;
+  | RestoreStateMessage
+  | ConversationListMessage
+  | ConversationDeletedMessage;
 
 /**
  * Base interface for extension to webview messages
@@ -323,6 +327,35 @@ export interface RestoreStateMessage extends BaseExtensionMessage {
   state: unknown;
 }
 
+/**
+ * Conversation summary from the extension
+ */
+export interface ConversationListItem {
+  filename: string;
+  timestamp: string;
+  preview: string;
+  messageCount: number;
+  sessionId?: string;
+  totalCost?: number;
+}
+
+/**
+ * Conversation list message - sends conversation summaries
+ */
+export interface ConversationListMessage extends BaseExtensionMessage {
+  type: 'conversationList';
+  conversations: ConversationListItem[];
+  data?: ConversationListItem[];
+}
+
+/**
+ * Conversation deleted message
+ */
+export interface ConversationDeletedMessage extends BaseExtensionMessage {
+  type: 'conversationDeleted';
+  filename: string;
+}
+
 // ============================================================================
 // Webview to Extension Messages
 // ============================================================================
@@ -351,7 +384,10 @@ export type WebviewToExtensionMessageType =
   | 'openExternal'
   | 'showInfo'
   | 'showError'
-  | 'telemetry';
+  | 'telemetry'
+  | 'getConversationList'
+  | 'loadConversation'
+  | 'deleteConversation';
 
 /**
  * Union type of all webview to extension messages
@@ -377,7 +413,10 @@ export type WebviewToExtensionMessage =
   | OpenExternalRequest
   | ShowInfoRequest
   | ShowErrorRequest
-  | TelemetryRequest;
+  | TelemetryRequest
+  | GetConversationListRequest
+  | LoadConversationRequest
+  | DeleteConversationRequest;
 
 /**
  * Base interface for webview to extension messages
@@ -506,6 +545,29 @@ export interface ExportConversationRequest extends BaseWebviewMessage {
   type: 'exportConversation';
   /** Export format */
   format: 'json' | 'markdown' | 'html';
+}
+
+/**
+ * Conversation list request - retrieves saved conversations
+ */
+export interface GetConversationListRequest extends BaseWebviewMessage {
+  type: 'getConversationList';
+}
+
+/**
+ * Load conversation request - loads a saved conversation
+ */
+export interface LoadConversationRequest extends BaseWebviewMessage {
+  type: 'loadConversation';
+  filename: string;
+}
+
+/**
+ * Delete conversation request - deletes a saved conversation
+ */
+export interface DeleteConversationRequest extends BaseWebviewMessage {
+  type: 'deleteConversation';
+  filename: string;
 }
 
 /**

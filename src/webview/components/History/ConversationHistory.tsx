@@ -10,12 +10,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { ConversationSearch } from './ConversationSearch';
 import { ConversationItem } from './ConversationItem';
-import {
-  useConversationStore,
-  selectConversations,
-  selectCurrentConversation,
-  selectIsLoading,
-} from '../../stores/conversationStore';
+import type { ConversationListItem } from '../../types/history';
 
 export interface ConversationHistoryProps {
   /** Whether the panel is visible */
@@ -24,26 +19,26 @@ export interface ConversationHistoryProps {
   onClose: () => void;
   /** Callback when a conversation is loaded */
   onConversationLoad?: (id: string) => void;
+  /** Conversations to display */
+  conversations: ConversationListItem[];
+  /** Whether conversations are loading */
+  isLoading?: boolean;
+  /** Active conversation id */
+  activeConversationId?: string | null;
+  /** Callback to delete a conversation */
+  onConversationDelete?: (id: string) => void;
 }
 
 export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
   isOpen,
   onClose,
   onConversationLoad,
+  conversations,
+  isLoading = false,
+  activeConversationId,
+  onConversationDelete,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Store selectors
-  const conversations = useConversationStore(selectConversations);
-  const currentConversation = useConversationStore(selectCurrentConversation);
-  const isLoading = useConversationStore(selectIsLoading);
-
-  // Store actions
-  const {
-    loadConversation,
-    deleteConversation,
-    searchConversations,
-  } = useConversationStore();
 
   // Filter conversations based on search query
   const filteredConversations = useMemo(() => {
@@ -51,10 +46,14 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
       // Sort by updated date descending
       return [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
     }
-    return searchConversations(searchQuery).sort(
-      (a, b) => b.updatedAt - a.updatedAt
-    );
-  }, [conversations, searchQuery, searchConversations]);
+    const query = searchQuery.toLowerCase();
+    return conversations
+      .filter((conversation) => (
+        conversation.title.toLowerCase().includes(query)
+        || conversation.preview.toLowerCase().includes(query)
+      ))
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  }, [conversations, searchQuery]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
@@ -63,22 +62,19 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
 
   // Handle conversation click
   const handleConversationClick = useCallback(
-    async (id: string) => {
-      const success = await loadConversation(id);
-      if (success) {
-        onConversationLoad?.(id);
-        onClose();
-      }
+    (id: string) => {
+      onConversationLoad?.(id);
+      onClose();
     },
-    [loadConversation, onConversationLoad, onClose]
+    [onConversationLoad, onClose]
   );
 
   // Handle conversation delete
   const handleConversationDelete = useCallback(
     (id: string) => {
-      deleteConversation(id);
+      onConversationDelete?.(id);
     },
-    [deleteConversation]
+    [onConversationDelete]
   );
 
   // Handle keyboard shortcuts
@@ -261,9 +257,10 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
               <ConversationItem
                 key={conversation.id}
                 conversation={conversation}
-                isActive={currentConversation?.summary.id === conversation.id}
+                isActive={activeConversationId === conversation.id}
                 onClick={handleConversationClick}
                 onDelete={handleConversationDelete}
+                cost={conversation.totalCost}
               />
             ))}
           </div>

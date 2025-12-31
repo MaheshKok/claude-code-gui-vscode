@@ -8,11 +8,11 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import type { ConversationSummary } from '../../stores/conversationStore';
+import type { ConversationListItem } from '../../types/history';
 
 export interface ConversationItemProps {
   /** Conversation summary data */
-  conversation: ConversationSummary;
+  conversation: ConversationListItem;
   /** Whether this conversation is currently active */
   isActive?: boolean;
   /** Callback when conversation is clicked */

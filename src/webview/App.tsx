@@ -43,6 +43,7 @@ import { useVSCode } from './hooks/useVSCode';
 
 // Types
 import type { ChatMessage, PermissionRequest, PermissionDecision } from './types';
+import type { ConversationListItem } from './types/history';
 
 // ============================================================================
 // WSL Alert Component
@@ -85,6 +86,265 @@ const WSLAlert: React.FC<WSLAlertProps> = ({ onDismiss, onConfigure }) => (
 );
 
 // ============================================================================
+// Conversation Restore Helpers
+// ============================================================================
+
+interface StoredConversationMessage {
+  type: string;
+  data?: unknown;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
+interface RestoreStatePayload {
+  messages?: StoredConversationMessage[];
+  sessionId?: string;
+  totalCost?: number;
+  totalTokens?: {
+    input: number;
+    output: number;
+  };
+  conversationId?: string;
+}
+
+const toTimestamp = (value: unknown): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? Date.now() : parsed;
+  }
+  return Date.now();
+};
+
+const toStringContent = (value: unknown): string => {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value === undefined || value === null) {
+    return '';
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
+
+const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[] => {
+  const chatMessages: ChatMessage[] = [];
+  const toolUseIndex = new Map<string, number>();
+  let activeAssistantIndex: number | null = null;
+
+  const finalizeAssistant = () => {
+    if (activeAssistantIndex === null) {
+      return;
+    }
+    const current = chatMessages[activeAssistantIndex];
+    if (current && current.type === 'assistant') {
+      current.isStreaming = false;
+    }
+    activeAssistantIndex = null;
+  };
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    const timestamp = toTimestamp(message.timestamp);
+    const data = typeof message.data === 'object' && message.data !== null
+      ? message.data as Record<string, unknown>
+      : null;
+
+    switch (message.type) {
+      case 'userInput': {
+        finalizeAssistant();
+        const content = toStringContent(message.data);
+        chatMessages.push({
+          id: `user-${timestamp}-${i}`,
+          type: 'user',
+          content,
+          timestamp,
+        });
+        break;
+      }
+      case 'output': {
+        const text = typeof message.text === 'string'
+          ? message.text
+          : typeof message.data === 'string'
+            ? message.data
+            : '';
+        const isFinal = typeof message.isFinal === 'boolean' ? message.isFinal : false;
+
+        if (activeAssistantIndex === null) {
+          if (!text && isFinal) {
+            break;
+          }
+          const id = `assistant-${timestamp}-${i}`;
+          chatMessages.push({
+            id,
+            type: 'assistant',
+            content: text,
+            timestamp,
+            isStreaming: !isFinal,
+          });
+          activeAssistantIndex = chatMessages.length - 1;
+        } else {
+          const current = chatMessages[activeAssistantIndex];
+          if (current && current.type === 'assistant') {
+            current.content += text;
+          }
+        }
+
+        if (isFinal) {
+          finalizeAssistant();
+        }
+        break;
+      }
+      case 'thinking': {
+        finalizeAssistant();
+        const content = typeof message.thinking === 'string'
+          ? message.thinking
+          : toStringContent(message.data);
+        chatMessages.push({
+          id: `thinking-${timestamp}-${i}`,
+          type: 'thinking',
+          content,
+          timestamp,
+        });
+        break;
+      }
+      case 'toolUse': {
+        finalizeAssistant();
+        const toolUseId = typeof message.toolUseId === 'string'
+          ? message.toolUseId
+          : data && 'toolUseId' in data
+            ? String(data.toolUseId)
+            : `tool-${timestamp}-${i}`;
+        const toolName = typeof message.toolName === 'string'
+          ? message.toolName
+          : data && 'toolName' in data
+            ? String(data.toolName)
+            : 'Tool';
+        const rawInput = typeof message.rawInput === 'object' && message.rawInput !== null
+          ? message.rawInput
+          : data && 'rawInput' in data
+            ? data.rawInput as Record<string, unknown>
+            : {};
+        const toolInfo = typeof message.toolInfo === 'string'
+          ? message.toolInfo
+          : data && 'toolInfo' in data
+            ? String(data.toolInfo)
+            : '';
+
+        chatMessages.push({
+          id: toolUseId,
+          type: 'tool_use',
+          toolUseId,
+          toolName,
+          rawInput,
+          toolInfo,
+          status: 'executing',
+          timestamp,
+        });
+        toolUseIndex.set(toolUseId, chatMessages.length - 1);
+        break;
+      }
+      case 'toolResult': {
+        finalizeAssistant();
+        const toolUseId = typeof message.toolUseId === 'string'
+          ? message.toolUseId
+          : data && 'toolUseId' in data
+            ? String(data.toolUseId)
+            : '';
+        const isError = typeof message.isError === 'boolean'
+          ? message.isError
+          : data && 'isError' in data
+            ? Boolean(data.isError)
+            : false;
+        const hidden = typeof message.hidden === 'boolean'
+          ? message.hidden
+          : data && 'hidden' in data
+            ? Boolean(data.hidden)
+            : false;
+
+        if (toolUseId && toolUseIndex.has(toolUseId)) {
+          const index = toolUseIndex.get(toolUseId);
+          if (index !== undefined) {
+            const existing = chatMessages[index];
+            if (existing && existing.type === 'tool_use') {
+              existing.status = isError ? 'failed' : 'completed';
+            }
+          }
+        }
+
+        if (!hidden) {
+          const content = typeof message.content === 'string'
+            ? message.content
+            : data && 'content' in data
+              ? toStringContent(data.content)
+              : '';
+          chatMessages.push({
+            id: `tool-result-${toolUseId || timestamp}-${i}`,
+            type: 'tool_result',
+            toolUseId,
+            content,
+            timestamp,
+            isError,
+            hidden: false,
+          });
+        }
+        break;
+      }
+      case 'error': {
+        finalizeAssistant();
+        const content = typeof message.message === 'string'
+          ? message.message
+          : toStringContent(message.data);
+        chatMessages.push({
+          id: `error-${timestamp}-${i}`,
+          type: 'error',
+          content,
+          timestamp,
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  finalizeAssistant();
+  return chatMessages;
+};
+
+const mapConversationList = (items: unknown[]): ConversationListItem[] =>
+  items.map((item, index) => {
+    const entry = item as Record<string, unknown>;
+    const preview = typeof entry.preview === 'string' ? entry.preview : 'Conversation';
+    const timestamp = toTimestamp(entry.timestamp ?? entry.startTime ?? entry.endTime);
+    const messageCount = typeof entry.messageCount === 'number' ? entry.messageCount : 0;
+    const totalCost = typeof entry.totalCost === 'number' ? entry.totalCost : undefined;
+    const sessionId = typeof entry.sessionId === 'string' ? entry.sessionId : undefined;
+    const tags = Array.isArray(entry.tags) ? entry.tags.filter((tag) => typeof tag === 'string') : undefined;
+    const id = typeof entry.filename === 'string'
+      ? entry.filename
+      : typeof entry.id === 'string'
+        ? entry.id
+        : sessionId || `conversation-${index}`;
+
+    return {
+      id,
+      title: preview,
+      preview,
+      updatedAt: timestamp,
+      messageCount,
+      sessionId,
+      totalCost,
+      tags,
+    };
+  });
+
+// ============================================================================
 // App Component
 // ============================================================================
 
@@ -103,6 +363,7 @@ export const App: React.FC = () => {
   const setProcessing = useChatStore((s) => s.setProcessing);
   const setSessionId = useChatStore((s) => s.setSessionId);
   const updateTokens = useChatStore((s) => s.updateTokens);
+  const hydrateConversation = useChatStore((s) => s.hydrateConversation);
   const resetChat = useChatStore((s) => s.resetChat);
 
   // Settings store
@@ -146,6 +407,9 @@ export const App: React.FC = () => {
   const [showWSLAlert, setShowWSLAlert] = React.useState(false);
   const [streamingMessageId, setStreamingMessageId] = React.useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
+  const [conversationList, setConversationList] = React.useState<ConversationListItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = React.useState(false);
+  const [activeConversationId, setActiveConversationId] = React.useState<string | null>(null);
 
   // -------------------------------------------------------------------------
   // Message Handlers
@@ -327,12 +591,51 @@ export const App: React.FC = () => {
       loadFromVSCode(msg.settings);
     },
 
+    conversationList: (msg: { conversations?: unknown[]; data?: unknown[] }) => {
+      const items = Array.isArray(msg.conversations)
+        ? msg.conversations
+        : Array.isArray(msg.data)
+          ? msg.data
+          : [];
+      setConversationList(mapConversationList(items));
+      setIsHistoryLoading(false);
+    },
+
+    conversationDeleted: (msg: { filename: string }) => {
+      setConversationList((prev) => prev.filter((item) => item.id !== msg.filename));
+      if (activeConversationId === msg.filename) {
+        setActiveConversationId(null);
+      }
+    },
+
     themeUpdate: (_msg: { theme: 'light' | 'dark' }) => {
       // Theme is handled by VSCode CSS variables
     },
 
-    restoreState: (_msg: { state: unknown }) => {
-      // Restore saved webview state if needed
+    restoreState: (msg: { state: unknown }) => {
+      if (!msg.state || typeof msg.state !== 'object') {
+        return;
+      }
+      const state = msg.state as RestoreStatePayload;
+      if (state.conversationId) {
+        setActiveConversationId(state.conversationId);
+      }
+      if (Array.isArray(state.messages)) {
+        const restoredMessages = buildChatMessages(state.messages);
+        const totalCost = typeof state.totalCost === 'number' ? state.totalCost : undefined;
+        const totalTokens = state.totalTokens
+          && typeof state.totalTokens.input === 'number'
+          && typeof state.totalTokens.output === 'number'
+          ? state.totalTokens
+          : undefined;
+        setStreamingMessageId(null);
+        hydrateConversation({
+          messages: restoredMessages,
+          sessionId: state.sessionId ?? null,
+          totalCost,
+          totalTokens,
+        });
+      }
     },
 
     compacting: (_msg: { isCompacting: boolean }) => {
@@ -354,6 +657,12 @@ export const App: React.FC = () => {
     showError,
     loadFromVSCode,
     streamingMessageId,
+    setStreamingMessageId,
+    hydrateConversation,
+    setConversationList,
+    setIsHistoryLoading,
+    setActiveConversationId,
+    activeConversationId,
   ]);
 
   // Set up message listener
@@ -389,6 +698,13 @@ export const App: React.FC = () => {
     }
   }, [isVSCode, postMessage]);
 
+  useEffect(() => {
+    if (isVSCode && isHistoryOpen) {
+      setIsHistoryLoading(true);
+      postMessage({ type: 'getConversationList' });
+    }
+  }, [isVSCode, isHistoryOpen, postMessage]);
+
   // -------------------------------------------------------------------------
   // Event Handlers
   // -------------------------------------------------------------------------
@@ -423,9 +739,10 @@ export const App: React.FC = () => {
 
   const handleNewChat = useCallback(() => {
     resetChat();
+    setActiveConversationId(null);
     postMessage({ type: 'clearConversation' });
     showSuccess('New Chat', 'Started a new conversation');
-  }, [resetChat, postMessage, showSuccess]);
+  }, [resetChat, setActiveConversationId, postMessage, showSuccess]);
 
   const handleOpenSettings = useCallback(() => {
     openModal('settings');
@@ -440,10 +757,14 @@ export const App: React.FC = () => {
   }, []);
 
   const handleConversationLoad = useCallback((id: string) => {
-    // Notify extension that a conversation was loaded
-    postMessage({ type: 'saveState', state: { conversationId: id } });
+    postMessage({ type: 'loadConversation', filename: id });
+    setActiveConversationId(id);
     showSuccess('Conversation Loaded', 'Previous conversation restored');
-  }, [postMessage, showSuccess]);
+  }, [postMessage, showSuccess, setActiveConversationId]);
+
+  const handleConversationDelete = useCallback((id: string) => {
+    postMessage({ type: 'deleteConversation', filename: id });
+  }, [postMessage]);
 
   const handleModelChange = useCallback((model: string) => {
     const typedModel = model as Parameters<typeof setSelectedModel>[0];
@@ -549,6 +870,10 @@ export const App: React.FC = () => {
         isOpen={isHistoryOpen}
         onClose={handleCloseHistory}
         onConversationLoad={handleConversationLoad}
+        onConversationDelete={handleConversationDelete}
+        conversations={conversationList}
+        isLoading={isHistoryLoading}
+        activeConversationId={activeConversationId}
       />
 
       {/* Chat Container */}
