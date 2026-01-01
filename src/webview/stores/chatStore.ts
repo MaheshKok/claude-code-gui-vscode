@@ -223,14 +223,17 @@ export const useChatStore = create<ChatStore>()(
         })),
 
       updateSessionCost: (costUsd) =>
-        set((state) => ({
-          costs: {
-            ...state.costs,
-            sessionCostUsd: costUsd,
-            allTimeCostUsd: state.costs.allTimeCostUsd + costUsd,
-            lastUpdated: Date.now(),
-          },
-        })),
+        set((state) => {
+          const delta = costUsd - state.costs.sessionCostUsd;
+          return {
+            costs: {
+              ...state.costs,
+              sessionCostUsd: costUsd,
+              allTimeCostUsd: state.costs.allTimeCostUsd + Math.max(0, delta),
+              lastUpdated: Date.now(),
+            },
+          };
+        }),
 
       resetTokenTracking: () =>
         set({

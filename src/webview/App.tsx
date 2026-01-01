@@ -236,6 +236,16 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           : data && 'toolInfo' in data
             ? String(data.toolInfo)
             : '';
+        const duration = typeof message.duration === 'number'
+          ? message.duration
+          : data && typeof data.duration === 'number'
+            ? data.duration
+            : undefined;
+        const tokens = typeof message.tokens === 'number'
+          ? message.tokens
+          : data && typeof data.tokens === 'number'
+            ? data.tokens
+            : undefined;
 
         chatMessages.push({
           id: toolUseId,
@@ -246,6 +256,8 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           toolInfo,
           status: 'executing',
           timestamp,
+          duration,
+          tokens,
         });
         toolUseIndex.set(toolUseId, chatMessages.length - 1);
         break;
@@ -267,6 +279,21 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           : data && 'hidden' in data
             ? Boolean(data.hidden)
             : false;
+        const duration = typeof message.duration === 'number'
+          ? message.duration
+          : data && typeof data.duration === 'number'
+            ? data.duration
+            : undefined;
+        const tokens = typeof message.tokens === 'number'
+          ? message.tokens
+          : data && typeof data.tokens === 'number'
+            ? data.tokens
+            : undefined;
+        const toolName = typeof message.toolName === 'string'
+          ? message.toolName
+          : data && typeof data.toolName === 'string'
+            ? data.toolName
+            : undefined;
 
         if (toolUseId && toolUseIndex.has(toolUseId)) {
           const index = toolUseIndex.get(toolUseId);
@@ -274,6 +301,8 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
             const existing = chatMessages[index];
             if (existing && existing.type === 'tool_use') {
               existing.status = isError ? 'failed' : 'completed';
+              existing.duration = duration ?? existing.duration;
+              existing.tokens = tokens ?? existing.tokens;
             }
           }
         }
@@ -292,6 +321,9 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
             timestamp,
             isError,
             hidden: false,
+            toolName,
+            duration,
+            tokens,
           });
         }
         break;
@@ -366,8 +398,15 @@ export const App: React.FC = () => {
   const setProcessing = useChatStore((s) => s.setProcessing);
   const setSessionId = useChatStore((s) => s.setSessionId);
   const updateTokens = useChatStore((s) => s.updateTokens);
+  const updateSessionCost = useChatStore((s) => s.updateSessionCost);
+  const resetTokenTracking = useChatStore((s) => s.resetTokenTracking);
+  const startRequestTiming = useChatStore((s) => s.startRequestTiming);
+  const stopRequestTiming = useChatStore((s) => s.stopRequestTiming);
   const hydrateConversation = useChatStore((s) => s.hydrateConversation);
   const resetChat = useChatStore((s) => s.resetChat);
+  const tokens = useChatStore((s) => s.tokens);
+  const costs = useChatStore((s) => s.costs);
+  const requestStartTime = useChatStore((s) => s.requestStartTime);
 
   // Settings store
   const selectedModel = useSettingsStore((s) => s.selectedModel);
@@ -413,6 +452,9 @@ export const App: React.FC = () => {
   const [conversationList, setConversationList] = React.useState<ConversationListItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = React.useState(false);
   const [activeConversationId, setActiveConversationId] = React.useState<string | null>(null);
+  const [subscriptionType, setSubscriptionType] = React.useState<string | null>(null);
+  const [requestCount, setRequestCount] = React.useState(0);
+  const [lastDurationMs, setLastDurationMs] = React.useState<number | null>(null);
 
   // -------------------------------------------------------------------------
   // Message Handlers
@@ -424,8 +466,11 @@ export const App: React.FC = () => {
       setConnectionStatus('connected');
     },
 
-    accountInfo: (_msg: { account: unknown }) => {
-      // Account info received - could update user state if needed
+    accountInfo: (msg: { account: { subscriptionType?: string } }) => {
+      const type = typeof msg.account?.subscriptionType === 'string'
+        ? msg.account.subscriptionType
+        : null;
+      setSubscriptionType(type);
     },
 
     output: (msg: { text: string; isFinal?: boolean }) => {
@@ -478,6 +523,8 @@ export const App: React.FC = () => {
       toolName: string;
       rawInput: unknown;
       toolInfo: string;
+      duration?: number;
+      tokens?: number;
     }) => {
       const toolMessage = {
         id: msg.toolUseId,
@@ -487,6 +534,8 @@ export const App: React.FC = () => {
         toolName: msg.toolName,
         rawInput: msg.rawInput as Record<string, unknown>,
         toolInfo: msg.toolInfo,
+        duration: msg.duration,
+        tokens: msg.tokens,
         status: 'executing' as const,
       };
       addMessage(toolMessage as ChatMessage);
@@ -497,10 +546,15 @@ export const App: React.FC = () => {
       content: string;
       isError: boolean;
       hidden: boolean;
+      toolName?: string;
+      duration?: number;
+      tokens?: number;
     }) => {
       // Update tool use message with result
       updateMessage(msg.toolUseId, {
         status: msg.isError ? 'failed' : 'completed',
+        duration: msg.duration,
+        tokens: msg.tokens,
       } as Partial<ChatMessage>);
 
       // Add result message if not hidden
@@ -511,22 +565,48 @@ export const App: React.FC = () => {
           content: msg.content,
           timestamp: Date.now(),
           toolUseId: msg.toolUseId,
+          toolName: msg.toolName,
           isError: msg.isError,
           hidden: false,
+          duration: msg.duration,
+          tokens: msg.tokens,
         };
         addMessage(resultMessage as ChatMessage);
       }
     },
 
     updateTokens: (msg: {
-      current: { input_tokens: number; output_tokens: number };
+      current: {
+        input_tokens: number;
+        output_tokens: number;
+        cache_read_input_tokens?: number;
+        cache_creation_input_tokens?: number;
+      };
       total: unknown;
     }) => {
       updateTokens(msg.current);
     },
 
-    updateTotals: (_msg: { totalCostUsd: number; durationMs: number; numTurns: number }) => {
-      // Update cost tracking if needed
+    updateTotals: (msg: {
+      totalCostUsd: number;
+      durationMs: number;
+      numTurns: number;
+      requestCount?: number;
+      totalCost?: number;
+    }) => {
+      const sessionCost = typeof msg.totalCost === 'number'
+        ? msg.totalCost
+        : costs.sessionCostUsd + msg.totalCostUsd;
+      updateSessionCost(sessionCost);
+      if (typeof msg.durationMs === 'number') {
+        setLastDurationMs(msg.durationMs);
+      }
+      if (typeof msg.requestCount === 'number') {
+        setRequestCount(msg.requestCount);
+      } else {
+        setRequestCount((prev) => prev + 1);
+      }
+      stopRequestTiming();
     },
 
     permissionRequest: (msg: {
@@ -553,6 +633,11 @@ export const App: React.FC = () => {
 
     setProcessing: (msg: { isProcessing: boolean }) => {
       setProcessing(msg.isProcessing);
+      if (msg.isProcessing) {
+        startRequestTiming();
+      } else {
+        stopRequestTiming();
+      }
       if (!msg.isProcessing) {
         setStreamingMessageId(null);
       }
@@ -644,6 +729,9 @@ export const App: React.FC = () => {
           totalCost,
           totalTokens,
         });
+        setRequestCount(
+          restoredMessages.filter((message) => message.type === 'user').length
+        );
         if (typeof state.isProcessing === 'boolean') {
           setProcessing(state.isProcessing);
         }
@@ -655,7 +743,7 @@ export const App: React.FC = () => {
     },
 
     compactBoundary: (_msg: { trigger: string; preTokens: number }) => {
-      // Handle compact boundary event
+      resetTokenTracking();
     },
   }), [
     addMessage,
@@ -664,6 +752,13 @@ export const App: React.FC = () => {
     setConnectionStatus,
     setProcessing,
     updateTokens,
+    updateSessionCost,
+    resetTokenTracking,
+    startRequestTiming,
+    stopRequestTiming,
+    setSubscriptionType,
+    setRequestCount,
+    setLastDurationMs,
     addPending,
     openModal,
     showError,
@@ -675,6 +770,7 @@ export const App: React.FC = () => {
     setIsHistoryLoading,
     setActiveConversationId,
     activeConversationId,
+    costs.sessionCostUsd,
   ]);
 
   // Set up message listener
@@ -732,6 +828,7 @@ export const App: React.FC = () => {
     };
     addMessage(userMessage as ChatMessage);
     setProcessing(true);
+    startRequestTiming();
 
     // Send to extension
     postMessage({
@@ -741,17 +838,20 @@ export const App: React.FC = () => {
       thinkingMode,
       attachments: attachments as Array<{ type: 'file' | 'image'; path: string; name: string }> | undefined,
     });
-  }, [addMessage, setProcessing, postMessage, planMode, thinkingMode]);
+  }, [addMessage, setProcessing, startRequestTiming, postMessage, planMode, thinkingMode]);
 
   const handleStopProcessing = useCallback(() => {
     postMessage({ type: 'stopGeneration' });
     setProcessing(false);
     setStreamingMessageId(null);
-  }, [postMessage, setProcessing]);
+    stopRequestTiming();
+  }, [postMessage, setProcessing, stopRequestTiming]);
 
   const handleNewChat = useCallback(() => {
     resetChat();
     setActiveConversationId(null);
+    setRequestCount(0);
+    setLastDurationMs(null);
     postMessage({ type: 'clearConversation' });
     showSuccess('New Chat', 'Started a new conversation');
   }, [resetChat, setActiveConversationId, postMessage, showSuccess]);
@@ -857,6 +957,7 @@ export const App: React.FC = () => {
     startedAt: new Date(),
     messageCount: messages.length,
   } : null;
+  const totalTokens = tokens.cumulative.totalInputTokens + tokens.cumulative.totalOutputTokens;
 
   return (
     <div className="flex flex-col h-screen bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)]">
@@ -898,7 +999,7 @@ export const App: React.FC = () => {
           toolName: 'toolName' in m ? (m as { toolName?: string }).toolName : undefined,
           isStreaming: m.isStreaming,
           duration: 'duration' in m ? (m as { duration?: number }).duration : undefined,
-          tokens: 'usage' in m ? (m as { usage?: { input_tokens?: number; output_tokens?: number } }).usage?.input_tokens : undefined,
+          tokens: 'tokens' in m ? (m as { tokens?: number }).tokens : undefined,
         }))}
         isProcessing={isProcessing}
         currentModel={selectedModel}
@@ -923,6 +1024,12 @@ export const App: React.FC = () => {
         isConnected={isConnected}
         isProcessing={isProcessing}
         onStop={handleStopProcessing}
+        totalTokens={totalTokens}
+        requestCount={requestCount}
+        sessionCostUsd={costs.sessionCostUsd}
+        lastDurationMs={lastDurationMs}
+        requestStartTime={requestStartTime}
+        subscriptionType={subscriptionType}
       />
 
       {/* Modals */}

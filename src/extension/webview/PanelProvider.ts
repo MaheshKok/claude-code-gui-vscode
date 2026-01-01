@@ -32,6 +32,7 @@ export class PanelProvider {
     private _selectedModel: string = 'default';
     private _subscriptionType: string | undefined;
     private _accountInfoFetchedThisSession: boolean = false;
+    private _toolUseMetrics: Map<string, { startTime: number; tokens?: number; toolName?: string }> = new Map();
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -71,6 +72,7 @@ export class PanelProvider {
             this._finalizeOutputStream();
             this._postMessage({ type: 'clearLoading' });
             this._postMessage({ type: 'setProcessing', isProcessing: false });
+            this._toolUseMetrics.clear();
         });
 
         this._claudeService.onError((error) => {
@@ -78,6 +80,7 @@ export class PanelProvider {
             this._finalizeOutputStream();
             this._postMessage({ type: 'clearLoading' });
             this._postMessage({ type: 'setProcessing', isProcessing: false });
+            this._toolUseMetrics.clear();
 
             if (error.includes('ENOENT') || error.includes('command not found')) {
                 this._postMessage({ type: 'showInstallModal' });
@@ -698,19 +701,38 @@ export class PanelProvider {
                     isCompacting: false
                 });
             }
+        } else if (message.subtype === 'compact_boundary') {
+            this._totalTokensInput = 0;
+            this._totalTokensOutput = 0;
+            this._totalCacheReadTokens = 0;
+            this._totalCacheCreationTokens = 0;
+
+            this._sendAndSaveMessage({
+                type: 'compactBoundary',
+                data: {
+                    trigger: message.compact_metadata?.trigger,
+                    preTokens: message.compact_metadata?.pre_tokens
+                },
+                trigger: message.compact_metadata?.trigger,
+                preTokens: message.compact_metadata?.pre_tokens
+            });
         }
     }
 
     private _handleAssistantMessage(message: any): void {
         if (message.message && message.message.content) {
             // Track token usage
-            if (message.message.usage) {
+            const usage = message.message.usage;
+            let tokenCount: number | undefined;
+            if (usage) {
                 const current = {
-                    input_tokens: message.message.usage.input_tokens || 0,
-                    output_tokens: message.message.usage.output_tokens || 0,
-                    cache_read_input_tokens: message.message.usage.cache_read_input_tokens || 0,
-                    cache_creation_input_tokens: message.message.usage.cache_creation_input_tokens || 0
+                    input_tokens: usage.input_tokens || 0,
+                    output_tokens: usage.output_tokens || 0,
+                    cache_read_input_tokens: usage.cache_read_input_tokens || 0,
+                    cache_creation_input_tokens: usage.cache_creation_input_tokens || 0
                 };
+
+                tokenCount = current.input_tokens + current.output_tokens;
 
                 this._totalTokensInput += current.input_tokens;
                 this._totalTokensOutput += current.output_tokens;
@@ -756,18 +778,25 @@ export class PanelProvider {
                 } else if (content.type === 'tool_use') {
                     const toolUseId = content.id || content.tool_use_id || `tool-${Date.now()}`;
                     const toolInfo = `Executing: ${content.name}`;
+                    this._toolUseMetrics.set(toolUseId, {
+                        startTime: Date.now(),
+                        tokens: tokenCount,
+                        toolName: content.name
+                    });
                     this._sendAndSaveMessage({
                         type: 'toolUse',
                         data: {
                             toolInfo,
                             rawInput: content.input,
                             toolName: content.name,
-                            toolUseId
+                            toolUseId,
+                            tokens: tokenCount
                         },
                         toolUseId,
                         toolName: content.name,
                         rawInput: content.input,
-                        toolInfo
+                        toolInfo,
+                        tokens: tokenCount
                     });
                 }
             }
@@ -782,20 +811,37 @@ export class PanelProvider {
                     if (typeof resultContent === 'object') {
                         resultContent = JSON.stringify(resultContent, null, 2);
                     }
+                    const toolUseId = content.tool_use_id;
+                    const toolMetrics = toolUseId
+                        ? this._toolUseMetrics.get(toolUseId)
+                        : undefined;
+                    const duration = toolMetrics ? Date.now() - toolMetrics.startTime : undefined;
+                    const tokens = toolMetrics?.tokens;
+                    const toolName = toolMetrics?.toolName;
 
                     this._sendAndSaveMessage({
                         type: 'toolResult',
                         data: {
                             content: resultContent,
                             isError: content.is_error || false,
-                            toolUseId: content.tool_use_id,
-                            hidden: false
+                            toolUseId: toolUseId,
+                            hidden: false,
+                            duration,
+                            tokens,
+                            toolName
                         },
-                        toolUseId: content.tool_use_id,
+                        toolUseId: toolUseId,
+                        toolName,
                         content: resultContent,
                         isError: content.is_error || false,
-                        hidden: false
+                        hidden: false,
+                        duration,
+                        tokens
                     });
+
+                    if (toolUseId) {
+                        this._toolUseMetrics.delete(toolUseId);
+                    }
                 }
             }
         }
@@ -835,7 +881,11 @@ export class PanelProvider {
                 type: 'updateTotals',
                 totalCostUsd: message.total_cost_usd || 0,
                 durationMs: message.duration_ms || 0,
-                numTurns: message.num_turns || 0
+                numTurns: message.num_turns || 0,
+                totalCost: this._totalCost,
+                totalTokensInput: this._totalTokensInput,
+                totalTokensOutput: this._totalTokensOutput,
+                requestCount: this._requestCount
             });
 
             // Save conversation - use sessionId from ClaudeService if not in message

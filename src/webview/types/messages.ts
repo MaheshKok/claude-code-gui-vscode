@@ -141,6 +141,8 @@ export interface ToolUseMessage extends BaseMessage {
   startLines?: number[];
   /** Duration of tool execution in ms */
   duration?: number;
+  /** Token count for this tool use */
+  tokens?: number;
 }
 
 /**
@@ -179,6 +181,10 @@ export interface ToolResultMessage extends BaseMessage {
   startLine?: number;
   /** Array of starting line numbers (for MultiEdit) */
   startLines?: number[];
+  /** Duration of tool execution in ms */
+  duration?: number;
+  /** Token count for this tool result */
+  tokens?: number;
 }
 
 // ============================================================================

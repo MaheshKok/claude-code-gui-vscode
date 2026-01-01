@@ -149,6 +149,10 @@ export interface ToolUseMessage extends BaseExtensionMessage {
   startLine?: number;
   /** Array of starting lines (for MultiEdit) */
   startLines?: number[];
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Token count for this tool use */
+  tokens?: number;
 }
 
 /**
@@ -158,6 +162,8 @@ export interface ToolResultMessage extends BaseExtensionMessage {
   type: 'toolResult';
   /** ID of the tool_use this is a result for */
   toolUseId: string;
+  /** Tool name (for display) */
+  toolName?: string;
   /** Result content (stringified if originally object) */
   content: string;
   /** Whether the tool execution resulted in an error */
@@ -170,6 +176,10 @@ export interface ToolResultMessage extends BaseExtensionMessage {
   startLine?: number;
   /** Array of starting lines (for MultiEdit) */
   startLines?: number[];
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Token count for this tool result */
+  tokens?: number;
 }
 
 /**
@@ -199,6 +209,14 @@ export interface UpdateTotalsMessage extends BaseExtensionMessage {
   durationMs: number;
   /** Number of conversation turns */
   numTurns: number;
+  /** Session total cost in USD */
+  totalCost?: number;
+  /** Session total input tokens */
+  totalTokensInput?: number;
+  /** Session total output tokens */
+  totalTokensOutput?: number;
+  /** Number of requests in session */
+  requestCount?: number;
 }
 
 /**
