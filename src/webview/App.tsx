@@ -502,6 +502,17 @@ export const App: React.FC = () => {
   const [requestCount, setRequestCount] = React.useState(0);
   const [lastDurationMs, setLastDurationMs] = React.useState<number | null>(null);
 
+  const finalizeStreamingMessage = useCallback(() => {
+    if (!streamingMessageId) {
+      return;
+    }
+
+    useChatStore.getState().updateMessage(streamingMessageId, {
+      isStreaming: false,
+    });
+    setStreamingMessageId(null);
+  }, [streamingMessageId]);
+
   // -------------------------------------------------------------------------
   // Message Handlers
   // -------------------------------------------------------------------------
@@ -555,6 +566,7 @@ export const App: React.FC = () => {
     },
 
     thinking: (msg: { thinking: string }) => {
+      finalizeStreamingMessage();
       const thinkingMessage = {
         id: `thinking-${Date.now()}`,
         type: 'thinking' as const,
@@ -575,6 +587,7 @@ export const App: React.FC = () => {
       startLine?: number;
       startLines?: number[];
     }) => {
+      finalizeStreamingMessage();
       if (msg.toolName === 'TodoWrite') {
         const nextTodos = extractTodosFromInput(msg.rawInput);
         if (nextTodos.length > 0) {
@@ -610,6 +623,7 @@ export const App: React.FC = () => {
       tokens?: number;
       fileContentAfter?: string;
     }) => {
+      finalizeStreamingMessage();
       // Update tool use message with result
       updateMessage(msg.toolUseId, {
         status: msg.isError ? 'failed' : 'completed',
@@ -679,6 +693,7 @@ export const App: React.FC = () => {
       description: string;
       suggestions: unknown[];
     }) => {
+      finalizeStreamingMessage();
       const request: PermissionRequest = {
         requestId: msg.requestId,
         toolUseId: msg.toolUseId,
@@ -715,6 +730,7 @@ export const App: React.FC = () => {
     },
 
     error: (msg: { message: string; code?: string; recoverable?: boolean }) => {
+      finalizeStreamingMessage();
       showError('Error', msg.message);
 
       const errorMessage = {
@@ -835,6 +851,7 @@ export const App: React.FC = () => {
     loadFromVSCode,
     streamingMessageId,
     setStreamingMessageId,
+    finalizeStreamingMessage,
     hydrateConversation,
     setConversationList,
     setIsHistoryLoading,
