@@ -469,7 +469,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 	};
 
 	return (
-		<div className="px-4 py-6 space-y-4 max-w-4xl mx-auto pb-64">
+		<div className="px-4 py-6 space-y-4 max-w-4xl mx-auto pb-4">
 			{items.map((item) => {
 				if (item.kind === "message") {
 					return (
