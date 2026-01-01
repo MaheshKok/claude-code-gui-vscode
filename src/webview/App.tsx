@@ -1076,11 +1076,11 @@ export const App: React.FC = () => {
     (model: string) => {
       const typedModel = model as Parameters<typeof setSelectedModel>[0];
       setSelectedModel(typedModel);
-      // Send model change - use claude.defaultModel to match SettingsState structure
+      // Sync with extension settings so the model persists across sessions.
       postMessage({
         type: "saveSettings",
         settings: {
-          claude: { defaultModel: typedModel },
+          selectedModel: typedModel,
         } as Partial<import("./types/state").SettingsState>,
       });
     },
