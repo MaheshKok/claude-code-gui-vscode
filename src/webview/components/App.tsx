@@ -22,9 +22,19 @@ export { App, default } from '../App';
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'tool' | 'error';
+  messageType?: 'tool_use' | 'tool_result';
   content: string;
   timestamp: Date;
   toolName?: string;
+  toolUseId?: string;
+  rawInput?: Record<string, unknown>;
+  status?: string;
+  isError?: boolean;
+  hidden?: boolean;
+  fileContentBefore?: string;
+  fileContentAfter?: string;
+  startLine?: number;
+  startLines?: number[];
   isStreaming?: boolean;
   /** Duration in milliseconds (for tool messages) */
   duration?: number;

@@ -386,6 +386,7 @@ export type WebviewToExtensionMessageType =
   | 'stopGeneration'
   | 'permissionResponse'
   | 'openFile'
+  | 'openDiff'
   | 'openFolder'
   | 'copyToClipboard'
   | 'saveSettings'
@@ -415,6 +416,7 @@ export type WebviewToExtensionMessage =
   | StopGenerationRequest
   | PermissionResponseRequest
   | OpenFileRequest
+  | OpenDiffRequest
   | OpenFolderRequest
   | CopyToClipboardRequest
   | SaveSettingsRequest
@@ -497,6 +499,19 @@ export interface OpenFileRequest extends BaseWebviewMessage {
   column?: number;
   /** Whether to preview only */
   preview?: boolean;
+}
+
+/**
+ * Open diff request - opens a diff view
+ */
+export interface OpenDiffRequest extends BaseWebviewMessage {
+  type: 'openDiff';
+  /** Original file content */
+  oldContent: string;
+  /** Updated file content */
+  newContent: string;
+  /** File path for the diff title */
+  filePath: string;
 }
 
 /**

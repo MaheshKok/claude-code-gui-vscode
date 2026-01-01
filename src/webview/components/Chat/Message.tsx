@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { ToolUseCard, ToolResultCard, TodoDisplay } from '../Tools';
+import { extractTodosFromInput } from '../../utils';
 import type { Message as MessageType } from '../App';
 
 interface MessageProps {
@@ -26,6 +28,8 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
   const isTool = message.role === 'tool';
+  const isToolUse = isTool && message.messageType === 'tool_use';
+  const isToolResult = isTool && message.messageType === 'tool_result';
 
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed(prev => !prev);
@@ -107,6 +111,69 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       hour12: true,
     }).format(date);
   };
+
+  if (isToolUse) {
+    const input = message.rawInput || {};
+    const todos = message.toolName === 'TodoWrite' ? extractTodosFromInput(input) : [];
+    const isExecuting = message.status
+      ? !['completed', 'failed', 'denied'].includes(message.status)
+      : Boolean(message.isStreaming);
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
+          <span>{getRoleLabel()}</span>
+          <span>{formatTimestamp(message.timestamp)}</span>
+          {message.status && <span>{message.status}</span>}
+          {message.duration !== undefined && (
+            <span>{formatDuration(message.duration)}</span>
+          )}
+          {message.tokens !== undefined && (
+            <span>{formatTokens(message.tokens)}</span>
+          )}
+        </div>
+        {todos.length > 0 ? (
+          <TodoDisplay todos={todos} title="Todo Update" />
+        ) : (
+          <ToolUseCard
+            toolName={message.toolName || 'Tool'}
+            input={input}
+            isExecuting={isExecuting}
+            duration={message.duration}
+            tokens={message.tokens}
+            fileContentBefore={message.fileContentBefore}
+            fileContentAfter={message.fileContentAfter}
+            startLine={message.startLine}
+            startLines={message.startLines}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (isToolResult) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
+          <span>{getRoleLabel()}</span>
+          <span>{formatTimestamp(message.timestamp)}</span>
+          {message.duration !== undefined && (
+            <span>{formatDuration(message.duration)}</span>
+          )}
+          {message.tokens !== undefined && (
+            <span>{formatTokens(message.tokens)}</span>
+          )}
+        </div>
+        <ToolResultCard
+          content={message.content}
+          isError={message.isError}
+          toolName={message.toolName}
+          duration={message.duration}
+          tokens={message.tokens}
+        />
+      </div>
+    );
+  }
 
   // For tool messages, use collapsible layout
   if (isTool) {

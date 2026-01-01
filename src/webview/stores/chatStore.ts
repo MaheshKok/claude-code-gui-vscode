@@ -15,6 +15,7 @@ import type {
   CumulativeTokenUsage,
   CostBreakdown,
 } from '../types';
+import type { TodoItem } from '../components/Tools';
 
 // ============================================================================
 // Types
@@ -54,6 +55,8 @@ export interface ChatState {
   isProcessing: boolean;
   /** Current session identifier */
   currentSessionId: string | null;
+  /** Current todo list */
+  todos: TodoItem[];
   /** Token tracking */
   tokens: TokenTracking;
   /** Cost tracking */
@@ -80,6 +83,10 @@ export interface ChatActions {
   setProcessing: (isProcessing: boolean) => void;
   /** Set the current session ID */
   setSessionId: (sessionId: string | null) => void;
+  /** Set the current todo list */
+  setTodos: (todos: TodoItem[]) => void;
+  /** Clear the current todo list */
+  clearTodos: () => void;
   /** Update current token usage */
   updateTokens: (usage: TokenUsage) => void;
   /** Update cumulative token usage */
@@ -105,6 +112,7 @@ export interface ChatActions {
       input: number;
       output: number;
     };
+    todos?: TodoItem[];
   }) => void;
 }
 
@@ -144,6 +152,7 @@ const initialState: ChatState = {
   messages: [],
   isProcessing: false,
   currentSessionId: null,
+  todos: [],
   tokens: initialTokenTracking,
   costs: initialCostTracking,
   requestStartTime: null,
@@ -190,6 +199,12 @@ export const useChatStore = create<ChatStore>()(
 
       setSessionId: (sessionId) =>
         set({ currentSessionId: sessionId }),
+
+      setTodos: (todos) =>
+        set({ todos }),
+
+      clearTodos: () =>
+        set({ todos: [] }),
 
       updateTokens: (usage) =>
         set((state) => ({
@@ -262,12 +277,13 @@ export const useChatStore = create<ChatStore>()(
           },
         }),
 
-      hydrateConversation: ({ messages, sessionId, totalCost, totalTokens }) =>
+      hydrateConversation: ({ messages, sessionId, totalCost, totalTokens, todos }) =>
         set((state) => ({
           messages,
           currentSessionId: sessionId ?? null,
           isProcessing: false,
           requestStartTime: null,
+          todos: todos ?? state.todos,
           numTurns: messages.filter((message) => message.type === 'user').length,
           tokens: {
             current: {
@@ -326,6 +342,11 @@ export const selectIsProcessing = (state: ChatStore) => state.isProcessing;
  * Select current session ID
  */
 export const selectSessionId = (state: ChatStore) => state.currentSessionId;
+
+/**
+ * Select todo list
+ */
+export const selectTodos = (state: ChatStore) => state.todos;
 
 /**
  * Select token tracking

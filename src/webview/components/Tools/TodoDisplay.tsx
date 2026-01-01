@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 
 export type TodoStatus = 'pending' | 'in_progress' | 'completed';
 
@@ -12,6 +12,8 @@ export interface TodoItem {
 export interface TodoDisplayProps {
   todos: TodoItem[];
   title?: string;
+  /** Whether to start collapsed (default: false) */
+  defaultCollapsed?: boolean;
 }
 
 const getStatusIcon = (status: TodoStatus): React.ReactNode => {
@@ -119,7 +121,7 @@ const getPriorityBadge = (priority?: string): React.ReactNode => {
 const getTextClasses = (status: TodoStatus): string => {
   switch (status) {
     case 'completed':
-      return 'text-[var(--vscode-descriptionForeground)] line-through';
+      return 'text-[var(--vscode-descriptionForeground)]';
     case 'in_progress':
       return 'text-[var(--vscode-foreground)] font-medium';
     case 'pending':
@@ -128,10 +130,19 @@ const getTextClasses = (status: TodoStatus): string => {
   }
 };
 
-export const TodoDisplay: React.FC<TodoDisplayProps> = ({ todos, title = 'Tasks' }) => {
+export const TodoDisplay: React.FC<TodoDisplayProps> = ({
+  todos,
+  title = 'Tasks',
+  defaultCollapsed = false,
+}) => {
   if (!todos || todos.length === 0) {
     return null;
   }
+
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((prev) => !prev);
+  }, []);
 
   const stats = {
     total: todos.length,
@@ -145,8 +156,25 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({ todos, title = 'Tasks'
   return (
     <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-background)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)]">
+      <div
+        className="flex items-center justify-between px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)] cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+        onClick={toggleCollapsed}
+      >
         <div className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -173,50 +201,54 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({ todos, title = 'Tasks'
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="h-1 bg-[var(--vscode-progressBar-background)]/20">
-        <div
-          className="h-full bg-[var(--vscode-terminal-ansiGreen)] transition-all duration-300"
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
+      {!isCollapsed && (
+        <>
+          {/* Progress Bar */}
+          <div className="h-1 bg-[var(--vscode-progressBar-background)]/20">
+            <div
+              className="h-full bg-[var(--vscode-terminal-ansiGreen)] transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
 
-      {/* Todo List */}
-      <div className="divide-y divide-[var(--vscode-panel-border)]">
-        {todos.map((todo, index) => (
-          <div
-            key={todo.id || index}
-            className={`flex items-start gap-3 px-3 py-2 ${getStatusClasses(todo.status)} border-l-2`}
-          >
-            <div className="pt-0.5 shrink-0">{getStatusIcon(todo.status)}</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={`text-sm ${getTextClasses(todo.status)}`}>{todo.content}</span>
-                {getPriorityBadge(todo.priority)}
+          {/* Todo List */}
+          <div className="divide-y divide-[var(--vscode-panel-border)]">
+            {todos.map((todo, index) => (
+              <div
+                key={todo.id || index}
+                className={`flex items-start gap-3 px-3 py-2 ${getStatusClasses(todo.status)} border-l-2`}
+              >
+                <div className="pt-0.5 shrink-0">{getStatusIcon(todo.status)}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-sm ${getTextClasses(todo.status)}`}>{todo.content}</span>
+                    {getPriorityBadge(todo.priority)}
+                  </div>
+                  <span className="text-[10px] text-[var(--vscode-descriptionForeground)]">
+                    {getStatusLabel(todo.status)}
+                  </span>
+                </div>
               </div>
-              <span className="text-[10px] text-[var(--vscode-descriptionForeground)]">
-                {getStatusLabel(todo.status)}
-              </span>
+            ))}
+          </div>
+
+          {/* Footer Stats */}
+          <div className="flex items-center gap-4 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-t border-[var(--vscode-panel-border)] text-xs text-[var(--vscode-descriptionForeground)]">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiGreen)]" />
+              <span>{stats.completed} completed</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiYellow)]" />
+              <span>{stats.inProgress} in progress</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[var(--vscode-descriptionForeground)]" />
+              <span>{stats.pending} pending</span>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Footer Stats */}
-      <div className="flex items-center gap-4 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-t border-[var(--vscode-panel-border)] text-xs text-[var(--vscode-descriptionForeground)]">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiGreen)]" />
-          <span>{stats.completed} completed</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiYellow)]" />
-          <span>{stats.inProgress} in progress</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-[var(--vscode-descriptionForeground)]" />
-          <span>{stats.pending} pending</span>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

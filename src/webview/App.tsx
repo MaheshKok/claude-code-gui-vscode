@@ -44,6 +44,8 @@ import { useVSCode } from './hooks/useVSCode';
 // Types
 import type { ChatMessage, PermissionRequest, PermissionDecision } from './types';
 import type { ConversationListItem } from './types/history';
+import type { TodoItem } from './components/Tools';
+import { extractTodosFromInput, getTodoStats } from './utils';
 
 // ============================================================================
 // WSL Alert Component
@@ -236,6 +238,21 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           : data && 'toolInfo' in data
             ? String(data.toolInfo)
             : '';
+        const fileContentBefore = typeof message.fileContentBefore === 'string'
+          ? message.fileContentBefore
+          : data && typeof data.fileContentBefore === 'string'
+            ? data.fileContentBefore
+            : undefined;
+        const startLine = typeof message.startLine === 'number'
+          ? message.startLine
+          : data && typeof data.startLine === 'number'
+            ? data.startLine
+            : undefined;
+        const startLines = Array.isArray(message.startLines)
+          ? message.startLines as number[]
+          : data && Array.isArray(data.startLines)
+            ? data.startLines as number[]
+            : undefined;
         const duration = typeof message.duration === 'number'
           ? message.duration
           : data && typeof data.duration === 'number'
@@ -258,6 +275,9 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           timestamp,
           duration,
           tokens,
+          fileContentBefore,
+          startLine,
+          startLines,
         });
         toolUseIndex.set(toolUseId, chatMessages.length - 1);
         break;
@@ -294,6 +314,11 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
           : data && typeof data.toolName === 'string'
             ? data.toolName
             : undefined;
+        const fileContentAfter = typeof message.fileContentAfter === 'string'
+          ? message.fileContentAfter
+          : data && typeof data.fileContentAfter === 'string'
+            ? data.fileContentAfter
+            : undefined;
 
         if (toolUseId && toolUseIndex.has(toolUseId)) {
           const index = toolUseIndex.get(toolUseId);
@@ -303,6 +328,9 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
               existing.status = isError ? 'failed' : 'completed';
               existing.duration = duration ?? existing.duration;
               existing.tokens = tokens ?? existing.tokens;
+              if (fileContentAfter !== undefined) {
+                existing.fileContentAfter = fileContentAfter;
+              }
             }
           }
         }
@@ -324,6 +352,7 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
             toolName,
             duration,
             tokens,
+            fileContentAfter,
           });
         }
         break;
@@ -350,6 +379,20 @@ const buildChatMessages = (messages: StoredConversationMessage[]): ChatMessage[]
     activeAssistantIndex = null;
   }
   return chatMessages;
+};
+
+const findLatestTodos = (messages: ChatMessage[]): TodoItem[] => {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message.type === 'tool_use' && message.toolName === 'TodoWrite') {
+      const todos = extractTodosFromInput(message.rawInput);
+      if (todos.length > 0) {
+        return todos;
+      }
+    }
+  }
+
+  return [];
 };
 
 const mapConversationList = (items: unknown[]): ConversationListItem[] =>
@@ -397,6 +440,8 @@ export const App: React.FC = () => {
   const updateMessage = useChatStore((s) => s.updateMessage);
   const setProcessing = useChatStore((s) => s.setProcessing);
   const setSessionId = useChatStore((s) => s.setSessionId);
+  const setTodos = useChatStore((s) => s.setTodos);
+  const clearTodos = useChatStore((s) => s.clearTodos);
   const updateTokens = useChatStore((s) => s.updateTokens);
   const updateSessionCost = useChatStore((s) => s.updateSessionCost);
   const resetTokenTracking = useChatStore((s) => s.resetTokenTracking);
@@ -407,6 +452,7 @@ export const App: React.FC = () => {
   const tokens = useChatStore((s) => s.tokens);
   const costs = useChatStore((s) => s.costs);
   const requestStartTime = useChatStore((s) => s.requestStartTime);
+  const todos = useChatStore((s) => s.todos);
 
   // Settings store
   const selectedModel = useSettingsStore((s) => s.selectedModel);
@@ -525,7 +571,17 @@ export const App: React.FC = () => {
       toolInfo: string;
       duration?: number;
       tokens?: number;
+      fileContentBefore?: string;
+      startLine?: number;
+      startLines?: number[];
     }) => {
+      if (msg.toolName === 'TodoWrite') {
+        const nextTodos = extractTodosFromInput(msg.rawInput);
+        if (nextTodos.length > 0) {
+          setTodos(nextTodos);
+        }
+      }
+
       const toolMessage = {
         id: msg.toolUseId,
         type: 'tool_use' as const,
@@ -536,6 +592,9 @@ export const App: React.FC = () => {
         toolInfo: msg.toolInfo,
         duration: msg.duration,
         tokens: msg.tokens,
+        fileContentBefore: msg.fileContentBefore,
+        startLine: msg.startLine,
+        startLines: msg.startLines,
         status: 'executing' as const,
       };
       addMessage(toolMessage as ChatMessage);
@@ -549,12 +608,14 @@ export const App: React.FC = () => {
       toolName?: string;
       duration?: number;
       tokens?: number;
+      fileContentAfter?: string;
     }) => {
       // Update tool use message with result
       updateMessage(msg.toolUseId, {
         status: msg.isError ? 'failed' : 'completed',
         duration: msg.duration,
         tokens: msg.tokens,
+        fileContentAfter: msg.fileContentAfter,
       } as Partial<ChatMessage>);
 
       // Add result message if not hidden
@@ -570,6 +631,7 @@ export const App: React.FC = () => {
           hidden: false,
           duration: msg.duration,
           tokens: msg.tokens,
+          fileContentAfter: msg.fileContentAfter,
         };
         addMessage(resultMessage as ChatMessage);
       }
@@ -723,6 +785,12 @@ export const App: React.FC = () => {
           ? lastMessage.id
           : null;
         setStreamingMessageId(state.isProcessing === false ? null : streamingId);
+        const restoredTodos = findLatestTodos(restoredMessages);
+        if (restoredTodos.length > 0) {
+          setTodos(restoredTodos);
+        } else {
+          clearTodos();
+        }
         hydrateConversation({
           messages: restoredMessages,
           sessionId: state.sessionId ?? null,
@@ -751,6 +819,8 @@ export const App: React.FC = () => {
     setSessionId,
     setConnectionStatus,
     setProcessing,
+    setTodos,
+    clearTodos,
     updateTokens,
     updateSessionCost,
     resetTokenTracking,
@@ -852,9 +922,10 @@ export const App: React.FC = () => {
     setActiveConversationId(null);
     setRequestCount(0);
     setLastDurationMs(null);
+    clearTodos();
     postMessage({ type: 'clearConversation' });
     showSuccess('New Chat', 'Started a new conversation');
-  }, [resetChat, setActiveConversationId, postMessage, showSuccess]);
+  }, [resetChat, setActiveConversationId, clearTodos, postMessage, showSuccess]);
 
   const handleOpenSettings = useCallback(() => {
     openModal('settings');
@@ -958,6 +1029,7 @@ export const App: React.FC = () => {
     messageCount: messages.length,
   } : null;
   const totalTokens = tokens.cumulative.totalInputTokens + tokens.cumulative.totalOutputTokens;
+  const todoStats = todos.length > 0 ? getTodoStats(todos) : null;
 
   return (
     <div className="flex flex-col h-screen bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)]">
@@ -976,6 +1048,12 @@ export const App: React.FC = () => {
         onOpenSettings={handleOpenSettings}
         onToggleHistory={handleToggleHistory}
         isHistoryOpen={isHistoryOpen}
+        summary={{
+          totalTokens,
+          sessionCostUsd: costs.sessionCostUsd,
+          subscriptionType,
+          todoStats,
+        }}
       />
 
       {/* Conversation History Panel */}
@@ -994,14 +1072,25 @@ export const App: React.FC = () => {
         messages={messages.map(m => ({
           id: m.id,
           role: m.type === 'user' ? 'user' : m.type === 'assistant' ? 'assistant' : m.type === 'error' ? 'error' : 'tool',
+          messageType: m.type === 'tool_use' || m.type === 'tool_result' ? m.type : undefined,
           content: 'content' in m ? (m as { content: string }).content : '',
           timestamp: new Date(m.timestamp),
           toolName: 'toolName' in m ? (m as { toolName?: string }).toolName : undefined,
+          toolUseId: 'toolUseId' in m ? (m as { toolUseId?: string }).toolUseId : undefined,
+          rawInput: 'rawInput' in m ? (m as { rawInput?: Record<string, unknown> }).rawInput : undefined,
+          status: 'status' in m ? (m as { status?: string }).status : undefined,
+          isError: 'isError' in m ? (m as { isError?: boolean }).isError : undefined,
+          hidden: 'hidden' in m ? (m as { hidden?: boolean }).hidden : undefined,
+          fileContentBefore: 'fileContentBefore' in m ? (m as { fileContentBefore?: string }).fileContentBefore : undefined,
+          fileContentAfter: 'fileContentAfter' in m ? (m as { fileContentAfter?: string }).fileContentAfter : undefined,
+          startLine: 'startLine' in m ? (m as { startLine?: number }).startLine : undefined,
+          startLines: 'startLines' in m ? (m as { startLines?: number[] }).startLines : undefined,
           isStreaming: m.isStreaming,
           duration: 'duration' in m ? (m as { duration?: number }).duration : undefined,
           tokens: 'tokens' in m ? (m as { tokens?: number }).tokens : undefined,
         }))}
         isProcessing={isProcessing}
+        todos={todos}
         currentModel={selectedModel}
         planMode={planMode}
         thinkingMode={thinkingMode}

@@ -32,7 +32,15 @@ export class PanelProvider {
     private _selectedModel: string = 'default';
     private _subscriptionType: string | undefined;
     private _accountInfoFetchedThisSession: boolean = false;
-    private _toolUseMetrics: Map<string, { startTime: number; tokens?: number; toolName?: string }> = new Map();
+    private _toolUseMetrics: Map<string, {
+        startTime: number;
+        tokens?: number;
+        toolName?: string;
+        rawInput?: Record<string, unknown>;
+        fileContentBefore?: string;
+        startLine?: number;
+        startLines?: number[];
+    }> = new Map();
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -654,10 +662,10 @@ export class PanelProvider {
                 this._handleSystemMessage(message);
                 break;
             case 'assistant':
-                this._handleAssistantMessage(message);
+                void this._handleAssistantMessage(message);
                 break;
             case 'user':
-                this._handleUserMessage(message);
+                void this._handleUserMessage(message);
                 break;
             case 'result':
                 this._handleResultMessage(message);
@@ -719,7 +727,7 @@ export class PanelProvider {
         }
     }
 
-    private _handleAssistantMessage(message: any): void {
+    private async _handleAssistantMessage(message: any): Promise<void> {
         if (message.message && message.message.content) {
             // Track token usage
             const usage = message.message.usage;
@@ -778,32 +786,82 @@ export class PanelProvider {
                 } else if (content.type === 'tool_use') {
                     const toolUseId = content.id || content.tool_use_id || `tool-${Date.now()}`;
                     const toolInfo = `Executing: ${content.name}`;
+                    const rawInput = content.input as Record<string, unknown> | undefined;
+
+                    let fileContentBefore: string | undefined;
+                    if ((content.name === 'Edit' || content.name === 'MultiEdit' || content.name === 'Write')
+                        && rawInput
+                        && typeof rawInput.file_path === 'string') {
+                        try {
+                            const fileUri = vscode.Uri.file(rawInput.file_path);
+                            const fileData = await vscode.workspace.fs.readFile(fileUri);
+                            fileContentBefore = Buffer.from(fileData).toString('utf8');
+                        } catch {
+                            fileContentBefore = '';
+                        }
+                    }
+
+                    let startLine: number | undefined;
+                    let startLines: number[] | undefined;
+                    if (fileContentBefore !== undefined && rawInput) {
+                        if (content.name === 'Edit' && typeof rawInput.old_string === 'string') {
+                            const position = fileContentBefore.indexOf(rawInput.old_string);
+                            if (position !== -1) {
+                                const textBefore = fileContentBefore.substring(0, position);
+                                startLine = (textBefore.match(/\n/g) || []).length + 1;
+                            } else {
+                                startLine = 1;
+                            }
+                        } else if (content.name === 'MultiEdit' && Array.isArray(rawInput.edits)) {
+                            startLines = rawInput.edits.map((edit: { old_string?: string }) => {
+                                if (edit && typeof edit.old_string === 'string') {
+                                    const position = fileContentBefore!.indexOf(edit.old_string);
+                                    if (position !== -1) {
+                                        const textBefore = fileContentBefore!.substring(0, position);
+                                        return (textBefore.match(/\n/g) || []).length + 1;
+                                    }
+                                }
+                                return 1;
+                            });
+                        }
+                    }
+
                     this._toolUseMetrics.set(toolUseId, {
                         startTime: Date.now(),
                         tokens: tokenCount,
-                        toolName: content.name
+                        toolName: content.name,
+                        rawInput,
+                        fileContentBefore,
+                        startLine,
+                        startLines
                     });
                     this._sendAndSaveMessage({
                         type: 'toolUse',
                         data: {
                             toolInfo,
-                            rawInput: content.input,
+                            rawInput,
                             toolName: content.name,
                             toolUseId,
-                            tokens: tokenCount
+                            tokens: tokenCount,
+                            fileContentBefore,
+                            startLine,
+                            startLines
                         },
                         toolUseId,
                         toolName: content.name,
-                        rawInput: content.input,
+                        rawInput,
                         toolInfo,
-                        tokens: tokenCount
+                        tokens: tokenCount,
+                        fileContentBefore,
+                        startLine,
+                        startLines
                     });
                 }
             }
         }
     }
 
-    private _handleUserMessage(message: any): void {
+    private async _handleUserMessage(message: any): Promise<void> {
         if (message.message && message.message.content) {
             for (const content of message.message.content) {
                 if (content.type === 'tool_result') {
@@ -818,6 +876,20 @@ export class PanelProvider {
                     const duration = toolMetrics ? Date.now() - toolMetrics.startTime : undefined;
                     const tokens = toolMetrics?.tokens;
                     const toolName = toolMetrics?.toolName;
+                    const rawInput = toolMetrics?.rawInput;
+                    let fileContentAfter: string | undefined;
+                    if ((toolName === 'Edit' || toolName === 'MultiEdit' || toolName === 'Write')
+                        && rawInput
+                        && typeof rawInput.file_path === 'string'
+                        && !content.is_error) {
+                        try {
+                            const fileUri = vscode.Uri.file(rawInput.file_path);
+                            const fileData = await vscode.workspace.fs.readFile(fileUri);
+                            fileContentAfter = Buffer.from(fileData).toString('utf8');
+                        } catch {
+                            fileContentAfter = undefined;
+                        }
+                    }
 
                     this._sendAndSaveMessage({
                         type: 'toolResult',
@@ -828,7 +900,8 @@ export class PanelProvider {
                             hidden: false,
                             duration,
                             tokens,
-                            toolName
+                            toolName,
+                            fileContentAfter
                         },
                         toolUseId: toolUseId,
                         toolName,
@@ -836,7 +909,8 @@ export class PanelProvider {
                         isError: content.is_error || false,
                         hidden: false,
                         duration,
-                        tokens
+                        tokens,
+                        fileContentAfter
                     });
 
                     if (toolUseId) {

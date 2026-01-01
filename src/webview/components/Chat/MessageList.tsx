@@ -5,11 +5,13 @@ import type { Message } from '../App';
 interface MessageListProps {
   messages: Message[];
   isProcessing: boolean;
+  showEmptyState?: boolean;
 }
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   isProcessing,
+  showEmptyState = true,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -21,7 +23,7 @@ export const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages, isProcessing]);
 
-  if (messages.length === 0) {
+  if (messages.length === 0 && showEmptyState) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
         <div className="mb-4 text-6xl opacity-20">

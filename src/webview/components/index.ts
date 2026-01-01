@@ -13,6 +13,9 @@ export {
   MessageInput
 } from './Chat';
 
+// Activity components
+export { ActivityTimeline } from './Activity';
+
 // Status components
 export { StatusBar } from './Status';
 

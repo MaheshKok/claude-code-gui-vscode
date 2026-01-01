@@ -2,6 +2,9 @@ import React from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import type { Message } from '../App';
+import { TodoDisplay } from '../Tools';
+import { ActivityTimeline } from '../Activity';
+import type { TodoItem } from '../Tools';
 
 /** Thinking intensity levels matching Claude Code CLI */
 type ThinkingIntensity = 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
@@ -9,6 +12,7 @@ type ThinkingIntensity = 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
 interface ChatContainerProps {
   messages: Message[];
   isProcessing: boolean;
+  todos: TodoItem[];
   currentModel: string;
   planMode: boolean;
   thinkingMode: boolean;
@@ -29,6 +33,7 @@ interface ChatContainerProps {
 export const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   isProcessing,
+  todos,
   currentModel,
   planMode,
   thinkingMode,
@@ -45,9 +50,30 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onSlashCommand,
   onMcpAction,
 }) => {
+  const activityMessages = messages.filter(
+    (message) => message.role === 'tool'
+      && (message.messageType === 'tool_use' || message.messageType === 'tool_result')
+  );
+  const visibleMessages = messages.filter(
+    (message) => !(message.role === 'tool'
+      && (message.messageType === 'tool_use' || message.messageType === 'tool_result'))
+  );
+  const showEmptyState = visibleMessages.length === 0 && activityMessages.length === 0;
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <MessageList messages={messages} isProcessing={isProcessing} />
+      {todos.length > 0 && (
+        <div className="px-4 pt-4">
+          <TodoDisplay todos={todos} title="Todo Progress" />
+        </div>
+      )}
+      <ActivityTimeline messages={activityMessages} defaultCollapsed={true} />
+
+      <MessageList
+        messages={visibleMessages}
+        isProcessing={isProcessing}
+        showEmptyState={showEmptyState}
+      />
 
       <MessageInput
         disabled={isProcessing}

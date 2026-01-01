@@ -135,6 +135,8 @@ export interface ToolUseMessage extends BaseMessage {
   status: ToolExecutionStatus;
   /** File content before the tool execution (for diff preview) */
   fileContentBefore?: string;
+  /** File content after the tool execution (for diff preview) */
+  fileContentAfter?: string;
   /** Starting line number for diff context */
   startLine?: number;
   /** Array of starting line numbers (for MultiEdit) */

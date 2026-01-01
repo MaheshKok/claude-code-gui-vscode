@@ -1,4 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { computeLineDiff, computeContextualDiff, formatDiffStats } from '../../utils';
+import { useVSCode } from '../../hooks/useVSCode';
 
 export interface ToolInput {
   [key: string]: unknown;
@@ -15,6 +17,14 @@ export interface ToolUseCardProps {
   tokens?: number;
   /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
+  /** File content before operation (for diff preview) */
+  fileContentBefore?: string;
+  /** File content after operation (for diff preview) */
+  fileContentAfter?: string;
+  /** Starting line number for diff context */
+  startLine?: number;
+  /** Array of starting lines (for MultiEdit) */
+  startLines?: number[];
 }
 
 const TOOL_ICONS: Record<string, string> = {
@@ -92,9 +102,14 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
   duration,
   tokens,
   defaultCollapsed = true,
+  fileContentBefore,
+  fileContentAfter,
+  startLine,
+  startLines,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { postMessage } = useVSCode();
 
   const handleFileClick = useCallback(
     (filePath: string) => {
@@ -112,6 +127,101 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => !prev);
   }, []);
+
+  const diffData = useMemo(() => {
+    if (!fileContentBefore) {
+      return null;
+    }
+
+    const filePath = typeof input.file_path === 'string' ? input.file_path : '';
+    let newContent: string | undefined;
+
+    if (toolName === 'Edit' && typeof input.old_string === 'string' && typeof input.new_string === 'string') {
+      newContent = fileContentBefore.replace(input.old_string, input.new_string);
+    } else if (toolName === 'MultiEdit' && Array.isArray(input.edits)) {
+      newContent = fileContentBefore;
+      for (const edit of input.edits as Array<Record<string, unknown>>) {
+        if (typeof edit.old_string === 'string' && typeof edit.new_string === 'string') {
+          newContent = newContent.replace(edit.old_string, edit.new_string);
+        }
+      }
+    } else if (toolName === 'Write' && typeof input.content === 'string') {
+      newContent = input.content;
+    }
+
+    const finalContent = fileContentAfter ?? newContent;
+    if (!finalContent) {
+      return null;
+    }
+
+    return {
+      filePath,
+      oldContent: fileContentBefore,
+      newContent: finalContent,
+    };
+  }, [fileContentBefore, fileContentAfter, input, toolName]);
+
+  const diffSections = useMemo(() => {
+    const sections: Array<{ id: string; title?: string; diff: ReturnType<typeof computeLineDiff> }> = [];
+    const filePath = typeof input.file_path === 'string' ? input.file_path : '';
+
+    const getStartLine = (needle: string, fallback = 1): number => {
+      if (!fileContentBefore || !needle) {
+        return fallback;
+      }
+      const position = fileContentBefore.indexOf(needle);
+      if (position === -1) {
+        return fallback;
+      }
+      const textBefore = fileContentBefore.slice(0, position);
+      return (textBefore.match(/\n/g) || []).length + 1;
+    };
+
+    if (toolName === 'Edit' && typeof input.old_string === 'string' && typeof input.new_string === 'string') {
+      const startLineValue = startLine ?? getStartLine(input.old_string, 1);
+      const diff = computeLineDiff(input.old_string, input.new_string, { startLine: startLineValue });
+      sections.push({
+        id: `${filePath || toolName}-edit`,
+        title: `Line ${startLineValue}`,
+        diff,
+      });
+    } else if (toolName === 'MultiEdit' && Array.isArray(input.edits)) {
+      const edits = input.edits as Array<Record<string, unknown>>;
+      edits.forEach((edit, index) => {
+        if (typeof edit.old_string !== 'string' || typeof edit.new_string !== 'string') {
+          return;
+        }
+        const fallbackStart = startLines?.[index] ?? getStartLine(edit.old_string, 1);
+        const diff = computeLineDiff(edit.old_string, edit.new_string, { startLine: fallbackStart });
+        sections.push({
+          id: `${filePath || toolName}-edit-${index}`,
+          title: `Edit ${index + 1} (Line ${fallbackStart})`,
+          diff,
+        });
+      });
+    } else if (toolName === 'Write' && typeof input.content === 'string') {
+      const oldContent = fileContentBefore ?? '';
+      const diff = computeContextualDiff(oldContent, input.content, { contextLines: 3, startLine: 1 });
+      sections.push({
+        id: `${filePath || toolName}-write`,
+        diff,
+      });
+    }
+
+    return sections;
+  }, [fileContentBefore, input, startLine, startLines, toolName]);
+
+  const handleOpenDiff = useCallback(() => {
+    if (!diffData || !diffData.filePath) {
+      return;
+    }
+    postMessage({
+      type: 'openDiff',
+      oldContent: diffData.oldContent,
+      newContent: diffData.newContent,
+      filePath: diffData.filePath,
+    });
+  }, [diffData, postMessage]);
 
   const renderInputValue = (key: string, value: unknown) => {
     if (isFilePath(key, value)) {
@@ -161,6 +271,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
 
   const inputEntries = Object.entries(input);
   const hasContent = inputEntries.length > 0;
+  const filePath = typeof input.file_path === 'string' ? input.file_path : '';
 
   return (
     <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-inactiveSelectionBackground)]">
@@ -204,6 +315,18 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
 
         {/* Metadata badges */}
         <div className="ml-auto flex items-center gap-2">
+          {diffData && diffData.filePath && (
+            <button
+              className="text-xs px-2 py-0.5 rounded border border-[var(--vscode-panel-border)] text-[var(--vscode-textLink-foreground)] hover:bg-[var(--vscode-toolbar-hoverBackground)]"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleOpenDiff();
+              }}
+              title="Open diff"
+            >
+              Diff
+            </button>
+          )}
           {duration !== undefined && (
             <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
               <svg
@@ -266,6 +389,71 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
               </div>
             </div>
           ))}
+          {diffSections.length > 0 && (
+            <div className="mt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] text-[var(--vscode-descriptionForeground)] uppercase tracking-wide">
+                  Diff Preview
+                </div>
+                {filePath && (
+                  <span
+                    className="text-[10px] text-[var(--vscode-textLink-foreground)] hover:underline cursor-pointer"
+                    onClick={() => handleFileClick(filePath)}
+                    title={filePath}
+                  >
+                    {formatFilePath(filePath)}
+                  </span>
+                )}
+              </div>
+              {diffSections.map((section) => {
+                const summary = formatDiffStats(section.diff);
+                return (
+                  <div key={section.id} className="rounded border border-[var(--vscode-panel-border)] overflow-hidden">
+                    {section.title && (
+                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-b border-[var(--vscode-panel-border)]">
+                        {section.title}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 px-2 py-1 text-[10px] uppercase text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)]">
+                      <span>Old</span>
+                      <span>New</span>
+                      <span />
+                      <span>Content</span>
+                    </div>
+                    <div className="font-mono text-xs">
+                      {section.diff.lines.map((line, index) => {
+                        const lineClass = line.type === 'insert'
+                          ? 'bg-[var(--vscode-diffEditor-insertedLineBackground)]'
+                          : line.type === 'delete'
+                            ? 'bg-[var(--vscode-diffEditor-removedLineBackground)]'
+                            : '';
+                        const prefix = line.type === 'insert' ? '+' : line.type === 'delete' ? '-' : ' ';
+                        const oldNumber = line.oldLineNumber ?? '';
+                        const newNumber = line.newLineNumber ?? '';
+                        return (
+                          <div key={index} className={`grid grid-cols-[auto_auto_auto_1fr] gap-x-2 px-2 py-0.5 ${lineClass}`}>
+                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-right">
+                              {oldNumber}
+                            </span>
+                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-right">
+                              {newNumber}
+                            </span>
+                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-center">
+                              {prefix}
+                            </span>
+                            <span className="whitespace-pre-wrap break-words">{line.content}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center justify-between px-2 py-1 text-[10px] text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-t border-[var(--vscode-panel-border)]">
+                      <span>{summary ? `Summary: ${summary}` : 'Summary: No changes'}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
