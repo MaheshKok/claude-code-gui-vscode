@@ -9,11 +9,13 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type {
-  PermissionRequest,
+import type { PermissionRequest, ToolInput } from "../types";
+import type { PermissionDecision as PermissionDecisionType } from "../types";
+import {
+  PermissionStatus,
   PermissionDecision,
-  ToolInput,
-} from "../types";
+  STORAGE_KEYS,
+} from "../../shared/constants";
 
 // ============================================================================
 // Types
@@ -54,7 +56,7 @@ export interface PermissionActions {
   /** Add a pending permission request */
   addPending: (request: PermissionRequest) => void;
   /** Resolve a pending permission request */
-  resolvePending: (requestId: string, decision: PermissionDecision) => void;
+  resolvePending: (requestId: string, decision: PermissionDecisionType) => void;
   /** Remove a pending permission request without resolving */
   removePending: (requestId: string) => void;
   /** Clear all pending permissions */
@@ -149,7 +151,10 @@ export const usePermissionStore = create<PermissionStore>()(
             p.requestId === requestId
               ? ({
                   ...p,
-                  status: decision === "deny" ? "denied" : "approved",
+                  status:
+                    decision === "deny"
+                      ? PermissionStatus.Denied
+                      : PermissionStatus.Approved,
                   decision,
                 } as PermissionRequest)
               : p,
@@ -270,7 +275,7 @@ export const usePermissionStore = create<PermissionStore>()(
         })),
     }),
     {
-      name: "claude-flow-permission-store",
+      name: STORAGE_KEYS.PERMISSION_STORE,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist 'always' scoped permissions
@@ -309,13 +314,14 @@ export const selectDeniedPatterns = (state: PermissionStore) =>
  * Select pending count
  */
 export const selectPendingCount = (state: PermissionStore) =>
-  state.pendingPermissions.filter((p) => p.status === "pending").length;
+  state.pendingPermissions.filter((p) => p.status === PermissionStatus.Pending)
+    .length;
 
 /**
  * Select first pending permission
  */
 export const selectFirstPending = (state: PermissionStore) =>
-  state.pendingPermissions.find((p) => p.status === "pending");
+  state.pendingPermissions.find((p) => p.status === PermissionStatus.Pending);
 
 /**
  * Select permissions for a specific tool

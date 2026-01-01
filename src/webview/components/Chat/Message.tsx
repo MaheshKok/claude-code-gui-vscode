@@ -3,6 +3,11 @@ import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
 import { extractTodosFromInput } from "../../utils";
 import type { Message as MessageType } from "../App";
 import {
+  MessageRole,
+  ToolExecutionStatus,
+  ToolName,
+} from "../../../shared/constants";
+import {
   User,
   Bot,
   Terminal,
@@ -12,6 +17,13 @@ import {
   Zap,
   Cpu,
 } from "lucide-react";
+
+/** Terminal statuses that indicate tool execution is no longer in progress */
+const TERMINAL_STATUSES: ToolExecutionStatus[] = [
+  ToolExecutionStatus.Completed,
+  ToolExecutionStatus.Failed,
+  ToolExecutionStatus.Denied,
+];
 
 interface MessageProps {
   message: MessageType;
@@ -35,9 +47,9 @@ const formatTokens = (tokens: number): string => {
 export const Message: React.FC<MessageProps> = ({ message }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  const isUser = message.role === "user";
-  const isError = message.role === "error";
-  const isTool = message.role === "tool";
+  const isUser = message.role === MessageRole.User;
+  const isError = message.role === MessageRole.Error;
+  const isTool = message.role === MessageRole.Tool;
   const isToolUse = isTool && message.messageType === "tool_use";
   const isToolResult = isTool && message.messageType === "tool_result";
 
@@ -47,13 +59,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   const getRoleLabel = () => {
     switch (message.role) {
-      case "user":
+      case MessageRole.User:
         return "You";
-      case "assistant":
+      case MessageRole.Assistant:
         return "Claude";
-      case "tool":
+      case MessageRole.Tool:
         return message.toolName || "Tool";
-      case "error":
+      case MessageRole.Error:
         return "Error";
       default:
         return "Unknown";
@@ -62,13 +74,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   const getRoleIcon = () => {
     switch (message.role) {
-      case "user":
+      case MessageRole.User:
         return <User className="w-4 h-4" />;
-      case "assistant":
+      case MessageRole.Assistant:
         return <Bot className="w-4 h-4" />;
-      case "tool":
+      case MessageRole.Tool:
         return <Terminal className="w-4 h-4" />;
-      case "error":
+      case MessageRole.Error:
         return <AlertCircle className="w-4 h-4" />;
       default:
         return null;
@@ -94,9 +106,11 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   if (isToolUse) {
     const input = message.rawInput || {};
     const todos =
-      message.toolName === "TodoWrite" ? extractTodosFromInput(input) : [];
+      message.toolName === ToolName.TodoWrite
+        ? extractTodosFromInput(input)
+        : [];
     const isExecuting = message.status
-      ? !["completed", "failed", "denied"].includes(message.status)
+      ? !TERMINAL_STATUSES.includes(message.status as ToolExecutionStatus)
       : Boolean(message.isStreaming);
 
     return (
@@ -106,11 +120,11 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
           <span>{formatTimestamp(message.timestamp)}</span>
           {message.status && (
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold 
+              className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold
                 ${
-                  message.status === "completed"
+                  message.status === ToolExecutionStatus.Completed
                     ? "bg-green-500/10 text-green-400"
-                    : message.status === "failed"
+                    : message.status === ToolExecutionStatus.Failed
                       ? "bg-red-500/10 text-red-400"
                       : "bg-blue-500/10 text-blue-400"
                 }`}

@@ -4,6 +4,13 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import { EventEmitter } from "events";
+import {
+  PermissionStatus,
+  PermissionDecision,
+  DEFAULT_WSL_CONFIG,
+  getCommandPattern,
+  ToolName,
+} from "../../shared/constants";
 
 /**
  * Options for sending a message to Claude
@@ -36,7 +43,7 @@ export class ClaudeService implements vscode.Disposable {
   private _abortController: AbortController | undefined;
   private _sessionId: string | undefined;
   private _isWslProcess: boolean = false;
-  private _wslDistro: string = "Ubuntu";
+  private _wslDistro: string = DEFAULT_WSL_CONFIG.DISTRO;
   private _pendingPermissionRequests: Map<string, PendingPermissionRequest> =
     new Map();
 
@@ -137,12 +144,12 @@ export class ClaudeService implements vscode.Disposable {
 
     console.log("Claude command args:", args);
 
-    const wslEnabled = config.get<boolean>("wsl.enabled", false);
-    const wslDistro = config.get<string>("wsl.distro", "Ubuntu");
-    const nodePath = config.get<string>("wsl.nodePath", "/usr/bin/node");
+    const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
+    const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
+    const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
     const claudePath = config.get<string>(
       "wsl.claudePath",
-      "/usr/local/bin/claude",
+      DEFAULT_WSL_CONFIG.CLAUDE_PATH,
     );
 
     // Create new AbortController for this request
@@ -363,7 +370,7 @@ export class ClaudeService implements vscode.Disposable {
           subtype: "success",
           request_id: requestId,
           response: {
-            behavior: "allow",
+            behavior: PermissionDecision.Allow,
             updatedInput: pendingRequest.input,
             updatedPermissions: alwaysAllow
               ? pendingRequest.suggestions
@@ -379,7 +386,7 @@ export class ClaudeService implements vscode.Disposable {
           subtype: "success",
           request_id: requestId,
           response: {
-            behavior: "deny",
+            behavior: PermissionDecision.Deny,
             message: "User denied permission",
             interrupt: true,
             toolUseID: pendingRequest.toolUseId,
@@ -486,15 +493,15 @@ export class ClaudeService implements vscode.Disposable {
 
     // Generate pattern for Bash commands
     let pattern: string | undefined;
-    if (toolName === "Bash" && input.command) {
-      pattern = this._getCommandPattern(input.command as string);
+    if (toolName === ToolName.Bash && input.command) {
+      pattern = getCommandPattern(input.command as string);
     }
 
     // Emit permission request event
     let description: string | undefined;
     if (request.description) {
       description = request.description;
-    } else if (toolName === "Bash" && typeof input.command === "string") {
+    } else if (toolName === ToolName.Bash && typeof input.command === "string") {
       description = input.command;
     } else if (pattern) {
       description = pattern;
@@ -509,7 +516,7 @@ export class ClaudeService implements vscode.Disposable {
       suggestions,
       decisionReason: request.decision_reason,
       blockedPath: request.blocked_path,
-      status: "pending",
+      status: PermissionStatus.Pending,
     });
   }
 
@@ -537,7 +544,7 @@ export class ClaudeService implements vscode.Disposable {
     for (const [id, _request] of this._pendingPermissionRequests) {
       this._messageEmitter.emit("message", {
         type: "updatePermissionStatus",
-        data: { id, status: "cancelled" },
+        data: { id, status: PermissionStatus.Cancelled },
       });
     }
     this._pendingPermissionRequests.clear();
@@ -547,7 +554,7 @@ export class ClaudeService implements vscode.Disposable {
     windowsPath: string,
     config: vscode.WorkspaceConfiguration,
   ): string {
-    const wslEnabled = config.get<boolean>("wsl.enabled", false);
+    const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
     if (!wslEnabled || process.platform !== "win32") {
       return windowsPath;
     }
@@ -556,42 +563,5 @@ export class ClaudeService implements vscode.Disposable {
     const driveLetter = windowsPath.charAt(0).toLowerCase();
     const pathWithoutDrive = windowsPath.slice(2).replace(/\\/g, "/");
     return `/mnt/${driveLetter}${pathWithoutDrive}`;
-  }
-
-  private _getCommandPattern(command: string): string {
-    const parts = command.trim().split(/\s+/);
-    if (parts.length === 0) return command;
-
-    const baseCmd = parts[0];
-    const subCmd = parts.length > 1 ? parts[1] : "";
-
-    const patterns: [string, string, string][] = [
-      ["npm", "install", "npm install *"],
-      ["npm", "i", "npm i *"],
-      ["npm", "run", "npm run *"],
-      ["yarn", "add", "yarn add *"],
-      ["yarn", "install", "yarn install *"],
-      ["pnpm", "install", "pnpm install *"],
-      ["git", "add", "git add *"],
-      ["git", "commit", "git commit *"],
-      ["git", "push", "git push *"],
-      ["git", "pull", "git pull *"],
-      ["git", "checkout", "git checkout *"],
-      ["docker", "run", "docker run *"],
-      ["docker", "build", "docker build *"],
-      ["node", "", "node *"],
-      ["python", "", "python *"],
-      ["python3", "", "python3 *"],
-      ["pip", "install", "pip install *"],
-      ["pip3", "install", "pip3 install *"],
-    ];
-
-    for (const [cmd, sub, pattern] of patterns) {
-      if (baseCmd === cmd && (sub === "" || subCmd === sub)) {
-        return pattern;
-      }
-    }
-
-    return command;
   }
 }

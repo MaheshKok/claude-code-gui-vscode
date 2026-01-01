@@ -13,7 +13,11 @@ import {
   Clock,
   Zap,
   FileDiff,
+  Files,
+  ListChecks,
+  BookOpen,
 } from "lucide-react";
+import { ToolName } from "../../../shared/constants";
 
 export interface ToolInput {
   [key: string]: unknown;
@@ -33,29 +37,40 @@ export interface ToolUseCardProps {
   startLines?: number[];
 }
 
-const getToolIcon = (toolName: string) => {
+const getToolIconElement = (toolName: string) => {
   switch (toolName) {
-    case "Read":
+    case ToolName.Read:
       return <FileText className="w-4 h-4" />;
-    case "Write":
+    case ToolName.Write:
       return <Edit3 className="w-4 h-4" />;
-    case "Edit":
+    case ToolName.Edit:
       return <Edit3 className="w-4 h-4" />;
-    case "MultiEdit":
-      return <Zap className="w-4 h-4" />;
-    case "Bash":
+    case ToolName.MultiEdit:
+      return <Files className="w-4 h-4" />;
+    case ToolName.Bash:
       return <Terminal className="w-4 h-4" />;
-    case "Glob":
+    case ToolName.Glob:
       return <Search className="w-4 h-4" />;
-    case "Grep":
+    case ToolName.Grep:
       return <Search className="w-4 h-4" />;
-    case "TodoWrite":
+    case ToolName.Task:
+      return <ListChecks className="w-4 h-4" />;
+    case ToolName.TodoRead:
       return <CheckSquare className="w-4 h-4" />;
-    case "WebFetch":
+    case ToolName.TodoWrite:
+      return <CheckSquare className="w-4 h-4" />;
+    case ToolName.WebFetch:
       return <Globe className="w-4 h-4" />;
-    case "WebSearch":
+    case ToolName.WebSearch:
       return <Search className="w-4 h-4" />;
+    case ToolName.NotebookRead:
+    case ToolName.NotebookEdit:
+      return <BookOpen className="w-4 h-4" />;
     default:
+      // Handle MCP tools with a generic icon
+      if (toolName.startsWith("mcp__")) {
+        return <Zap className="w-4 h-4" />;
+      }
       return <Code className="w-4 h-4" />;
   }
 };
@@ -147,7 +162,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     let newContent: string | undefined;
 
     if (
-      toolName === "Edit" &&
+      toolName === ToolName.Edit &&
       typeof input.old_string === "string" &&
       typeof input.new_string === "string"
     ) {
@@ -155,7 +170,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         input.old_string,
         input.new_string,
       );
-    } else if (toolName === "MultiEdit" && Array.isArray(input.edits)) {
+    } else if (toolName === ToolName.MultiEdit && Array.isArray(input.edits)) {
       newContent = fileContentBefore;
       for (const edit of input.edits as Array<Record<string, unknown>>) {
         if (
@@ -165,7 +180,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
           newContent = newContent.replace(edit.old_string, edit.new_string);
         }
       }
-    } else if (toolName === "Write" && typeof input.content === "string") {
+    } else if (toolName === ToolName.Write && typeof input.content === "string") {
       newContent = input.content;
     }
 
@@ -196,7 +211,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     };
 
     if (
-      toolName === "Edit" &&
+      toolName === ToolName.Edit &&
       typeof input.old_string === "string" &&
       typeof input.new_string === "string"
     ) {
@@ -209,7 +224,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         title: `Line ${startLineValue}`,
         diff,
       });
-    } else if (toolName === "MultiEdit" && Array.isArray(input.edits)) {
+    } else if (toolName === ToolName.MultiEdit && Array.isArray(input.edits)) {
       const edits = input.edits as Array<Record<string, unknown>>;
       edits.forEach((edit, index) => {
         if (
@@ -228,7 +243,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
           diff,
         });
       });
-    } else if (toolName === "Write" && typeof input.content === "string") {
+    } else if (toolName === ToolName.Write && typeof input.content === "string") {
       const oldContent = fileContentBefore ?? "";
       const diff = computeContextualDiff(oldContent, input.content, {
         contextLines: 3,
@@ -299,7 +314,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         />
 
         <div className="text-orange-400 opacity-80">
-          {getToolIcon(toolName)}
+          {getToolIconElement(toolName)}
         </div>
         <span className="font-medium text-sm text-white/90">{toolName}</span>
 

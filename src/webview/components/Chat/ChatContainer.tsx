@@ -4,9 +4,7 @@ import type { Message } from "../App";
 import { TodoDisplay } from "../Tools";
 import { JourneyTimeline } from "./JourneyTimeline";
 import type { TodoItem } from "../Tools";
-
-/** Thinking intensity levels matching Claude Code CLI */
-type ThinkingIntensity = "think" | "think-hard" | "think-harder" | "ultrathink";
+import { ThinkingIntensity } from "../../../shared/constants";
 
 interface ChatContainerProps {
   messages: Message[];

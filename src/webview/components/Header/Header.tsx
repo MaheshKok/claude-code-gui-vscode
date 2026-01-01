@@ -2,11 +2,33 @@ import React from "react";
 import type { SessionInfo } from "../App";
 import { MessageSquarePlus, Settings, History, X, Cpu } from "lucide-react";
 
+// ============================================================================
+// Constants
+// ============================================================================
+
+const HEADER_CONSTANTS = {
+  APP_NAME: "Claude Code",
+  ICON_SIZE: "w-4 h-4",
+  LOGO_ICON_SIZE: "w-5 h-5",
+  TOOLTIPS: {
+    OPEN_HISTORY: "Chat History",
+    CLOSE_HISTORY: "Close History",
+    SETTINGS: "Settings",
+    NEW_CHAT: "New Chat",
+  },
+} as const;
+
+// ============================================================================
+// Types
+// ============================================================================
+
+type ButtonClickHandler = (event: React.MouseEvent<HTMLButtonElement>) => void;
+
 interface HeaderProps {
   session: SessionInfo | null;
-  onNewChat: () => void;
-  onOpenSettings: () => void;
-  onToggleHistory: () => void;
+  onNewChat: ButtonClickHandler;
+  onOpenSettings: ButtonClickHandler;
+  onToggleHistory: ButtonClickHandler;
   isHistoryOpen?: boolean;
 }
 
@@ -16,18 +38,20 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onToggleHistory,
   isHistoryOpen = false,
-}) => {
+}): React.JSX.Element => {
+  const { APP_NAME, ICON_SIZE, LOGO_ICON_SIZE, TOOLTIPS } = HEADER_CONSTANTS;
+
   return (
     <header className="relative z-50 flex flex-col glass border-b border-white/5 backdrop-blur-xl">
       <div className="flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-              <Cpu className="w-5 h-5" />
+              <Cpu className={LOGO_ICON_SIZE} />
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-white/90">
-                Claude Code
+                {APP_NAME}
               </h1>
               {session && (
                 <div className="flex items-center gap-2 text-xs text-white/50">
@@ -43,21 +67,21 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onToggleHistory}
             className={`btn-icon ${isHistoryOpen ? "bg-white/10 text-white" : ""}`}
-            title={isHistoryOpen ? "Close History" : "Chat History"}
+            title={isHistoryOpen ? TOOLTIPS.CLOSE_HISTORY : TOOLTIPS.OPEN_HISTORY}
           >
             {isHistoryOpen ? (
-              <X className="w-4 h-4" />
+              <X className={ICON_SIZE} />
             ) : (
-              <History className="w-4 h-4" />
+              <History className={ICON_SIZE} />
             )}
           </button>
 
           <button
             onClick={onOpenSettings}
             className="btn-icon"
-            title="Settings"
+            title={TOOLTIPS.SETTINGS}
           >
-            <Settings className="w-4 h-4" />
+            <Settings className={ICON_SIZE} />
           </button>
 
           <div className="h-6 w-px bg-white/10 mx-1" />
@@ -65,10 +89,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onNewChat}
             className="btn btn-primary text-xs py-1.5 px-3 shadow-lg shadow-orange-500/20"
-            title="New Chat"
+            title={TOOLTIPS.NEW_CHAT}
           >
-            <MessageSquarePlus className="w-4 h-4" />
-            <span className="hidden sm:inline">New Chat</span>
+            <MessageSquarePlus className={ICON_SIZE} />
+            <span className="hidden sm:inline">{TOOLTIPS.NEW_CHAT}</span>
           </button>
         </div>
       </div>

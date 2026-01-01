@@ -16,6 +16,7 @@ import type {
   CostBreakdown,
 } from "../types";
 import type { TodoItem } from "../components/Tools";
+import { STORAGE_KEYS, MessageType } from "../../shared/constants";
 
 // ============================================================================
 // Types
@@ -283,8 +284,9 @@ export const useChatStore = create<ChatStore>()(
           isProcessing: false,
           requestStartTime: null,
           todos: todos ?? state.todos,
-          numTurns: messages.filter((message) => message.type === "user")
-            .length,
+          numTurns: messages.filter(
+            (message) => message.type === MessageType.User,
+          ).length,
           tokens: {
             current: {
               input_tokens: 0,
@@ -312,7 +314,7 @@ export const useChatStore = create<ChatStore>()(
         })),
     }),
     {
-      name: "claude-code-gui-store",
+      name: STORAGE_KEYS.CHAT_STORE,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist costs across sessions

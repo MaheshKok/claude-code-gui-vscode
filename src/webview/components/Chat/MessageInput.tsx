@@ -11,9 +11,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from "lucide-react";
-
-/** Thinking intensity levels matching Claude Code CLI */
-type ThinkingIntensity = "think" | "think-hard" | "think-harder" | "ultrathink";
+import { ThinkingIntensity } from "../../../shared/constants";
 
 interface MessageInputProps {
   disabled: boolean;
@@ -35,27 +33,32 @@ interface MessageInputProps {
 }
 
 /** Thinking mode options with token budgets */
-const THINKING_MODES = [
+const THINKING_MODES: Array<{
+  id: ThinkingIntensity;
+  label: string;
+  tokens: string;
+  description: string;
+}> = [
   {
-    id: "think" as const,
+    id: ThinkingIntensity.Think,
     label: "Think",
     tokens: "4K tokens",
     description: "Basic reasoning",
   },
   {
-    id: "think-hard" as const,
+    id: ThinkingIntensity.ThinkHard,
     label: "Think Hard",
     tokens: "10K tokens",
     description: "Deeper analysis",
   },
   {
-    id: "think-harder" as const,
+    id: ThinkingIntensity.ThinkHarder,
     label: "Think Harder",
     tokens: "20K tokens",
     description: "Comprehensive reasoning",
   },
   {
-    id: "ultrathink" as const,
+    id: ThinkingIntensity.Ultrathink,
     label: "Ultrathink",
     tokens: "32K tokens",
     description: "Maximum depth",

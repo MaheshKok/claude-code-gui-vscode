@@ -15,26 +15,33 @@ import type {
   PermissionDecision,
 } from "./claude-events";
 
+import {
+  MessageType,
+  MessageRole,
+  ToolExecutionStatus,
+  PermissionStatus,
+  SystemMessageSeverity,
+  ErrorAction,
+} from "../../shared/constants";
+
+// Re-export enums for backward compatibility
+export { MessageType, MessageRole, ToolExecutionStatus, PermissionStatus, SystemMessageSeverity, ErrorAction };
+
 // ============================================================================
 // Base Message Types
 // ============================================================================
 
 /**
- * All possible message types in the chat
+ * All possible message types in the chat (backward compatible type alias)
+ * @deprecated Use MessageType enum instead
  */
-export type MessageType =
-  | "user"
-  | "assistant"
-  | "tool_use"
-  | "tool_result"
-  | "thinking"
-  | "error"
-  | "system";
+export type MessageTypeValue = `${MessageType}`;
 
 /**
- * Message sender role
+ * Message sender role (backward compatible type alias)
+ * @deprecated Use MessageRole enum instead
  */
-export type MessageRole = "user" | "assistant" | "system";
+export type MessageRoleValue = `${MessageRole}`;
 
 /**
  * Base interface for all chat messages
@@ -43,7 +50,7 @@ export interface BaseMessage {
   /** Unique message identifier */
   id: string;
   /** Message type discriminator */
-  type: MessageType;
+  type: MessageType | MessageTypeValue;
   /** Timestamp when the message was created */
   timestamp: number;
   /** Whether the message is still being streamed */
@@ -70,7 +77,7 @@ export type ChatMessage =
  * A message sent by the user
  */
 export interface UserMessage extends BaseMessage {
-  type: "user";
+  type: MessageType.User | "user";
   /** The message content */
   content: string;
   /** Optional file attachments */
@@ -103,7 +110,7 @@ export interface MessageAttachment {
  * A message from the assistant (Claude)
  */
 export interface AssistantMessage extends BaseMessage {
-  type: "assistant";
+  type: MessageType.Assistant | "assistant";
   /** The text content of the message */
   content: string;
   /** Token usage for this message */
@@ -122,7 +129,7 @@ export interface AssistantMessage extends BaseMessage {
  * A message representing a tool invocation
  */
 export interface ToolUseMessage extends BaseMessage {
-  type: "tool_use";
+  type: MessageType.ToolUse | "tool_use";
   /** Unique ID for this tool use (from Claude) */
   toolUseId: string;
   /** Name of the tool being used */
@@ -132,7 +139,7 @@ export interface ToolUseMessage extends BaseMessage {
   /** Formatted human-readable tool info */
   toolInfo: string;
   /** Tool execution status */
-  status: ToolExecutionStatus;
+  status: ToolExecutionStatus | ToolExecutionStatusValue;
   /** File content before the tool execution (for diff preview) */
   fileContentBefore?: string;
   /** File content after the tool execution (for diff preview) */
@@ -148,15 +155,10 @@ export interface ToolUseMessage extends BaseMessage {
 }
 
 /**
- * Tool execution status
+ * Tool execution status (backward compatible type alias)
+ * @deprecated Use ToolExecutionStatus enum instead
  */
-export type ToolExecutionStatus =
-  | "pending" // Waiting for permission
-  | "approved" // Permission granted, executing
-  | "executing" // Currently executing
-  | "completed" // Successfully completed
-  | "failed" // Execution failed
-  | "denied"; // Permission denied
+export type ToolExecutionStatusValue = `${ToolExecutionStatus}`;
 
 // ============================================================================
 // Tool Result Message
@@ -166,7 +168,7 @@ export type ToolExecutionStatus =
  * A message representing the result of a tool execution
  */
 export interface ToolResultMessage extends BaseMessage {
-  type: "tool_result";
+  type: MessageType.ToolResult | "tool_result";
   /** ID of the tool_use this is a result for */
   toolUseId: string;
   /** Tool name (for display purposes) */
@@ -197,7 +199,7 @@ export interface ToolResultMessage extends BaseMessage {
  * A message representing Claude's thinking/reasoning process
  */
 export interface ThinkingMessage extends BaseMessage {
-  type: "thinking";
+  type: MessageType.Thinking | "thinking";
   /** The thinking content */
   content: string;
   /** Whether this thinking block is expanded in the UI */
@@ -214,7 +216,7 @@ export interface ThinkingMessage extends BaseMessage {
  * An error message
  */
 export interface ErrorMessage extends BaseMessage {
-  type: "error";
+  type: MessageType.Error | "error";
   /** Error message content */
   content: string;
   /** Error code (if available) */
@@ -222,18 +224,14 @@ export interface ErrorMessage extends BaseMessage {
   /** Whether this is a recoverable error */
   recoverable?: boolean;
   /** Suggested action for recovery */
-  suggestedAction?: ErrorAction;
+  suggestedAction?: ErrorAction | ErrorActionValue;
 }
 
 /**
- * Suggested error recovery action
+ * Suggested error recovery action (backward compatible type alias)
+ * @deprecated Use ErrorAction enum instead
  */
-export type ErrorAction =
-  | "retry"
-  | "login"
-  | "install"
-  | "configure"
-  | "contact_support";
+export type ErrorActionValue = `${ErrorAction}`;
 
 // ============================================================================
 // System Message
@@ -243,17 +241,18 @@ export type ErrorAction =
  * A system message (non-interactive informational message)
  */
 export interface SystemMessage extends BaseMessage {
-  type: "system";
+  type: MessageType.System | "system";
   /** System message content */
   content: string;
   /** System message severity */
-  severity: SystemMessageSeverity;
+  severity: SystemMessageSeverity | SystemMessageSeverityValue;
 }
 
 /**
- * System message severity level
+ * System message severity level (backward compatible type alias)
+ * @deprecated Use SystemMessageSeverity enum instead
  */
-export type SystemMessageSeverity = "info" | "warning" | "success";
+export type SystemMessageSeverityValue = `${SystemMessageSeverity}`;
 
 // ============================================================================
 // Permission Request
@@ -282,19 +281,16 @@ export interface PermissionRequest {
   /** Timestamp when the request was created */
   timestamp: number;
   /** Current status of the request */
-  status: PermissionRequestStatus;
+  status: PermissionStatus | PermissionRequestStatus;
   /** The decision made (once resolved) */
   decision?: PermissionDecision;
 }
 
 /**
- * Permission request status
+ * Permission request status (backward compatible type alias)
+ * @deprecated Use PermissionStatus enum instead
  */
-export type PermissionRequestStatus =
-  | "pending"
-  | "approved"
-  | "denied"
-  | "expired";
+export type PermissionRequestStatus = `${PermissionStatus}`;
 
 // ============================================================================
 // Message Groups
@@ -392,7 +388,7 @@ export interface DiffInfo {
  * Type guard for UserMessage
  */
 export function isUserMessage(message: ChatMessage): message is UserMessage {
-  return message.type === "user";
+  return message.type === MessageType.User;
 }
 
 /**
@@ -401,7 +397,7 @@ export function isUserMessage(message: ChatMessage): message is UserMessage {
 export function isAssistantMessage(
   message: ChatMessage,
 ): message is AssistantMessage {
-  return message.type === "assistant";
+  return message.type === MessageType.Assistant;
 }
 
 /**
@@ -410,7 +406,7 @@ export function isAssistantMessage(
 export function isToolUseMessage(
   message: ChatMessage,
 ): message is ToolUseMessage {
-  return message.type === "tool_use";
+  return message.type === MessageType.ToolUse;
 }
 
 /**
@@ -419,7 +415,7 @@ export function isToolUseMessage(
 export function isToolResultMessage(
   message: ChatMessage,
 ): message is ToolResultMessage {
-  return message.type === "tool_result";
+  return message.type === MessageType.ToolResult;
 }
 
 /**
@@ -428,14 +424,14 @@ export function isToolResultMessage(
 export function isThinkingMessage(
   message: ChatMessage,
 ): message is ThinkingMessage {
-  return message.type === "thinking";
+  return message.type === MessageType.Thinking;
 }
 
 /**
  * Type guard for ErrorMessage
  */
 export function isErrorMessage(message: ChatMessage): message is ErrorMessage {
-  return message.type === "error";
+  return message.type === MessageType.Error;
 }
 
 /**
@@ -444,5 +440,5 @@ export function isErrorMessage(message: ChatMessage): message is ErrorMessage {
 export function isSystemMessage(
   message: ChatMessage,
 ): message is SystemMessage {
-  return message.type === "system";
+  return message.type === MessageType.System;
 }

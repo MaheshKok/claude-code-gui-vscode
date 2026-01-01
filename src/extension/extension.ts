@@ -5,6 +5,7 @@ import { ClaudeService } from "./services/ClaudeService";
 import { ConversationService } from "./services/ConversationService";
 import { PermissionService } from "./services/PermissionService";
 import { MCPService } from "./services/MCPService";
+import { COMMAND_IDS, VIEW_IDS, CONFIG_KEYS } from "../shared/constants";
 
 // Storage for diff content (used by DiffContentProvider)
 const diffContentStore = new Map<string, string>();
@@ -64,7 +65,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register command to open chat in main editor area
   const openChatCommand = vscode.commands.registerCommand(
-    "claude-code-gui.openChat",
+    COMMAND_IDS.OPEN_CHAT,
     (column?: vscode.ViewColumn) => {
       console.log("Claude Code GUI command executed!");
       panelProvider.show(column);
@@ -73,7 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register command to load a specific conversation
   const loadConversationCommand = vscode.commands.registerCommand(
-    "claude-code-gui.loadConversation",
+    COMMAND_IDS.LOAD_CONVERSATION,
     (filename: string) => {
       panelProvider.loadConversation(filename);
     },
@@ -81,7 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register command to start a new session
   const newSessionCommand = vscode.commands.registerCommand(
-    "claude-code-gui.newSession",
+    COMMAND_IDS.NEW_SESSION,
     () => {
       panelProvider.newSession();
     },
@@ -89,7 +90,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register command to stop current request
   const stopRequestCommand = vscode.commands.registerCommand(
-    "claude-code-gui.stopRequest",
+    COMMAND_IDS.STOP_REQUEST,
     () => {
       claudeService.stopProcess();
     },
@@ -97,7 +98,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register webview view provider for sidebar chat
   const webviewProviderRegistration = vscode.window.registerWebviewViewProvider(
-    "claude-code-gui.chatView",
+    VIEW_IDS.CHAT_VIEW,
     webviewProvider,
   );
 
@@ -112,7 +113,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // Listen for configuration changes
   const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(
     (event) => {
-      if (event.affectsConfiguration("claudeCodeGui.wsl")) {
+      // Check for WSL configuration changes using CONFIG_KEYS prefix
+      const wslConfigPrefix = CONFIG_KEYS.WSL_ENABLED.replace(".enabled", "");
+      if (event.affectsConfiguration(wslConfigPrefix)) {
         console.log("WSL configuration changed, starting new session");
         panelProvider.newSessionOnConfigChange();
       }
@@ -126,7 +129,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   statusBarItem.text = "$(comment-discussion) Claude";
   statusBarItem.tooltip = "Open Claude Code GUI (Ctrl+Shift+C)";
-  statusBarItem.command = "claude-code-gui.openChat";
+  statusBarItem.command = COMMAND_IDS.OPEN_CHAT;
   statusBarItem.show();
 
   // Register all disposables

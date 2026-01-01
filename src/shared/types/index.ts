@@ -2,6 +2,11 @@
  * Shared type definitions for Claude Code GUI extension
  */
 
+import { MessageStatus, ThinkingIntensity } from "../constants";
+
+// Re-export enums for convenience
+export { MessageStatus, ThinkingIntensity };
+
 // Message Types
 export interface Message {
   id: string;
@@ -15,7 +20,11 @@ export interface Message {
   status?: MessageStatus;
 }
 
-export type MessageStatus = "pending" | "streaming" | "complete" | "error";
+/**
+ * MessageStatus type - uses the MessageStatus enum values
+ * @deprecated Import MessageStatus enum from '../constants' instead
+ */
+export type MessageStatusType = `${MessageStatus}`;
 
 export interface ThinkingBlock {
   content: string;
@@ -74,7 +83,7 @@ export interface ClaudeSettings {
 
 export interface ThinkingSettings {
   enabled: boolean;
-  intensity: "think" | "think-hard" | "think-harder" | "ultrathink";
+  intensity: ThinkingIntensity;
   showProcess: boolean;
 }
 

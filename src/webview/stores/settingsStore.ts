@@ -9,6 +9,19 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  ClaudeModel,
+  ThinkingIntensity,
+  CodeBlockTheme,
+  DEFAULT_WSL_CONFIG,
+  DEFAULT_UI_SETTINGS,
+  DEFAULT_CHAT_SETTINGS,
+  DEFAULT_THINKING_SETTINGS,
+  DEFAULT_MODEL,
+} from "../../shared/constants";
+
+// Re-export enums for backward compatibility
+export { ClaudeModel, ThinkingIntensity, CodeBlockTheme };
 
 // ============================================================================
 // Types
@@ -27,23 +40,6 @@ export interface WSLConfig {
   /** Path to Claude executable in WSL */
   claudePath: string;
 }
-
-/**
- * Thinking mode intensity levels
- */
-export type ThinkingIntensity =
-  | "think"
-  | "think-hard"
-  | "think-harder"
-  | "ultrathink";
-
-/**
- * Available Claude models (4.5 series)
- */
-export type ClaudeModel =
-  | "claude-sonnet-4-5-20250929"
-  | "claude-opus-4-5-20251101"
-  | "claude-haiku-4-5-20251001";
 
 /**
  * Settings store state
@@ -74,13 +70,7 @@ export interface SettingsState {
   /** Whether to show timestamps */
   showTimestamps: boolean;
   /** Code block theme */
-  codeBlockTheme:
-    | "auto"
-    | "github-dark"
-    | "github-light"
-    | "monokai"
-    | "dracula"
-    | "one-dark-pro";
+  codeBlockTheme: CodeBlockTheme;
   /** UI font size */
   fontSize: number;
   /** Compact mode */
@@ -161,29 +151,29 @@ export type SettingsStore = SettingsState & SettingsActions;
 
 const initialState: SettingsState = {
   wsl: {
-    enabled: false,
-    distro: "Ubuntu",
-    nodePath: "/usr/bin/node",
-    claudePath: "/usr/local/bin/claude",
+    enabled: DEFAULT_WSL_CONFIG.ENABLED,
+    distro: DEFAULT_WSL_CONFIG.DISTRO,
+    nodePath: DEFAULT_WSL_CONFIG.NODE_PATH,
+    claudePath: DEFAULT_WSL_CONFIG.CLAUDE_PATH,
   },
-  selectedModel: "claude-sonnet-4-5-20250929",
-  thinkingMode: true,
-  thinkingIntensity: "think",
-  showThinkingProcess: true,
+  selectedModel: DEFAULT_MODEL,
+  thinkingMode: DEFAULT_THINKING_SETTINGS.ENABLED,
+  thinkingIntensity: DEFAULT_THINKING_SETTINGS.INTENSITY,
+  showThinkingProcess: DEFAULT_THINKING_SETTINGS.SHOW_PROCESS,
   planMode: false,
   yoloMode: false,
   autoApprovePatterns: [],
   claudeExecutable: "claude",
-  maxHistorySize: 100,
-  streamResponses: true,
-  showTimestamps: true,
-  codeBlockTheme: "auto",
-  fontSize: 14,
-  compactMode: false,
-  showAvatars: true,
+  maxHistorySize: DEFAULT_CHAT_SETTINGS.MAX_HISTORY_SIZE,
+  streamResponses: DEFAULT_CHAT_SETTINGS.STREAM_RESPONSES,
+  showTimestamps: DEFAULT_UI_SETTINGS.SHOW_TIMESTAMPS,
+  codeBlockTheme: DEFAULT_UI_SETTINGS.CODE_BLOCK_THEME,
+  fontSize: DEFAULT_UI_SETTINGS.FONT_SIZE,
+  compactMode: DEFAULT_UI_SETTINGS.COMPACT_MODE,
+  showAvatars: DEFAULT_UI_SETTINGS.SHOW_AVATARS,
   includeFileContext: true,
   includeWorkspaceInfo: true,
-  maxContextLines: 500,
+  maxContextLines: DEFAULT_CHAT_SETTINGS.MAX_CONTEXT_LINES,
 };
 
 // ============================================================================

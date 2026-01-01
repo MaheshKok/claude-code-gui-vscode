@@ -1,97 +1,113 @@
 /**
  * Application Constants
  *
- * Central location for all constant values, mappings, and default settings
- * used throughout the webview application.
+ * This module re-exports shared constants and provides webview-specific constants.
+ * All common constants are defined in `../../shared/constants` for consistency
+ * across the application.
  *
  * @module utils/constants
  */
 
 // ============================================================================
-// Tool Icons Mapping
+// Imports from shared constants (for creating legacy aliases)
+// ============================================================================
+import {
+  BREAKPOINT_VALUES as SharedBreakpointValues,
+  SIDEBAR_CONFIG as SharedSidebarConfig,
+  INPUT_CONFIG as SharedInputConfig,
+  ANIMATION_DURATION as SharedAnimationDuration,
+  DEBOUNCE_DELAY as SharedDebounceDelay,
+  STATUS_COLORS as SharedStatusColors,
+  PATTERNS as SharedPatterns,
+  Breakpoint,
+} from "../../shared/constants";
+
+// ============================================================================
+// Re-export all shared constants
+// ============================================================================
+export {
+  // Enums
+  MessageType,
+  MessageRole,
+  MessageStatus,
+  ToolExecutionStatus,
+  ToolName,
+  PermissionStatus,
+  PermissionDecision,
+  ClaudeModel,
+  ThinkingIntensity,
+  SessionStatus,
+  ThemeMode,
+  CodeBlockTheme,
+  SidebarTab,
+  ModalType,
+  Breakpoint,
+  NotificationType,
+  SystemMessageSeverity,
+  ErrorAction,
+
+  // Model constants
+  MODEL_DISPLAY_NAMES,
+  MODEL_DESCRIPTIONS,
+  DEFAULT_MODEL,
+  THINKING_INTENSITY_NAMES,
+  DEFAULT_THINKING_INTENSITY,
+
+  // Layout constants (shared format with UPPER_CASE keys)
+  BREAKPOINT_VALUES,
+  SIDEBAR_CONFIG as SHARED_SIDEBAR_CONFIG,
+  INPUT_CONFIG as SHARED_INPUT_CONFIG,
+  ANIMATION_DURATION,
+  DEBOUNCE_DELAY,
+
+  // Token and pricing
+  TOKEN_PRICING,
+  CONTEXT_WINDOW_SIZE,
+  DEFAULT_CONTEXT_WINDOW_SIZE,
+  type TokenPricing,
+
+  // Default settings (shared format)
+  DEFAULT_WSL_CONFIG,
+  DEFAULT_UI_SETTINGS,
+  DEFAULT_CHAT_SETTINGS,
+  DEFAULT_PERMISSION_SETTINGS as SHARED_PERMISSION_SETTINGS,
+  DEFAULT_THINKING_SETTINGS,
+
+  // Tool and message icons
+  TOOL_ICONS,
+  MESSAGE_TYPE_ICONS,
+
+  // Status colors (shared format with UPPER_CASE keys)
+  STATUS_COLORS as SHARED_STATUS_COLORS,
+  TOOL_STATUS_COLORS,
+
+  // Patterns and language mappings (shared format with UPPER_CASE keys)
+  PATTERNS as SHARED_PATTERNS,
+  EXTENSION_TO_LANGUAGE,
+  COMMAND_PATTERNS,
+
+  // VSCode extension constants
+  CONFIG_KEYS,
+  COMMAND_IDS,
+  VIEW_IDS,
+  STORAGE_KEYS,
+
+  // Helper functions
+  getToolIcon,
+  getLanguageFromPath,
+  getCommandPattern,
+  getTokenPricing,
+  getContextWindowSize,
+  isTerminalStatus,
+  isActiveSessionStatus,
+} from "../../shared/constants";
+
+// ============================================================================
+// Webview-specific Default Settings
 // ============================================================================
 
 /**
- * SVG icon paths for each tool type
- * Using Codicons (VS Code icon set) naming convention where applicable
- */
-export const TOOL_ICONS: Record<string, string> = {
-  // File Operations
-  Read: "file",
-  Write: "file-add",
-  Edit: "edit",
-  MultiEdit: "files",
-
-  // Search and Navigation
-  Glob: "search",
-  Grep: "search",
-
-  // Terminal
-  Bash: "terminal",
-
-  // Task Management
-  Task: "checklist",
-  TodoRead: "checklist",
-  TodoWrite: "tasklist",
-
-  // Web Operations
-  WebFetch: "globe",
-  WebSearch: "globe",
-
-  // Notebook
-  NotebookRead: "notebook",
-  NotebookEdit: "notebook",
-
-  // LSP
-  LSP: "symbol-method",
-
-  // MCP Tools (prefix matching)
-  mcp__: "extensions",
-
-  // Default
-  default: "tools",
-};
-
-/**
- * Get icon name for a tool
- */
-export function getToolIcon(toolName: string): string {
-  // Direct match
-  if (TOOL_ICONS[toolName]) {
-    return TOOL_ICONS[toolName];
-  }
-
-  // MCP tool prefix match
-  if (toolName.startsWith("mcp__")) {
-    return TOOL_ICONS["mcp__"];
-  }
-
-  return TOOL_ICONS.default;
-}
-
-// ============================================================================
-// Message Type Icons
-// ============================================================================
-
-/**
- * Icons for different message types
- */
-export const MESSAGE_TYPE_ICONS: Record<string, string> = {
-  user: "account",
-  assistant: "sparkle",
-  tool_use: "tools",
-  tool_result: "check",
-  thinking: "lightbulb",
-  error: "error",
-  system: "info",
-};
-
-// ============================================================================
-// Default Settings
-// ============================================================================
-
-/**
- * Default theme settings
+ * Default theme settings (webview-specific)
  */
 export const DEFAULT_THEME_SETTINGS = {
   mode: "auto" as const,
@@ -100,7 +116,7 @@ export const DEFAULT_THEME_SETTINGS = {
 };
 
 /**
- * Default editor settings
+ * Default editor settings (webview-specific)
  */
 export const DEFAULT_EDITOR_SETTINGS = {
   tabSize: 2,
@@ -112,7 +128,7 @@ export const DEFAULT_EDITOR_SETTINGS = {
 };
 
 /**
- * Default Claude settings
+ * Default Claude settings (webview-specific)
  */
 export const DEFAULT_CLAUDE_SETTINGS = {
   cliPath: null,
@@ -124,7 +140,7 @@ export const DEFAULT_CLAUDE_SETTINGS = {
 };
 
 /**
- * Default permission settings
+ * Default permission settings (webview-specific format)
  */
 export const DEFAULT_PERMISSION_SETTINGS = {
   autoApprove: {
@@ -140,7 +156,7 @@ export const DEFAULT_PERMISSION_SETTINGS = {
 };
 
 /**
- * Default display settings
+ * Default display settings (webview-specific)
  */
 export const DEFAULT_DISPLAY_SETTINGS = {
   messageRendering: {
@@ -160,7 +176,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
 };
 
 /**
- * Default keyboard shortcuts
+ * Default keyboard shortcuts (webview-specific)
  */
 export const DEFAULT_SHORTCUTS = {
   submit: "Enter",
@@ -172,52 +188,7 @@ export const DEFAULT_SHORTCUTS = {
 };
 
 // ============================================================================
-// Token and Cost Constants
-// ============================================================================
-
-/**
- * Token pricing per million tokens (in USD)
- * Updated for current Anthropic pricing
- */
-export const TOKEN_PRICING = {
-  "claude-sonnet-4-5-20250929": {
-    input: 3.0,
-    output: 15.0,
-    cacheRead: 0.3,
-    cacheWrite: 3.75,
-  },
-  "claude-opus-4-5-20251101": {
-    input: 15.0,
-    output: 75.0,
-    cacheRead: 1.5,
-    cacheWrite: 18.75,
-  },
-  "claude-haiku-4-5-20251001": {
-    input: 1.0,
-    output: 5.0,
-    cacheRead: 0.1,
-    cacheWrite: 1.25,
-  },
-  default: {
-    input: 3.0,
-    output: 15.0,
-    cacheRead: 0.3,
-    cacheWrite: 3.75,
-  },
-};
-
-/**
- * Context window sizes by model
- */
-export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
-  "claude-sonnet-4-5-20250929": 200000,
-  "claude-opus-4-5-20251101": 200000,
-  "claude-haiku-4-5-20251001": 200000,
-  default: 200000,
-};
-
-// ============================================================================
-// Popular MCP Servers
+// Popular MCP Servers (webview-specific)
 // ============================================================================
 
 /**
@@ -330,197 +301,114 @@ export const POPULAR_MCP_SERVERS: MCPServerConfig[] = [
 ];
 
 // ============================================================================
-// UI Constants
+// Backward Compatibility Aliases
+// These maintain the original API for existing consumers
 // ============================================================================
 
 /**
- * Layout breakpoints in pixels
+ * Context window sizes by model (legacy format for backward compatibility)
+ * @deprecated Use CONTEXT_WINDOW_SIZE from shared constants instead
+ */
+export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
+  "claude-sonnet-4-5-20250929": 200000,
+  "claude-opus-4-5-20251101": 200000,
+  "claude-haiku-4-5-20251001": 200000,
+  default: 200000,
+};
+
+/**
+ * Layout breakpoints in pixels (legacy format with lowercase keys)
+ * @deprecated Use BREAKPOINT_VALUES from shared constants instead
  */
 export const BREAKPOINTS = {
-  xs: 0,
-  sm: 576,
-  md: 768,
-  lg: 992,
-  xl: 1200,
+  xs: SharedBreakpointValues[Breakpoint.XS],
+  sm: SharedBreakpointValues[Breakpoint.SM],
+  md: SharedBreakpointValues[Breakpoint.MD],
+  lg: SharedBreakpointValues[Breakpoint.LG],
+  xl: SharedBreakpointValues[Breakpoint.XL],
 };
 
 /**
- * Sidebar configuration
+ * Sidebar configuration (legacy format with camelCase keys)
+ * @deprecated Use SHARED_SIDEBAR_CONFIG from shared constants instead
  */
 export const SIDEBAR_CONFIG = {
-  minWidth: 200,
-  maxWidth: 600,
-  defaultWidth: 280,
-  collapsedWidth: 48,
+  minWidth: SharedSidebarConfig.MIN_WIDTH,
+  maxWidth: SharedSidebarConfig.MAX_WIDTH,
+  defaultWidth: SharedSidebarConfig.DEFAULT_WIDTH,
+  collapsedWidth: SharedSidebarConfig.COLLAPSED_WIDTH,
 };
 
 /**
- * Input area configuration
+ * Input area configuration (legacy format with camelCase keys)
+ * @deprecated Use SHARED_INPUT_CONFIG from shared constants instead
  */
 export const INPUT_CONFIG = {
-  minHeight: 44,
-  maxHeight: 300,
-  defaultHeight: 44,
+  minHeight: SharedInputConfig.MIN_HEIGHT,
+  maxHeight: SharedInputConfig.MAX_HEIGHT,
+  defaultHeight: SharedInputConfig.DEFAULT_HEIGHT,
 };
 
 /**
- * Animation durations in milliseconds
+ * Animation durations in milliseconds (legacy format with camelCase keys)
+ * @deprecated Use ANIMATION_DURATION from shared constants instead
  */
 export const ANIMATION_DURATIONS = {
-  fast: 100,
-  normal: 200,
-  slow: 300,
+  fast: SharedAnimationDuration.FAST,
+  normal: SharedAnimationDuration.NORMAL,
+  slow: SharedAnimationDuration.SLOW,
 };
 
 /**
- * Debounce delays in milliseconds
+ * Debounce delays in milliseconds (legacy format with camelCase keys)
+ * @deprecated Use DEBOUNCE_DELAY from shared constants instead
  */
 export const DEBOUNCE_DELAYS = {
-  input: 100,
-  search: 300,
-  resize: 50,
-  autosave: 1000,
+  input: SharedDebounceDelay.INPUT,
+  search: SharedDebounceDelay.SEARCH,
+  resize: SharedDebounceDelay.RESIZE,
+  autosave: SharedDebounceDelay.AUTOSAVE,
 };
 
-// ============================================================================
-// Status Colors
-// ============================================================================
-
 /**
- * Status indicator colors (using CSS variable names)
+ * Status indicator colors (legacy format with camelCase keys)
+ * @deprecated Use SHARED_STATUS_COLORS from shared constants instead
  */
 export const STATUS_COLORS = {
-  success: "var(--vscode-testing-iconPassed)",
-  error: "var(--vscode-testing-iconFailed)",
-  warning: "var(--vscode-editorWarning-foreground)",
-  info: "var(--vscode-editorInfo-foreground)",
-  pending: "var(--vscode-editorLightBulb-foreground)",
-  active: "var(--vscode-progressBar-background)",
+  success: SharedStatusColors.SUCCESS,
+  error: SharedStatusColors.ERROR,
+  warning: SharedStatusColors.WARNING,
+  info: SharedStatusColors.INFO,
+  pending: SharedStatusColors.PENDING,
+  active: SharedStatusColors.ACTIVE,
 };
 
 /**
- * Tool status colors
- */
-export const TOOL_STATUS_COLORS = {
-  pending: STATUS_COLORS.pending,
-  approved: STATUS_COLORS.info,
-  executing: STATUS_COLORS.active,
-  completed: STATUS_COLORS.success,
-  failed: STATUS_COLORS.error,
-  denied: STATUS_COLORS.warning,
-};
-
-// ============================================================================
-// Regex Patterns
-// ============================================================================
-
-/**
- * Common regex patterns used in the application
+ * Common regex patterns (legacy format with camelCase keys)
+ * @deprecated Use SHARED_PATTERNS from shared constants instead
  */
 export const PATTERNS = {
   /** Matches file paths */
-  filePath: /^[a-zA-Z]?:?[\\/]?(?:[^<>:"|?*\n\r]+[\\/])*[^<>:"|?*\n\r]*$/,
+  filePath: SharedPatterns.FILE_PATH,
 
   /** Matches glob patterns */
-  glob: /^[^<>:"|?\n\r]+$/,
+  glob: SharedPatterns.GLOB,
 
   /** Matches URL */
-  url: /^https?:\/\/[^\s]+$/,
+  url: SharedPatterns.URL,
 
   /** Matches code blocks in markdown */
-  codeBlock: /```(\w+)?\n([\s\S]*?)```/g,
+  codeBlock: SharedPatterns.CODE_BLOCK,
 
   /** Matches inline code */
-  inlineCode: /`([^`]+)`/g,
+  inlineCode: SharedPatterns.INLINE_CODE,
 
   /** Matches markdown links */
-  markdownLink: /\[([^\]]+)\]\(([^)]+)\)/g,
+  markdownLink: SharedPatterns.MARKDOWN_LINK,
 
   /** Matches @-mentions */
-  mention: /@(\w+)/g,
+  mention: SharedPatterns.MENTION,
 
   /** Matches file extensions */
-  fileExtension: /\.([a-zA-Z0-9]+)$/,
+  fileExtension: SharedPatterns.FILE_EXTENSION,
 };
-
-// ============================================================================
-// Language Mappings
-// ============================================================================
-
-/**
- * File extension to language ID mapping for syntax highlighting
- */
-export const EXTENSION_TO_LANGUAGE: Record<string, string> = {
-  ts: "typescript",
-  tsx: "typescriptreact",
-  js: "javascript",
-  jsx: "javascriptreact",
-  py: "python",
-  rb: "ruby",
-  rs: "rust",
-  go: "go",
-  java: "java",
-  kt: "kotlin",
-  swift: "swift",
-  cs: "csharp",
-  cpp: "cpp",
-  c: "c",
-  h: "c",
-  hpp: "cpp",
-  php: "php",
-  sh: "shellscript",
-  bash: "shellscript",
-  zsh: "shellscript",
-  ps1: "powershell",
-  sql: "sql",
-  json: "json",
-  jsonc: "jsonc",
-  yaml: "yaml",
-  yml: "yaml",
-  toml: "toml",
-  xml: "xml",
-  html: "html",
-  css: "css",
-  scss: "scss",
-  less: "less",
-  md: "markdown",
-  mdx: "mdx",
-  vue: "vue",
-  svelte: "svelte",
-  dockerfile: "dockerfile",
-  makefile: "makefile",
-  cmake: "cmake",
-  r: "r",
-  scala: "scala",
-  clj: "clojure",
-  ex: "elixir",
-  exs: "elixir",
-  erl: "erlang",
-  hs: "haskell",
-  lua: "lua",
-  perl: "perl",
-  graphql: "graphql",
-  proto: "protobuf",
-  tf: "terraform",
-  hcl: "hcl",
-};
-
-/**
- * Get language ID from file path
- */
-export function getLanguageFromPath(filePath: string): string {
-  const match = filePath.match(PATTERNS.fileExtension);
-  if (match) {
-    const ext = match[1].toLowerCase();
-    return EXTENSION_TO_LANGUAGE[ext] || ext;
-  }
-
-  // Check for special filenames
-  const filename = filePath.split(/[\\/]/).pop()?.toLowerCase() || "";
-  if (filename === "dockerfile") return "dockerfile";
-  if (filename === "makefile") return "makefile";
-  if (filename === ".gitignore") return "ignore";
-  if (filename === ".env") return "dotenv";
-
-  return "plaintext";
-}

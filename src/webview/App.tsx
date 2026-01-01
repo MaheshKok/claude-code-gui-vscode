@@ -48,6 +48,7 @@ import type {
   PermissionDecision,
 } from "./types";
 import type { ConversationListItem } from "./types/history";
+import { ThinkingIntensity } from "../shared/constants";
 import type { TodoItem } from "./components/Tools";
 import { extractTodosFromInput } from "./utils";
 
@@ -1096,7 +1097,7 @@ export const App: React.FC = () => {
   }, [toggleThinkingMode]);
 
   const handleThinkingIntensityChange = useCallback(
-    (intensity: "think" | "think-hard" | "think-harder" | "ultrathink") => {
+    (intensity: ThinkingIntensity) => {
       setThinkingIntensity(intensity);
     },
     [setThinkingIntensity],

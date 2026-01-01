@@ -20,6 +20,18 @@ import type {
   ConversationThread,
   MessageRenderOptions,
 } from "./messages";
+import {
+  SessionStatus,
+  ThemeMode,
+  SidebarTab,
+  ModalType,
+  Breakpoint,
+  NotificationType,
+  DEFAULT_CONTEXT_WINDOW_SIZE,
+} from "../../shared/constants";
+
+// Re-export enums for backward compatibility
+export { SessionStatus, ThemeMode, SidebarTab, ModalType, Breakpoint, NotificationType };
 
 // ============================================================================
 // Session State
@@ -46,14 +58,10 @@ export interface SessionState {
 }
 
 /**
- * Session status
+ * Session status type alias for backward compatibility
+ * @deprecated Use SessionStatus enum from shared/constants instead
  */
-export type SessionStatus =
-  | "initializing" // Session is being initialized
-  | "active" // Session is active and ready
-  | "compacting" // Context is being compacted
-  | "error" // Session encountered an error
-  | "closed"; // Session has been closed
+export type SessionStatusType = `${SessionStatus}`;
 
 /**
  * Session initialization options
@@ -218,7 +226,7 @@ export interface SettingsState {
  */
 export interface ThemeSettings {
   /** Current theme mode */
-  mode: "light" | "dark" | "auto";
+  mode: ThemeMode;
   /** Custom accent color */
   accentColor?: string;
   /** Font family */
@@ -366,9 +374,10 @@ export interface SidebarState {
 }
 
 /**
- * Sidebar tabs
+ * Sidebar tabs type alias for backward compatibility
+ * @deprecated Use SidebarTab enum from shared/constants instead
  */
-export type SidebarTab = "history" | "files" | "tools" | "settings";
+export type SidebarTabType = `${SidebarTab}`;
 
 /**
  * Input area state
@@ -433,16 +442,10 @@ export interface ModalState {
 }
 
 /**
- * Modal types
+ * Modal types type alias for backward compatibility
+ * @deprecated Use ModalType enum from shared/constants instead
  */
-export type ModalType =
-  | "permission"
-  | "install"
-  | "login"
-  | "settings"
-  | "confirm"
-  | "error"
-  | "about";
+export type ModalTypeAlias = `${ModalType}`;
 
 /**
  * Notification state
@@ -461,7 +464,7 @@ export interface Notification {
   /** Notification ID */
   id: string;
   /** Notification type */
-  type: "info" | "success" | "warning" | "error";
+  type: NotificationType;
   /** Notification title */
   title: string;
   /** Notification message */
@@ -504,9 +507,10 @@ export interface LayoutState {
 }
 
 /**
- * Layout breakpoints
+ * Layout breakpoints type alias for backward compatibility
+ * @deprecated Use Breakpoint enum from shared/constants instead
  */
-export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
+export type BreakpointType = `${Breakpoint}`;
 
 // ============================================================================
 // Root Application State
@@ -537,7 +541,7 @@ export interface AppState {
  */
 export const initialSessionState: SessionState = {
   sessionId: null,
-  status: "initializing",
+  status: SessionStatus.Initializing,
   tools: [],
   mcpServers: [],
   account: null,
@@ -575,7 +579,7 @@ export const initialTokenTrackingState: TokenTrackingState = {
     totalCacheCreationTokens: 0,
   },
   limits: {
-    maxContextTokens: 200000,
+    maxContextTokens: DEFAULT_CONTEXT_WINDOW_SIZE,
     warningThreshold: 0.8,
     usagePercentage: 0,
   },
