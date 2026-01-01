@@ -1,12 +1,6 @@
 import React from "react";
 import type { SessionInfo } from "../App";
-import {
-  MessageSquarePlus,
-  Settings,
-  History,
-  X,
-  Cpu,
-} from "lucide-react";
+import { MessageSquarePlus, Settings, History, X, Cpu } from "lucide-react";
 
 interface HeaderProps {
   session: SessionInfo | null;
