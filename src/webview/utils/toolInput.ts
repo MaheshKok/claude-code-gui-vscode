@@ -711,6 +711,131 @@ export function getToolDescription(toolName: string): string {
 }
 
 /**
+ * Get a concise summary for display in collapsed tool step headers.
+ * Extracts the most important parameter for each tool type.
+ *
+ * @param toolName - The name of the tool
+ * @param input - The tool input parameters
+ * @param maxLength - Maximum length of the summary (default: 40)
+ * @returns A concise summary string
+ */
+export function getToolSummary(
+  toolName: string,
+  input: ToolInput,
+  maxLength: number = 40,
+): string {
+  if (!input || typeof input !== "object") {
+    return "";
+  }
+
+  const truncate = (str: string, len: number): string => {
+    if (str.length <= len) return str;
+    return str.slice(0, len - 1) + "…";
+  };
+
+  const getFilename = (filePath: string): string => {
+    const parts = filePath.split("/");
+    return parts[parts.length - 1] || filePath;
+  };
+
+  switch (toolName) {
+    case "Read":
+    case "Write":
+    case "Edit":
+    case "NotebookRead":
+    case "NotebookEdit": {
+      const filePath =
+        (input.file_path as string) || (input.notebook_path as string) || "";
+      return truncate(getFilename(filePath), maxLength);
+    }
+
+    case "MultiEdit": {
+      const filePath = (input.file_path as string) || "";
+      const edits =
+        (input.edits as Array<{ old_string: string; new_string: string }>) ||
+        [];
+      const filename = getFilename(filePath);
+      return truncate(`${filename} (${edits.length} edits)`, maxLength);
+    }
+
+    case "Glob": {
+      const pattern = (input.pattern as string) || "";
+      return truncate(pattern, maxLength);
+    }
+
+    case "Grep": {
+      const pattern = (input.pattern as string) || "";
+      const glob = input.glob as string | undefined;
+      if (glob) {
+        return truncate(`"${pattern}" in ${glob}`, maxLength);
+      }
+      return truncate(`"${pattern}"`, maxLength);
+    }
+
+    case "Bash": {
+      const command = (input.command as string) || "";
+      const description = input.description as string | undefined;
+      if (description) {
+        return truncate(description, maxLength);
+      }
+      // Get first meaningful part of command
+      const cleanCmd = command.trim().split("\n")[0] || "";
+      return truncate(cleanCmd, maxLength);
+    }
+
+    case "Task": {
+      const description =
+        (input.description as string) || (input.prompt as string) || "";
+      return truncate(description, maxLength);
+    }
+
+    case "TodoWrite": {
+      const todos = (input.todos as Array<unknown>) || [];
+      const inProgress = todos.filter(
+        (t) => (t as { status: string }).status === "in_progress",
+      ).length;
+      const completed = todos.filter(
+        (t) => (t as { status: string }).status === "completed",
+      ).length;
+      return `${todos.length} tasks (${completed} done, ${inProgress} active)`;
+    }
+
+    case "WebFetch": {
+      const url = (input.url as string) || "";
+      try {
+        const hostname = new URL(url).hostname;
+        return truncate(hostname, maxLength);
+      } catch {
+        return truncate(url, maxLength);
+      }
+    }
+
+    case "WebSearch": {
+      const query = (input.query as string) || "";
+      return truncate(`"${query}"`, maxLength);
+    }
+
+    case "LSP": {
+      const operation = (input.operation as string) || "";
+      const filePath = (input.filePath as string) || "";
+      const filename = getFilename(filePath);
+      return truncate(`${operation} in ${filename}`, maxLength);
+    }
+
+    default: {
+      // For unknown tools, try common parameter names
+      const description =
+        (input.description as string) ||
+        (input.name as string) ||
+        (input.path as string) ||
+        (input.query as string) ||
+        "";
+      return truncate(description, maxLength);
+    }
+  }
+}
+
+/**
  * Check if a tool input represents a destructive operation
  */
 export function isDestructiveOperation(
