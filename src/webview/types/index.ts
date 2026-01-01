@@ -80,7 +80,7 @@ export type {
   // Permission handling
   PermissionResponse,
   PermissionDecision,
-} from './claude-events';
+} from "./claude-events";
 
 // Export type guards from claude-events
 export {
@@ -98,7 +98,7 @@ export {
   isThinkingContentBlock,
   isToolUseContentBlock,
   isToolResultContentBlock,
-} from './claude-events';
+} from "./claude-events";
 
 // ============================================================================
 // Chat Message Types
@@ -133,7 +133,7 @@ export type {
   // Rendering
   MessageRenderOptions,
   DiffInfo,
-} from './messages';
+} from "./messages";
 
 // Export type guards from messages
 export {
@@ -144,7 +144,7 @@ export {
   isThinkingMessage,
   isErrorMessage,
   isSystemMessage,
-} from './messages';
+} from "./messages";
 
 // ============================================================================
 // Application State Types
@@ -197,7 +197,7 @@ export type {
 
   // Root state
   AppState,
-} from './state';
+} from "./state";
 
 // Export initial state values
 export {
@@ -205,7 +205,7 @@ export {
   initialConversationState,
   initialTokenTrackingState,
   initialTimingState,
-} from './state';
+} from "./state";
 
 // ============================================================================
 // VSCode Webview API Types
@@ -268,7 +268,7 @@ export type {
   ExtensionMessageHandlerMap,
   WebviewMessageHandler,
   WebviewMessageHandlerMap,
-} from './webview-api';
+} from "./webview-api";
 
 // Export type guards from webview-api
 export {
@@ -276,4 +276,4 @@ export {
   isWebviewMessage,
   isExtensionMessageOfType,
   isWebviewMessageOfType,
-} from './webview-api';
+} from "./webview-api";

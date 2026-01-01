@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { formatCost, formatDuration, formatTokenCount } from '../../utils';
+import React, { useEffect, useMemo, useState } from "react";
+import { formatCost, formatDuration, formatTokenCount } from "../../utils";
 
 interface StatusBarProps {
   isConnected: boolean;
@@ -48,7 +48,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       abbreviated: false,
     });
 
-    segments.push(isProcessing ? 'Processing' : 'Ready');
+    segments.push(isProcessing ? "Processing" : "Ready");
     segments.push(tokenLabel);
 
     if (isProcessing && requestStartTime) {
@@ -64,14 +64,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
     if (!isProcessing) {
       if (subscriptionType) {
-        const planName = subscriptionType.charAt(0).toUpperCase() + subscriptionType.slice(1);
+        const planName =
+          subscriptionType.charAt(0).toUpperCase() + subscriptionType.slice(1);
         segments.push(`${planName} Plan`);
       } else {
         segments.push(formatCost(sessionCostUsd, { showFreeForZero: false }));
       }
     }
 
-    return segments.join(' | ');
+    return segments.join(" | ");
   }, [
     elapsedMs,
     isProcessing,
@@ -91,13 +92,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           <span
             className={`w-2 h-2 rounded-full ${
               isConnected
-                ? 'bg-green-500'
-                : 'bg-[var(--vscode-statusBarItem-errorBackground)]'
+                ? "bg-green-500"
+                : "bg-[var(--vscode-statusBarItem-errorBackground)]"
             }`}
           />
-          <span>
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
+          <span>{isConnected ? "Connected" : "Disconnected"}</span>
         </div>
 
         <div className="w-px h-3 bg-[var(--vscode-statusBar-foreground)] opacity-30" />

@@ -7,8 +7,8 @@
  * @module test/stores/settingsStore
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import {
   useSettingsStore,
   selectWSL,
@@ -21,7 +21,7 @@ import {
   type WSLConfig,
   type ThinkingIntensity,
   type ClaudeModel,
-} from '../../webview/stores/settingsStore';
+} from "../../webview/stores/settingsStore";
 
 // Mock localStorage for persistence tests
 const localStorageMock = (() => {
@@ -40,11 +40,11 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 
-describe('settingsStore', () => {
+describe("settingsStore", () => {
   beforeEach(() => {
     // Reset store state before each test
     const { result } = renderHook(() => useSettingsStore());
@@ -57,9 +57,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // WSL Configuration Tests
   // ==========================================================================
-  describe('WSL configuration', () => {
-    describe('updateWSL', () => {
-      it('should update WSL enabled state', () => {
+  describe("WSL configuration", () => {
+    describe("updateWSL", () => {
+      it("should update WSL enabled state", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -69,53 +69,57 @@ describe('settingsStore', () => {
         expect(result.current.wsl.enabled).toBe(true);
       });
 
-      it('should update WSL distro', () => {
+      it("should update WSL distro", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.updateWSL({ distro: 'Debian' });
+          result.current.updateWSL({ distro: "Debian" });
         });
 
-        expect(result.current.wsl.distro).toBe('Debian');
+        expect(result.current.wsl.distro).toBe("Debian");
       });
 
-      it('should update WSL node path', () => {
+      it("should update WSL node path", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.updateWSL({ nodePath: '/usr/local/bin/node' });
+          result.current.updateWSL({ nodePath: "/usr/local/bin/node" });
         });
 
-        expect(result.current.wsl.nodePath).toBe('/usr/local/bin/node');
+        expect(result.current.wsl.nodePath).toBe("/usr/local/bin/node");
       });
 
-      it('should update WSL claude path', () => {
+      it("should update WSL claude path", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.updateWSL({ claudePath: '/home/user/.local/bin/claude' });
+          result.current.updateWSL({
+            claudePath: "/home/user/.local/bin/claude",
+          });
         });
 
-        expect(result.current.wsl.claudePath).toBe('/home/user/.local/bin/claude');
+        expect(result.current.wsl.claudePath).toBe(
+          "/home/user/.local/bin/claude",
+        );
       });
 
-      it('should update multiple WSL properties at once', () => {
+      it("should update multiple WSL properties at once", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
           result.current.updateWSL({
             enabled: true,
-            distro: 'Alpine',
-            nodePath: '/custom/node',
+            distro: "Alpine",
+            nodePath: "/custom/node",
           });
         });
 
         expect(result.current.wsl.enabled).toBe(true);
-        expect(result.current.wsl.distro).toBe('Alpine');
-        expect(result.current.wsl.nodePath).toBe('/custom/node');
+        expect(result.current.wsl.distro).toBe("Alpine");
+        expect(result.current.wsl.nodePath).toBe("/custom/node");
       });
 
-      it('should preserve unmodified WSL properties', () => {
+      it("should preserve unmodified WSL properties", () => {
         const { result } = renderHook(() => useSettingsStore());
         const originalClaudePath = result.current.wsl.claudePath;
 
@@ -127,25 +131,25 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default values', () => {
-      it('should have WSL disabled by default', () => {
+    describe("default values", () => {
+      it("should have WSL disabled by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.wsl.enabled).toBe(false);
       });
 
-      it('should have Ubuntu as default distro', () => {
+      it("should have Ubuntu as default distro", () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.wsl.distro).toBe('Ubuntu');
+        expect(result.current.wsl.distro).toBe("Ubuntu");
       });
 
-      it('should have default node path', () => {
+      it("should have default node path", () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.wsl.nodePath).toBe('/usr/bin/node');
+        expect(result.current.wsl.nodePath).toBe("/usr/bin/node");
       });
 
-      it('should have default claude path', () => {
+      it("should have default claude path", () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.wsl.claudePath).toBe('/usr/local/bin/claude');
+        expect(result.current.wsl.claudePath).toBe("/usr/local/bin/claude");
       });
     });
   });
@@ -153,25 +157,25 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Model Selection Tests
   // ==========================================================================
-  describe('model selection', () => {
-    describe('setSelectedModel', () => {
-      it('should set the selected model', () => {
+  describe("model selection", () => {
+    describe("setSelectedModel", () => {
+      it("should set the selected model", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.setSelectedModel('claude-opus-4-5-20251101');
+          result.current.setSelectedModel("claude-opus-4-5-20251101");
         });
 
-        expect(result.current.selectedModel).toBe('claude-opus-4-5-20251101');
+        expect(result.current.selectedModel).toBe("claude-opus-4-5-20251101");
       });
 
-      it('should accept all valid model options', () => {
+      it("should accept all valid model options", () => {
         const { result } = renderHook(() => useSettingsStore());
         const models: ClaudeModel[] = [
-          'claude-sonnet-4-5-20250929',
-          'claude-opus-4-5-20251101',
-          'claude-3-5-sonnet-20241022',
-          'claude-3-5-haiku-20241022',
+          "claude-sonnet-4-5-20250929",
+          "claude-opus-4-5-20251101",
+          "claude-3-5-sonnet-20241022",
+          "claude-3-5-haiku-20241022",
         ];
 
         for (const model of models) {
@@ -183,10 +187,10 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default value', () => {
-      it('should have claude-sonnet-4-5-20250929 as default', () => {
+    describe("default value", () => {
+      it("should have claude-sonnet-4-5-20250929 as default", () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.selectedModel).toBe('claude-sonnet-4-5-20250929');
+        expect(result.current.selectedModel).toBe("claude-sonnet-4-5-20250929");
       });
     });
   });
@@ -194,9 +198,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Thinking Mode Tests
   // ==========================================================================
-  describe('thinking mode', () => {
-    describe('toggleThinkingMode', () => {
-      it('should toggle thinking mode on', () => {
+  describe("thinking mode", () => {
+    describe("toggleThinkingMode", () => {
+      it("should toggle thinking mode on", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         // First disable it
@@ -211,7 +215,7 @@ describe('settingsStore', () => {
         expect(result.current.thinkingMode).toBe(true);
       });
 
-      it('should toggle thinking mode off', () => {
+      it("should toggle thinking mode off", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         // Ensure it's on first
@@ -227,8 +231,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('setThinkingMode', () => {
-      it('should set thinking mode explicitly', () => {
+    describe("setThinkingMode", () => {
+      it("should set thinking mode explicitly", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -245,14 +249,14 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('setThinkingIntensity', () => {
-      it('should set thinking intensity', () => {
+    describe("setThinkingIntensity", () => {
+      it("should set thinking intensity", () => {
         const { result } = renderHook(() => useSettingsStore());
         const intensities: ThinkingIntensity[] = [
-          'think',
-          'think-hard',
-          'think-harder',
-          'ultrathink',
+          "think",
+          "think-hard",
+          "think-harder",
+          "ultrathink",
         ];
 
         for (const intensity of intensities) {
@@ -264,8 +268,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('toggleShowThinkingProcess', () => {
-      it('should toggle show thinking process', () => {
+    describe("toggleShowThinkingProcess", () => {
+      it("should toggle show thinking process", () => {
         const { result } = renderHook(() => useSettingsStore());
         const initial = result.current.showThinkingProcess;
 
@@ -277,18 +281,18 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default values', () => {
-      it('should have thinking mode enabled by default', () => {
+    describe("default values", () => {
+      it("should have thinking mode enabled by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.thinkingMode).toBe(true);
       });
 
       it('should have "think" as default intensity', () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.thinkingIntensity).toBe('think');
+        expect(result.current.thinkingIntensity).toBe("think");
       });
 
-      it('should show thinking process by default', () => {
+      it("should show thinking process by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.showThinkingProcess).toBe(true);
       });
@@ -298,9 +302,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Plan Mode Tests
   // ==========================================================================
-  describe('plan mode', () => {
-    describe('togglePlanMode', () => {
-      it('should toggle plan mode on', () => {
+  describe("plan mode", () => {
+    describe("togglePlanMode", () => {
+      it("should toggle plan mode on", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         expect(result.current.planMode).toBe(false);
@@ -312,7 +316,7 @@ describe('settingsStore', () => {
         expect(result.current.planMode).toBe(true);
       });
 
-      it('should toggle plan mode off', () => {
+      it("should toggle plan mode off", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -327,8 +331,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('setPlanMode', () => {
-      it('should set plan mode explicitly', () => {
+    describe("setPlanMode", () => {
+      it("should set plan mode explicitly", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -345,8 +349,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default value', () => {
-      it('should have plan mode disabled by default', () => {
+    describe("default value", () => {
+      it("should have plan mode disabled by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.planMode).toBe(false);
       });
@@ -356,9 +360,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Yolo Mode Tests
   // ==========================================================================
-  describe('yolo mode', () => {
-    describe('toggleYoloMode', () => {
-      it('should toggle yolo mode', () => {
+  describe("yolo mode", () => {
+    describe("toggleYoloMode", () => {
+      it("should toggle yolo mode", () => {
         const { result } = renderHook(() => useSettingsStore());
         const initial = result.current.yoloMode;
 
@@ -370,8 +374,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('setYoloMode', () => {
-      it('should set yolo mode explicitly', () => {
+    describe("setYoloMode", () => {
+      it("should set yolo mode explicitly", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -382,8 +386,8 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default value', () => {
-      it('should have yolo mode disabled by default', () => {
+    describe("default value", () => {
+      it("should have yolo mode disabled by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.yoloMode).toBe(false);
       });
@@ -393,61 +397,61 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Auto-Approve Patterns Tests
   // ==========================================================================
-  describe('auto-approve patterns', () => {
-    describe('addAutoApprovePattern', () => {
-      it('should add a new pattern', () => {
+  describe("auto-approve patterns", () => {
+    describe("addAutoApprovePattern", () => {
+      it("should add a new pattern", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.addAutoApprovePattern('/src/**');
+          result.current.addAutoApprovePattern("/src/**");
         });
 
-        expect(result.current.autoApprovePatterns).toContain('/src/**');
+        expect(result.current.autoApprovePatterns).toContain("/src/**");
       });
 
-      it('should not add duplicate patterns', () => {
+      it("should not add duplicate patterns", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.addAutoApprovePattern('/src/**');
-          result.current.addAutoApprovePattern('/src/**');
+          result.current.addAutoApprovePattern("/src/**");
+          result.current.addAutoApprovePattern("/src/**");
         });
 
         const count = result.current.autoApprovePatterns.filter(
-          (p) => p === '/src/**'
+          (p) => p === "/src/**",
         ).length;
         expect(count).toBe(1);
       });
     });
 
-    describe('removeAutoApprovePattern', () => {
-      it('should remove an existing pattern', () => {
+    describe("removeAutoApprovePattern", () => {
+      it("should remove an existing pattern", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.addAutoApprovePattern('/src/**');
+          result.current.addAutoApprovePattern("/src/**");
         });
 
         act(() => {
-          result.current.removeAutoApprovePattern('/src/**');
+          result.current.removeAutoApprovePattern("/src/**");
         });
 
-        expect(result.current.autoApprovePatterns).not.toContain('/src/**');
+        expect(result.current.autoApprovePatterns).not.toContain("/src/**");
       });
 
-      it('should not fail when removing non-existent pattern', () => {
+      it("should not fail when removing non-existent pattern", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.removeAutoApprovePattern('/non-existent/**');
+          result.current.removeAutoApprovePattern("/non-existent/**");
         });
 
         expect(result.current.autoApprovePatterns).toEqual([]);
       });
     });
 
-    describe('default value', () => {
-      it('should have empty patterns by default', () => {
+    describe("default value", () => {
+      it("should have empty patterns by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.autoApprovePatterns).toEqual([]);
       });
@@ -457,23 +461,23 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Claude Executable Tests
   // ==========================================================================
-  describe('claude executable', () => {
-    describe('setClaudeExecutable', () => {
-      it('should set claude executable path', () => {
+  describe("claude executable", () => {
+    describe("setClaudeExecutable", () => {
+      it("should set claude executable path", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.setClaudeExecutable('/custom/path/claude');
+          result.current.setClaudeExecutable("/custom/path/claude");
         });
 
-        expect(result.current.claudeExecutable).toBe('/custom/path/claude');
+        expect(result.current.claudeExecutable).toBe("/custom/path/claude");
       });
     });
 
-    describe('default value', () => {
+    describe("default value", () => {
       it('should have "claude" as default', () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.claudeExecutable).toBe('claude');
+        expect(result.current.claudeExecutable).toBe("claude");
       });
     });
   });
@@ -481,9 +485,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // UI Settings Tests
   // ==========================================================================
-  describe('UI settings', () => {
-    describe('updateUISettings', () => {
-      it('should update font size', () => {
+  describe("UI settings", () => {
+    describe("updateUISettings", () => {
+      it("should update font size", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -493,7 +497,7 @@ describe('settingsStore', () => {
         expect(result.current.fontSize).toBe(16);
       });
 
-      it('should update compact mode', () => {
+      it("should update compact mode", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -503,7 +507,7 @@ describe('settingsStore', () => {
         expect(result.current.compactMode).toBe(true);
       });
 
-      it('should update show avatars', () => {
+      it("should update show avatars", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -513,7 +517,7 @@ describe('settingsStore', () => {
         expect(result.current.showAvatars).toBe(false);
       });
 
-      it('should update show timestamps', () => {
+      it("should update show timestamps", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -523,17 +527,17 @@ describe('settingsStore', () => {
         expect(result.current.showTimestamps).toBe(false);
       });
 
-      it('should update code block theme', () => {
+      it("should update code block theme", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
-          result.current.updateUISettings({ codeBlockTheme: 'monokai' });
+          result.current.updateUISettings({ codeBlockTheme: "monokai" });
         });
 
-        expect(result.current.codeBlockTheme).toBe('monokai');
+        expect(result.current.codeBlockTheme).toBe("monokai");
       });
 
-      it('should update multiple settings at once', () => {
+      it("should update multiple settings at once", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -550,30 +554,30 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default values', () => {
-      it('should have default font size of 14', () => {
+    describe("default values", () => {
+      it("should have default font size of 14", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.fontSize).toBe(14);
       });
 
-      it('should have compact mode disabled by default', () => {
+      it("should have compact mode disabled by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.compactMode).toBe(false);
       });
 
-      it('should show avatars by default', () => {
+      it("should show avatars by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.showAvatars).toBe(true);
       });
 
-      it('should show timestamps by default', () => {
+      it("should show timestamps by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.showTimestamps).toBe(true);
       });
 
-      it('should have auto code block theme by default', () => {
+      it("should have auto code block theme by default", () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.codeBlockTheme).toBe('auto');
+        expect(result.current.codeBlockTheme).toBe("auto");
       });
     });
   });
@@ -581,9 +585,9 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Context Settings Tests
   // ==========================================================================
-  describe('context settings', () => {
-    describe('updateContextSettings', () => {
-      it('should update include file context', () => {
+  describe("context settings", () => {
+    describe("updateContextSettings", () => {
+      it("should update include file context", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -593,7 +597,7 @@ describe('settingsStore', () => {
         expect(result.current.includeFileContext).toBe(false);
       });
 
-      it('should update include workspace info', () => {
+      it("should update include workspace info", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -603,7 +607,7 @@ describe('settingsStore', () => {
         expect(result.current.includeWorkspaceInfo).toBe(false);
       });
 
-      it('should update max context lines', () => {
+      it("should update max context lines", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -614,18 +618,18 @@ describe('settingsStore', () => {
       });
     });
 
-    describe('default values', () => {
-      it('should include file context by default', () => {
+    describe("default values", () => {
+      it("should include file context by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.includeFileContext).toBe(true);
       });
 
-      it('should include workspace info by default', () => {
+      it("should include workspace info by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.includeWorkspaceInfo).toBe(true);
       });
 
-      it('should have 500 max context lines by default', () => {
+      it("should have 500 max context lines by default", () => {
         const { result } = renderHook(() => useSettingsStore());
         expect(result.current.maxContextLines).toBe(500);
       });
@@ -635,15 +639,15 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Reset and Load Tests
   // ==========================================================================
-  describe('reset and load', () => {
-    describe('resetToDefaults', () => {
-      it('should reset all settings to defaults', () => {
+  describe("reset and load", () => {
+    describe("resetToDefaults", () => {
+      it("should reset all settings to defaults", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         // Modify various settings
         act(() => {
           result.current.updateWSL({ enabled: true });
-          result.current.setSelectedModel('claude-opus-4-5-20251101');
+          result.current.setSelectedModel("claude-opus-4-5-20251101");
           result.current.setPlanMode(true);
           result.current.setYoloMode(true);
           result.current.updateUISettings({ fontSize: 20 });
@@ -655,31 +659,31 @@ describe('settingsStore', () => {
         });
 
         expect(result.current.wsl.enabled).toBe(false);
-        expect(result.current.selectedModel).toBe('claude-sonnet-4-5-20250929');
+        expect(result.current.selectedModel).toBe("claude-sonnet-4-5-20250929");
         expect(result.current.planMode).toBe(false);
         expect(result.current.yoloMode).toBe(false);
         expect(result.current.fontSize).toBe(14);
       });
     });
 
-    describe('loadFromVSCode', () => {
-      it('should load settings from VSCode', () => {
+    describe("loadFromVSCode", () => {
+      it("should load settings from VSCode", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
           result.current.loadFromVSCode({
-            selectedModel: 'claude-3-5-haiku-20241022',
+            selectedModel: "claude-3-5-haiku-20241022",
             planMode: true,
             fontSize: 16,
           });
         });
 
-        expect(result.current.selectedModel).toBe('claude-3-5-haiku-20241022');
+        expect(result.current.selectedModel).toBe("claude-3-5-haiku-20241022");
         expect(result.current.planMode).toBe(true);
         expect(result.current.fontSize).toBe(16);
       });
 
-      it('should preserve existing settings not in loaded data', () => {
+      it("should preserve existing settings not in loaded data", () => {
         const { result } = renderHook(() => useSettingsStore());
 
         act(() => {
@@ -688,7 +692,7 @@ describe('settingsStore', () => {
 
         act(() => {
           result.current.loadFromVSCode({
-            selectedModel: 'claude-3-5-haiku-20241022',
+            selectedModel: "claude-3-5-haiku-20241022",
           });
         });
 
@@ -700,37 +704,39 @@ describe('settingsStore', () => {
   // ==========================================================================
   // Selector Tests
   // ==========================================================================
-  describe('selectors', () => {
-    it('selectWSL should return WSL config', () => {
+  describe("selectors", () => {
+    it("selectWSL should return WSL config", () => {
       const { result } = renderHook(() => useSettingsStore());
       const wsl = selectWSL(result.current);
 
-      expect(wsl).toHaveProperty('enabled');
-      expect(wsl).toHaveProperty('distro');
-      expect(wsl).toHaveProperty('nodePath');
-      expect(wsl).toHaveProperty('claudePath');
+      expect(wsl).toHaveProperty("enabled");
+      expect(wsl).toHaveProperty("distro");
+      expect(wsl).toHaveProperty("nodePath");
+      expect(wsl).toHaveProperty("claudePath");
     });
 
-    it('selectSelectedModel should return selected model', () => {
+    it("selectSelectedModel should return selected model", () => {
       const { result } = renderHook(() => useSettingsStore());
 
       act(() => {
-        result.current.setSelectedModel('claude-opus-4-5-20251101');
+        result.current.setSelectedModel("claude-opus-4-5-20251101");
       });
 
-      expect(selectSelectedModel(result.current)).toBe('claude-opus-4-5-20251101');
+      expect(selectSelectedModel(result.current)).toBe(
+        "claude-opus-4-5-20251101",
+      );
     });
 
-    it('selectThinkingSettings should return thinking settings', () => {
+    it("selectThinkingSettings should return thinking settings", () => {
       const { result } = renderHook(() => useSettingsStore());
       const thinking = selectThinkingSettings(result.current);
 
-      expect(thinking).toHaveProperty('enabled');
-      expect(thinking).toHaveProperty('intensity');
-      expect(thinking).toHaveProperty('showProcess');
+      expect(thinking).toHaveProperty("enabled");
+      expect(thinking).toHaveProperty("intensity");
+      expect(thinking).toHaveProperty("showProcess");
     });
 
-    it('selectPlanMode should return plan mode state', () => {
+    it("selectPlanMode should return plan mode state", () => {
       const { result } = renderHook(() => useSettingsStore());
 
       act(() => {
@@ -740,7 +746,7 @@ describe('settingsStore', () => {
       expect(selectPlanMode(result.current)).toBe(true);
     });
 
-    it('selectYoloMode should return yolo mode state', () => {
+    it("selectYoloMode should return yolo mode state", () => {
       const { result } = renderHook(() => useSettingsStore());
 
       act(() => {
@@ -750,37 +756,37 @@ describe('settingsStore', () => {
       expect(selectYoloMode(result.current)).toBe(true);
     });
 
-    it('selectUISettings should return UI settings', () => {
+    it("selectUISettings should return UI settings", () => {
       const { result } = renderHook(() => useSettingsStore());
       const ui = selectUISettings(result.current);
 
-      expect(ui).toHaveProperty('fontSize');
-      expect(ui).toHaveProperty('compactMode');
-      expect(ui).toHaveProperty('showAvatars');
-      expect(ui).toHaveProperty('showTimestamps');
-      expect(ui).toHaveProperty('codeBlockTheme');
+      expect(ui).toHaveProperty("fontSize");
+      expect(ui).toHaveProperty("compactMode");
+      expect(ui).toHaveProperty("showAvatars");
+      expect(ui).toHaveProperty("showTimestamps");
+      expect(ui).toHaveProperty("codeBlockTheme");
     });
 
-    it('selectContextSettings should return context settings', () => {
+    it("selectContextSettings should return context settings", () => {
       const { result } = renderHook(() => useSettingsStore());
       const context = selectContextSettings(result.current);
 
-      expect(context).toHaveProperty('includeFileContext');
-      expect(context).toHaveProperty('includeWorkspaceInfo');
-      expect(context).toHaveProperty('maxContextLines');
+      expect(context).toHaveProperty("includeFileContext");
+      expect(context).toHaveProperty("includeWorkspaceInfo");
+      expect(context).toHaveProperty("maxContextLines");
     });
   });
 
   // ==========================================================================
   // Other Settings Tests
   // ==========================================================================
-  describe('other settings', () => {
-    it('should have max history size of 100 by default', () => {
+  describe("other settings", () => {
+    it("should have max history size of 100 by default", () => {
       const { result } = renderHook(() => useSettingsStore());
       expect(result.current.maxHistorySize).toBe(100);
     });
 
-    it('should have stream responses enabled by default', () => {
+    it("should have stream responses enabled by default", () => {
       const { result } = renderHook(() => useSettingsStore());
       expect(result.current.streamResponses).toBe(true);
     });

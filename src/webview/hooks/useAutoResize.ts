@@ -14,7 +14,7 @@ import {
   useState,
   type RefObject,
   type ChangeEvent,
-} from 'react';
+} from "react";
 
 // ============================================================================
 // Types
@@ -105,12 +105,12 @@ export interface UseAutoResizeReturn {
  * ```
  */
 export function useAutoResize(
-  options: UseAutoResizeOptions = {}
+  options: UseAutoResizeOptions = {},
 ): UseAutoResizeReturn {
   const {
     minHeight: minHeightOption,
     maxHeight = 300,
-    initialValue = '',
+    initialValue = "",
     minRows = 1,
     onChange,
     resetOnEmpty = true,
@@ -145,7 +145,11 @@ export function useAutoResize(
       const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
 
       calculatedMinHeightRef.current =
-        lineHeight * minRows + paddingTop + paddingBottom + borderTop + borderBottom;
+        lineHeight * minRows +
+        paddingTop +
+        paddingBottom +
+        borderTop +
+        borderBottom;
     }
 
     return calculatedMinHeightRef.current;
@@ -161,7 +165,7 @@ export function useAutoResize(
     }
 
     // Reset height to auto to get accurate scrollHeight
-    textarea.style.height = 'auto';
+    textarea.style.height = "auto";
 
     // Get the scroll height (actual content height)
     const scrollHeight = textarea.scrollHeight;
@@ -176,7 +180,7 @@ export function useAutoResize(
 
     // Apply the new height
     textarea.style.height = `${newHeight}px`;
-    textarea.style.overflowY = atMax ? 'auto' : 'hidden';
+    textarea.style.overflowY = atMax ? "auto" : "hidden";
 
     setHeight(newHeight);
     setIsAtMaxHeight(atMax);
@@ -195,7 +199,7 @@ export function useAutoResize(
         resize();
       });
     },
-    [onChange, resize]
+    [onChange, resize],
   );
 
   /**
@@ -206,7 +210,7 @@ export function useAutoResize(
       const newValue = event.target.value;
       setValue(newValue);
     },
-    [setValue]
+    [setValue],
   );
 
   /**
@@ -219,8 +223,8 @@ export function useAutoResize(
     const textarea = textareaRef.current;
     if (textarea) {
       const minHeight = getMinHeight();
-      textarea.style.height = minHeight ? `${minHeight}px` : 'auto';
-      textarea.style.overflowY = 'hidden';
+      textarea.style.height = minHeight ? `${minHeight}px` : "auto";
+      textarea.style.overflowY = "hidden";
       setHeight(minHeight);
       setIsAtMaxHeight(false);
     }
@@ -230,12 +234,12 @@ export function useAutoResize(
    * Handle value clearing (reset height if enabled)
    */
   useEffect(() => {
-    if (resetOnEmpty && value === '') {
+    if (resetOnEmpty && value === "") {
       const textarea = textareaRef.current;
       if (textarea) {
         const minHeight = getMinHeight();
-        textarea.style.height = minHeight ? `${minHeight}px` : 'auto';
-        textarea.style.overflowY = 'hidden';
+        textarea.style.height = minHeight ? `${minHeight}px` : "auto";
+        textarea.style.overflowY = "hidden";
         setHeight(minHeight);
         setIsAtMaxHeight(false);
       }
@@ -259,9 +263,9 @@ export function useAutoResize(
       resize();
     };
 
-    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener("resize", handleWindowResize);
     return () => {
-      window.removeEventListener('resize', handleWindowResize);
+      window.removeEventListener("resize", handleWindowResize);
     };
   }, [resize]);
 
@@ -292,21 +296,26 @@ export function calculateTextareaHeight(
     lineHeight?: number;
     padding?: number;
     maxHeight?: number;
-  } = {}
+  } = {},
 ): number {
-  const { element, lineHeight = 20, padding = 16, maxHeight = Infinity } = options;
+  const {
+    element,
+    lineHeight = 20,
+    padding = 16,
+    maxHeight = Infinity,
+  } = options;
 
   if (element) {
     // Use actual element for measurement
     const originalHeight = element.style.height;
-    element.style.height = 'auto';
+    element.style.height = "auto";
     const height = Math.min(element.scrollHeight, maxHeight);
     element.style.height = originalHeight;
     return height;
   }
 
   // Estimate from line count
-  const lines = text.split('\n').length;
+  const lines = text.split("\n").length;
   const estimatedHeight = lines * lineHeight + padding;
   return Math.min(estimatedHeight, maxHeight);
 }
@@ -315,34 +324,34 @@ export function calculateTextareaHeight(
  * Create a hidden textarea for measuring text dimensions
  */
 export function createMeasureElement(
-  sourceElement: HTMLTextAreaElement
+  sourceElement: HTMLTextAreaElement,
 ): HTMLTextAreaElement {
-  const measure = document.createElement('textarea');
+  const measure = document.createElement("textarea");
   const computedStyle = window.getComputedStyle(sourceElement);
 
   // Copy relevant styles
   const stylesToCopy = [
-    'font-family',
-    'font-size',
-    'font-weight',
-    'line-height',
-    'letter-spacing',
-    'padding',
-    'border',
-    'box-sizing',
-    'width',
+    "font-family",
+    "font-size",
+    "font-weight",
+    "line-height",
+    "letter-spacing",
+    "padding",
+    "border",
+    "box-sizing",
+    "width",
   ];
 
   stylesToCopy.forEach((style) => {
     measure.style.setProperty(style, computedStyle.getPropertyValue(style));
   });
 
-  measure.style.position = 'absolute';
-  measure.style.visibility = 'hidden';
-  measure.style.height = 'auto';
-  measure.style.overflow = 'hidden';
-  measure.style.whiteSpace = 'pre-wrap';
-  measure.style.wordWrap = 'break-word';
+  measure.style.position = "absolute";
+  measure.style.visibility = "hidden";
+  measure.style.height = "auto";
+  measure.style.overflow = "hidden";
+  measure.style.whiteSpace = "pre-wrap";
+  measure.style.wordWrap = "break-word";
 
   return measure;
 }

@@ -17,11 +17,8 @@ import type {
   ToolInput,
   PermissionDecision,
   PermissionSuggestion,
-} from './claude-events';
-import type {
-  SessionInitOptions,
-  SettingsState,
-} from './state';
+} from "./claude-events";
+import type { SessionInitOptions, SettingsState } from "./state";
 
 // ============================================================================
 // Extension to Webview Messages
@@ -31,28 +28,28 @@ import type {
  * All message types sent from extension to webview
  */
 export type ExtensionToWebviewMessageType =
-  | 'sessionInfo'
-  | 'accountInfo'
-  | 'output'
-  | 'thinking'
-  | 'toolUse'
-  | 'toolResult'
-  | 'updateTokens'
-  | 'updateTotals'
-  | 'compacting'
-  | 'compactBoundary'
-  | 'permissionRequest'
-  | 'setProcessing'
-  | 'loading'
-  | 'clearLoading'
-  | 'error'
-  | 'showInstallModal'
-  | 'showLoginModal'
-  | 'settingsUpdate'
-  | 'themeUpdate'
-  | 'restoreState'
-  | 'conversationList'
-  | 'conversationDeleted';
+  | "sessionInfo"
+  | "accountInfo"
+  | "output"
+  | "thinking"
+  | "toolUse"
+  | "toolResult"
+  | "updateTokens"
+  | "updateTotals"
+  | "compacting"
+  | "compactBoundary"
+  | "permissionRequest"
+  | "setProcessing"
+  | "loading"
+  | "clearLoading"
+  | "error"
+  | "showInstallModal"
+  | "showLoginModal"
+  | "settingsUpdate"
+  | "themeUpdate"
+  | "restoreState"
+  | "conversationList"
+  | "conversationDeleted";
 
 /**
  * Union type of all extension to webview messages
@@ -92,7 +89,7 @@ interface BaseExtensionMessage {
  * Session info message - sent on session init and result
  */
 export interface SessionInfoMessage extends BaseExtensionMessage {
-  type: 'sessionInfo';
+  type: "sessionInfo";
   /** Session ID */
   sessionId: string;
   /** Available tools */
@@ -105,7 +102,7 @@ export interface SessionInfoMessage extends BaseExtensionMessage {
  * Account info message - sent from control response
  */
 export interface AccountInfoMessage extends BaseExtensionMessage {
-  type: 'accountInfo';
+  type: "accountInfo";
   /** Account information */
   account: AccountInfo;
 }
@@ -114,7 +111,7 @@ export interface AccountInfoMessage extends BaseExtensionMessage {
  * Output message - assistant text content
  */
 export interface OutputMessage extends BaseExtensionMessage {
-  type: 'output';
+  type: "output";
   /** Text content to display */
   text: string;
   /** Whether this is the final output chunk */
@@ -125,7 +122,7 @@ export interface OutputMessage extends BaseExtensionMessage {
  * Thinking message - Claude's reasoning process
  */
 export interface ThinkingMessage extends BaseExtensionMessage {
-  type: 'thinking';
+  type: "thinking";
   /** Thinking content */
   thinking: string;
 }
@@ -134,7 +131,7 @@ export interface ThinkingMessage extends BaseExtensionMessage {
  * Tool use message - tool invocation by assistant
  */
 export interface ToolUseMessage extends BaseExtensionMessage {
-  type: 'toolUse';
+  type: "toolUse";
   /** Unique tool use ID */
   toolUseId: string;
   /** Tool name */
@@ -159,7 +156,7 @@ export interface ToolUseMessage extends BaseExtensionMessage {
  * Tool result message - result of tool execution
  */
 export interface ToolResultMessage extends BaseExtensionMessage {
-  type: 'toolResult';
+  type: "toolResult";
   /** ID of the tool_use this is a result for */
   toolUseId: string;
   /** Tool name (for display) */
@@ -186,7 +183,7 @@ export interface ToolResultMessage extends BaseExtensionMessage {
  * Update tokens message - per-message token counts
  */
 export interface UpdateTokensMessage extends BaseExtensionMessage {
-  type: 'updateTokens';
+  type: "updateTokens";
   /** Current message token usage */
   current: TokenUsage;
   /** Cumulative token totals */
@@ -202,7 +199,7 @@ export interface UpdateTokensMessage extends BaseExtensionMessage {
  * Update totals message - end-of-request summary
  */
 export interface UpdateTotalsMessage extends BaseExtensionMessage {
-  type: 'updateTotals';
+  type: "updateTotals";
   /** Total cost in USD */
   totalCostUsd: number;
   /** Duration in milliseconds */
@@ -223,7 +220,7 @@ export interface UpdateTotalsMessage extends BaseExtensionMessage {
  * Compacting message - indicates compaction status
  */
 export interface CompactingMessage extends BaseExtensionMessage {
-  type: 'compacting';
+  type: "compacting";
   /** Whether compaction is in progress */
   isCompacting: boolean;
 }
@@ -232,9 +229,9 @@ export interface CompactingMessage extends BaseExtensionMessage {
  * Compact boundary message - marks compaction event
  */
 export interface CompactBoundaryMessage extends BaseExtensionMessage {
-  type: 'compactBoundary';
+  type: "compactBoundary";
   /** What triggered the compaction */
-  trigger: 'auto' | 'manual' | 'limit';
+  trigger: "auto" | "manual" | "limit";
   /** Tokens before compaction */
   preTokens: number;
 }
@@ -243,7 +240,7 @@ export interface CompactBoundaryMessage extends BaseExtensionMessage {
  * Permission request message - tool permission request
  */
 export interface PermissionRequestMessage extends BaseExtensionMessage {
-  type: 'permissionRequest';
+  type: "permissionRequest";
   /** Unique request ID */
   requestId: string;
   /** ID of the tool_use content block */
@@ -266,7 +263,7 @@ export interface PermissionRequestMessage extends BaseExtensionMessage {
  * Set processing message - controls processing state
  */
 export interface SetProcessingMessage extends BaseExtensionMessage {
-  type: 'setProcessing';
+  type: "setProcessing";
   /** Whether processing is in progress */
   isProcessing: boolean;
 }
@@ -275,7 +272,7 @@ export interface SetProcessingMessage extends BaseExtensionMessage {
  * Loading message - shows loading indicator
  */
 export interface LoadingMessage extends BaseExtensionMessage {
-  type: 'loading';
+  type: "loading";
   /** Loading message to display */
   message?: string;
 }
@@ -284,14 +281,14 @@ export interface LoadingMessage extends BaseExtensionMessage {
  * Clear loading message - hides loading indicator
  */
 export interface ClearLoadingMessage extends BaseExtensionMessage {
-  type: 'clearLoading';
+  type: "clearLoading";
 }
 
 /**
  * Error message - displays error to user
  */
 export interface ErrorMessage extends BaseExtensionMessage {
-  type: 'error';
+  type: "error";
   /** Error message */
   message: string;
   /** Error code */
@@ -304,7 +301,7 @@ export interface ErrorMessage extends BaseExtensionMessage {
  * Show install modal message - prompts Claude installation
  */
 export interface ShowInstallModalMessage extends BaseExtensionMessage {
-  type: 'showInstallModal';
+  type: "showInstallModal";
   /** Installation instructions */
   instructions?: string;
 }
@@ -313,7 +310,7 @@ export interface ShowInstallModalMessage extends BaseExtensionMessage {
  * Show login modal message - prompts authentication
  */
 export interface ShowLoginModalMessage extends BaseExtensionMessage {
-  type: 'showLoginModal';
+  type: "showLoginModal";
   /** Login URL */
   loginUrl?: string;
 }
@@ -322,7 +319,7 @@ export interface ShowLoginModalMessage extends BaseExtensionMessage {
  * Settings update message - pushes settings to webview
  */
 export interface SettingsUpdateMessage extends BaseExtensionMessage {
-  type: 'settingsUpdate';
+  type: "settingsUpdate";
   /** Updated settings */
   settings: Partial<SettingsState>;
 }
@@ -331,16 +328,16 @@ export interface SettingsUpdateMessage extends BaseExtensionMessage {
  * Theme update message - notifies of theme change
  */
 export interface ThemeUpdateMessage extends BaseExtensionMessage {
-  type: 'themeUpdate';
+  type: "themeUpdate";
   /** New theme mode */
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
 }
 
 /**
  * Restore state message - restores webview state
  */
 export interface RestoreStateMessage extends BaseExtensionMessage {
-  type: 'restoreState';
+  type: "restoreState";
   /** Serialized state to restore */
   state: unknown;
 }
@@ -361,7 +358,7 @@ export interface ConversationListItem {
  * Conversation list message - sends conversation summaries
  */
 export interface ConversationListMessage extends BaseExtensionMessage {
-  type: 'conversationList';
+  type: "conversationList";
   conversations: ConversationListItem[];
   data?: ConversationListItem[];
 }
@@ -370,7 +367,7 @@ export interface ConversationListMessage extends BaseExtensionMessage {
  * Conversation deleted message
  */
 export interface ConversationDeletedMessage extends BaseExtensionMessage {
-  type: 'conversationDeleted';
+  type: "conversationDeleted";
   filename: string;
 }
 
@@ -382,31 +379,31 @@ export interface ConversationDeletedMessage extends BaseExtensionMessage {
  * All message types sent from webview to extension
  */
 export type WebviewToExtensionMessageType =
-  | 'sendMessage'
-  | 'stopGeneration'
-  | 'permissionResponse'
-  | 'openFile'
-  | 'openDiff'
-  | 'openFolder'
-  | 'copyToClipboard'
-  | 'saveSettings'
-  | 'getSettings'
-  | 'startSession'
-  | 'endSession'
-  | 'clearConversation'
-  | 'exportConversation'
-  | 'login'
-  | 'logout'
-  | 'installClaude'
-  | 'saveState'
-  | 'requestState'
-  | 'openExternal'
-  | 'showInfo'
-  | 'showError'
-  | 'telemetry'
-  | 'getConversationList'
-  | 'loadConversation'
-  | 'deleteConversation';
+  | "sendMessage"
+  | "stopGeneration"
+  | "permissionResponse"
+  | "openFile"
+  | "openDiff"
+  | "openFolder"
+  | "copyToClipboard"
+  | "saveSettings"
+  | "getSettings"
+  | "startSession"
+  | "endSession"
+  | "clearConversation"
+  | "exportConversation"
+  | "login"
+  | "logout"
+  | "installClaude"
+  | "saveState"
+  | "requestState"
+  | "openExternal"
+  | "showInfo"
+  | "showError"
+  | "telemetry"
+  | "getConversationList"
+  | "loadConversation"
+  | "deleteConversation";
 
 /**
  * Union type of all webview to extension messages
@@ -449,7 +446,7 @@ interface BaseWebviewMessage {
  * Send message request - sends user message to Claude
  */
 export interface SendMessageRequest extends BaseWebviewMessage {
-  type: 'sendMessage';
+  type: "sendMessage";
   /** Message content */
   message: string;
   /** Optional plan mode toggle */
@@ -458,7 +455,7 @@ export interface SendMessageRequest extends BaseWebviewMessage {
   thinkingMode?: boolean;
   /** Optional file attachments */
   attachments?: Array<{
-    type: 'file' | 'image';
+    type: "file" | "image";
     path: string;
     name: string;
   }>;
@@ -468,14 +465,14 @@ export interface SendMessageRequest extends BaseWebviewMessage {
  * Stop generation request - stops current Claude response
  */
 export interface StopGenerationRequest extends BaseWebviewMessage {
-  type: 'stopGeneration';
+  type: "stopGeneration";
 }
 
 /**
  * Permission response request - responds to permission request
  */
 export interface PermissionResponseRequest extends BaseWebviewMessage {
-  type: 'permissionResponse';
+  type: "permissionResponse";
   /** Request ID being responded to */
   requestId: string;
   /** Permission decision */
@@ -490,7 +487,7 @@ export interface PermissionResponseRequest extends BaseWebviewMessage {
  * Open file request - opens file in editor
  */
 export interface OpenFileRequest extends BaseWebviewMessage {
-  type: 'openFile';
+  type: "openFile";
   /** File path to open */
   filePath: string;
   /** Line number to jump to */
@@ -505,7 +502,7 @@ export interface OpenFileRequest extends BaseWebviewMessage {
  * Open diff request - opens a diff view
  */
 export interface OpenDiffRequest extends BaseWebviewMessage {
-  type: 'openDiff';
+  type: "openDiff";
   /** Original file content */
   oldContent: string;
   /** Updated file content */
@@ -518,7 +515,7 @@ export interface OpenDiffRequest extends BaseWebviewMessage {
  * Open folder request - opens folder in explorer
  */
 export interface OpenFolderRequest extends BaseWebviewMessage {
-  type: 'openFolder';
+  type: "openFolder";
   /** Folder path to open */
   folderPath: string;
 }
@@ -527,7 +524,7 @@ export interface OpenFolderRequest extends BaseWebviewMessage {
  * Copy to clipboard request - copies text to clipboard
  */
 export interface CopyToClipboardRequest extends BaseWebviewMessage {
-  type: 'copyToClipboard';
+  type: "copyToClipboard";
   /** Text to copy */
   text: string;
 }
@@ -536,7 +533,7 @@ export interface CopyToClipboardRequest extends BaseWebviewMessage {
  * Save settings request - saves settings to storage
  */
 export interface SaveSettingsRequest extends BaseWebviewMessage {
-  type: 'saveSettings';
+  type: "saveSettings";
   /** Settings to save */
   settings: Partial<SettingsState>;
 }
@@ -545,14 +542,14 @@ export interface SaveSettingsRequest extends BaseWebviewMessage {
  * Get settings request - retrieves current settings
  */
 export interface GetSettingsRequest extends BaseWebviewMessage {
-  type: 'getSettings';
+  type: "getSettings";
 }
 
 /**
  * Start session request - starts new Claude session
  */
 export interface StartSessionRequest extends BaseWebviewMessage {
-  type: 'startSession';
+  type: "startSession";
   /** Session initialization options */
   options?: SessionInitOptions;
 }
@@ -561,37 +558,37 @@ export interface StartSessionRequest extends BaseWebviewMessage {
  * End session request - ends current session
  */
 export interface EndSessionRequest extends BaseWebviewMessage {
-  type: 'endSession';
+  type: "endSession";
 }
 
 /**
  * Clear conversation request - clears message history
  */
 export interface ClearConversationRequest extends BaseWebviewMessage {
-  type: 'clearConversation';
+  type: "clearConversation";
 }
 
 /**
  * Export conversation request - exports conversation to file
  */
 export interface ExportConversationRequest extends BaseWebviewMessage {
-  type: 'exportConversation';
+  type: "exportConversation";
   /** Export format */
-  format: 'json' | 'markdown' | 'html';
+  format: "json" | "markdown" | "html";
 }
 
 /**
  * Conversation list request - retrieves saved conversations
  */
 export interface GetConversationListRequest extends BaseWebviewMessage {
-  type: 'getConversationList';
+  type: "getConversationList";
 }
 
 /**
  * Load conversation request - loads a saved conversation
  */
 export interface LoadConversationRequest extends BaseWebviewMessage {
-  type: 'loadConversation';
+  type: "loadConversation";
   filename: string;
 }
 
@@ -599,7 +596,7 @@ export interface LoadConversationRequest extends BaseWebviewMessage {
  * Delete conversation request - deletes a saved conversation
  */
 export interface DeleteConversationRequest extends BaseWebviewMessage {
-  type: 'deleteConversation';
+  type: "deleteConversation";
   filename: string;
 }
 
@@ -607,28 +604,28 @@ export interface DeleteConversationRequest extends BaseWebviewMessage {
  * Login request - initiates authentication
  */
 export interface LoginRequest extends BaseWebviewMessage {
-  type: 'login';
+  type: "login";
 }
 
 /**
  * Logout request - logs out current user
  */
 export interface LogoutRequest extends BaseWebviewMessage {
-  type: 'logout';
+  type: "logout";
 }
 
 /**
  * Install Claude request - opens installation flow
  */
 export interface InstallClaudeRequest extends BaseWebviewMessage {
-  type: 'installClaude';
+  type: "installClaude";
 }
 
 /**
  * Save state request - saves webview state for restoration
  */
 export interface SaveStateRequest extends BaseWebviewMessage {
-  type: 'saveState';
+  type: "saveState";
   /** State to save */
   state: unknown;
 }
@@ -637,14 +634,14 @@ export interface SaveStateRequest extends BaseWebviewMessage {
  * Request state - requests saved state from extension
  */
 export interface RequestStateRequest extends BaseWebviewMessage {
-  type: 'requestState';
+  type: "requestState";
 }
 
 /**
  * Open external request - opens URL in external browser
  */
 export interface OpenExternalRequest extends BaseWebviewMessage {
-  type: 'openExternal';
+  type: "openExternal";
   /** URL to open */
   url: string;
 }
@@ -653,7 +650,7 @@ export interface OpenExternalRequest extends BaseWebviewMessage {
  * Show info request - shows info notification
  */
 export interface ShowInfoRequest extends BaseWebviewMessage {
-  type: 'showInfo';
+  type: "showInfo";
   /** Message to show */
   message: string;
 }
@@ -662,7 +659,7 @@ export interface ShowInfoRequest extends BaseWebviewMessage {
  * Show error request - shows error notification
  */
 export interface ShowErrorRequest extends BaseWebviewMessage {
-  type: 'showError';
+  type: "showError";
   /** Error message to show */
   message: string;
 }
@@ -671,7 +668,7 @@ export interface ShowErrorRequest extends BaseWebviewMessage {
  * Telemetry request - sends telemetry event
  */
 export interface TelemetryRequest extends BaseWebviewMessage {
-  type: 'telemetry';
+  type: "telemetry";
   /** Event name */
   event: string;
   /** Event properties */
@@ -720,7 +717,7 @@ declare function acquireVsCodeApi(): VSCodeApi;
  * Handler function type for extension to webview messages
  */
 export type ExtensionMessageHandler<T extends ExtensionToWebviewMessage> = (
-  message: T
+  message: T,
 ) => void;
 
 /**
@@ -736,7 +733,7 @@ export type ExtensionMessageHandlerMap = {
  * Handler function type for webview to extension messages
  */
 export type WebviewMessageHandler<T extends WebviewToExtensionMessage> = (
-  message: T
+  message: T,
 ) => void | Promise<void>;
 
 /**
@@ -756,13 +753,13 @@ export type WebviewMessageHandlerMap = {
  * Type guard for extension to webview messages
  */
 export function isExtensionMessage(
-  message: unknown
+  message: unknown,
 ): message is ExtensionToWebviewMessage {
   return (
-    typeof message === 'object' &&
+    typeof message === "object" &&
     message !== null &&
-    'type' in message &&
-    typeof (message as { type: unknown }).type === 'string'
+    "type" in message &&
+    typeof (message as { type: unknown }).type === "string"
   );
 }
 
@@ -770,22 +767,24 @@ export function isExtensionMessage(
  * Type guard for webview to extension messages
  */
 export function isWebviewMessage(
-  message: unknown
+  message: unknown,
 ): message is WebviewToExtensionMessage {
   return (
-    typeof message === 'object' &&
+    typeof message === "object" &&
     message !== null &&
-    'type' in message &&
-    typeof (message as { type: unknown }).type === 'string'
+    "type" in message &&
+    typeof (message as { type: unknown }).type === "string"
   );
 }
 
 /**
  * Type guard for specific extension message type
  */
-export function isExtensionMessageOfType<T extends ExtensionToWebviewMessageType>(
+export function isExtensionMessageOfType<
+  T extends ExtensionToWebviewMessageType,
+>(
   message: ExtensionToWebviewMessage,
-  type: T
+  type: T,
 ): message is Extract<ExtensionToWebviewMessage, { type: T }> {
   return message.type === type;
 }
@@ -795,7 +794,7 @@ export function isExtensionMessageOfType<T extends ExtensionToWebviewMessageType
  */
 export function isWebviewMessageOfType<T extends WebviewToExtensionMessageType>(
   message: WebviewToExtensionMessage,
-  type: T
+  type: T,
 ): message is Extract<WebviewToExtensionMessage, { type: T }> {
   return message.type === type;
 }

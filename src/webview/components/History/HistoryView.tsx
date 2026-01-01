@@ -2,8 +2,8 @@
  * History View Component
  * Displays chat history and allows loading previous conversations
  */
-import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, MessageSquare, Trash2, Search, FolderOpen } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { Clock, MessageSquare, Trash2, Search, FolderOpen } from "lucide-react";
 
 interface ConversationSummary {
   filename: string;
@@ -14,62 +14,65 @@ interface ConversationSummary {
 
 export const HistoryView: React.FC = () => {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Request conversation list from extension
-    window.vscode?.postMessage({ type: 'getConversationList' });
+    window.vscode?.postMessage({ type: "getConversationList" });
 
     // Listen for messages from extension
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       switch (message.type) {
-        case 'conversationList':
+        case "conversationList":
           setConversations(message.conversations || []);
           setIsLoading(false);
           break;
-        case 'conversationDeleted':
-          setConversations(prev =>
-            prev.filter(c => c.filename !== message.filename)
+        case "conversationDeleted":
+          setConversations((prev) =>
+            prev.filter((c) => c.filename !== message.filename),
           );
           break;
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
   const handleLoadConversation = useCallback((filename: string) => {
     window.vscode?.postMessage({
-      type: 'loadConversation',
-      filename
+      type: "loadConversation",
+      filename,
     });
   }, []);
 
-  const handleDeleteConversation = useCallback((filename: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm('Are you sure you want to delete this conversation?')) {
-      window.vscode?.postMessage({
-        type: 'deleteConversation',
-        filename
-      });
-    }
-  }, []);
+  const handleDeleteConversation = useCallback(
+    (filename: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (confirm("Are you sure you want to delete this conversation?")) {
+        window.vscode?.postMessage({
+          type: "deleteConversation",
+          filename,
+        });
+      }
+    },
+    [],
+  );
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.preview.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter((conv) =>
+    conv.preview.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const formatDate = (date: Date) => {
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -90,7 +93,8 @@ export const HistoryView: React.FC = () => {
           <h1 className="text-lg font-semibold">Chat History</h1>
         </div>
         <span className="text-sm text-[var(--vscode-descriptionForeground)]">
-          {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+          {conversations.length} conversation
+          {conversations.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -115,7 +119,9 @@ export const HistoryView: React.FC = () => {
             <FolderOpen className="w-12 h-12 mb-4 opacity-50" />
             <p className="text-lg">No conversations found</p>
             <p className="text-sm mt-1">
-              {searchQuery ? 'Try a different search term' : 'Start chatting to see history here'}
+              {searchQuery
+                ? "Try a different search term"
+                : "Start chatting to see history here"}
             </p>
           </div>
         ) : (
@@ -128,7 +134,9 @@ export const HistoryView: React.FC = () => {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{conv.preview}</p>
+                    <p className="text-sm font-medium truncate">
+                      {conv.preview}
+                    </p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-[var(--vscode-descriptionForeground)]">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />

@@ -7,7 +7,7 @@
  * @module stores/uiStore
  */
 
-import { create } from 'zustand';
+import { create } from "zustand";
 
 // ============================================================================
 // Types
@@ -17,28 +17,28 @@ import { create } from 'zustand';
  * Modal types that can be displayed
  */
 export type ModalType =
-  | 'settings'
-  | 'mcp'
-  | 'model'
-  | 'permission'
-  | 'install'
-  | 'login'
-  | 'confirm'
-  | 'error'
-  | 'about'
-  | 'export'
-  | 'keyboard-shortcuts'
+  | "settings"
+  | "mcp"
+  | "model"
+  | "permission"
+  | "install"
+  | "login"
+  | "confirm"
+  | "error"
+  | "about"
+  | "export"
+  | "keyboard-shortcuts"
   | null;
 
 /**
  * Connection status to the Claude CLI
  */
 export type ConnectionStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'error'
-  | 'reconnecting';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "reconnecting";
 
 /**
  * Notification item
@@ -47,7 +47,7 @@ export interface Notification {
   /** Unique notification ID */
   id: string;
   /** Notification type */
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   /** Notification title */
   title: string;
   /** Optional notification message */
@@ -99,7 +99,7 @@ export interface UIState {
   /** Whether in fullscreen mode */
   isFullscreen: boolean;
   /** Current layout breakpoint */
-  breakpoint: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 /**
@@ -107,7 +107,10 @@ export interface UIState {
  */
 export interface UIActions {
   /** Open a modal */
-  openModal: (type: Exclude<ModalType, null>, props?: Record<string, unknown>) => void;
+  openModal: (
+    type: Exclude<ModalType, null>,
+    props?: Record<string, unknown>,
+  ) => void;
   /** Close the current modal */
   closeModal: () => void;
   /** Toggle sidebar visibility */
@@ -123,7 +126,9 @@ export interface UIActions {
   /** Clear draft message */
   clearDraftMessage: () => void;
   /** Add a notification */
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => string;
+  addNotification: (
+    notification: Omit<Notification, "id" | "createdAt">,
+  ) => string;
   /** Remove a notification by ID */
   removeNotification: (id: string) => void;
   /** Clear all notifications */
@@ -133,7 +138,7 @@ export interface UIActions {
   /** Toggle fullscreen mode */
   toggleFullscreen: () => void;
   /** Set breakpoint */
-  setBreakpoint: (breakpoint: UIState['breakpoint']) => void;
+  setBreakpoint: (breakpoint: UIState["breakpoint"]) => void;
   /** Show info notification */
   showInfo: (title: string, message?: string) => void;
   /** Show success notification */
@@ -155,14 +160,14 @@ const initialState: UIState = {
   modalProps: {},
   sidebarOpen: true,
   sidebarWidth: 280,
-  connectionStatus: 'disconnected',
+  connectionStatus: "disconnected",
   connectionError: null,
-  draftMessage: '',
+  draftMessage: "",
   notifications: [],
   maxVisibleNotifications: 5,
   inputFocused: false,
   isFullscreen: false,
-  breakpoint: 'lg',
+  breakpoint: "lg",
 };
 
 // ============================================================================
@@ -197,11 +202,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
       modalProps: {},
     }),
 
-  toggleSidebar: () =>
-    set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
-  setSidebarOpen: (open) =>
-    set({ sidebarOpen: open }),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
   setSidebarWidth: (width) =>
     set({ sidebarWidth: Math.max(200, Math.min(500, width)) }),
@@ -212,11 +215,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
       connectionError: error || null,
     }),
 
-  setDraftMessage: (message) =>
-    set({ draftMessage: message }),
+  setDraftMessage: (message) => set({ draftMessage: message }),
 
-  clearDraftMessage: () =>
-    set({ draftMessage: '' }),
+  clearDraftMessage: () => set({ draftMessage: "" }),
 
   addNotification: (notification) => {
     const id = generateId();
@@ -252,21 +253,18 @@ export const useUIStore = create<UIStore>((set, get) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
     })),
 
-  clearNotifications: () =>
-    set({ notifications: [] }),
+  clearNotifications: () => set({ notifications: [] }),
 
-  setInputFocused: (focused) =>
-    set({ inputFocused: focused }),
+  setInputFocused: (focused) => set({ inputFocused: focused }),
 
   toggleFullscreen: () =>
     set((state) => ({ isFullscreen: !state.isFullscreen })),
 
-  setBreakpoint: (breakpoint) =>
-    set({ breakpoint }),
+  setBreakpoint: (breakpoint) => set({ breakpoint }),
 
   showInfo: (title, message) => {
     get().addNotification({
-      type: 'info',
+      type: "info",
       title,
       message,
       timeout: 5000,
@@ -275,7 +273,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   showSuccess: (title, message) => {
     get().addNotification({
-      type: 'success',
+      type: "success",
       title,
       message,
       timeout: 3000,
@@ -284,7 +282,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   showWarning: (title, message) => {
     get().addNotification({
-      type: 'warning',
+      type: "warning",
       title,
       message,
       timeout: 7000,
@@ -293,7 +291,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   showError: (title, message) => {
     get().addNotification({
-      type: 'error',
+      type: "error",
       title,
       message,
       timeout: 10000,
@@ -350,4 +348,4 @@ export const selectIsModalOpen = (state: UIStore) => state.activeModal !== null;
  * Select whether connected
  */
 export const selectIsConnected = (state: UIStore) =>
-  state.connectionStatus === 'connected';
+  state.connectionStatus === "connected";

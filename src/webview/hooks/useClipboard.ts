@@ -7,8 +7,8 @@
  * @module hooks/useClipboard
  */
 
-import { useCallback, useRef, useState, useEffect } from 'react';
-import { useVSCode } from './useVSCode';
+import { useCallback, useRef, useState, useEffect } from "react";
+import { useVSCode } from "./useVSCode";
 
 // ============================================================================
 // Types
@@ -17,7 +17,7 @@ import { useVSCode } from './useVSCode';
 /**
  * Clipboard item types
  */
-export type ClipboardItemType = 'text' | 'image' | 'file' | 'html';
+export type ClipboardItemType = "text" | "image" | "file" | "html";
 
 /**
  * Clipboard content
@@ -122,7 +122,9 @@ export interface UseClipboardReturn {
  * }
  * ```
  */
-export function useClipboard(options: UseClipboardOptions = {}): UseClipboardReturn {
+export function useClipboard(
+  options: UseClipboardOptions = {},
+): UseClipboardReturn {
   const {
     onCopySuccess,
     onCopyError,
@@ -170,7 +172,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       try {
         // Use VSCode extension for clipboard operations if available
         if (useExtension && isVSCode) {
-          postMessage({ type: 'copyToClipboard', text });
+          postMessage({ type: "copyToClipboard", text });
           setHasCopied(true);
           resetCopyFeedback();
           onCopySuccess?.(text);
@@ -187,16 +189,16 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
         }
 
         // Fallback: use document.execCommand
-        const textArea = document.createElement('textarea');
+        const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        textArea.style.top = '-9999px';
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "-9999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
 
-        const success = document.execCommand('copy');
+        const success = document.execCommand("copy");
         document.body.removeChild(textArea);
 
         if (success) {
@@ -206,16 +208,23 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
           return true;
         }
 
-        throw new Error('Copy command failed');
+        throw new Error("Copy command failed");
       } catch (error) {
-        const err = error instanceof Error ? error : new Error('Copy failed');
+        const err = error instanceof Error ? error : new Error("Copy failed");
         onCopyError?.(err);
         return false;
       } finally {
         setIsCopying(false);
       }
     },
-    [useExtension, isVSCode, postMessage, resetCopyFeedback, onCopySuccess, onCopyError]
+    [
+      useExtension,
+      isVSCode,
+      postMessage,
+      resetCopyFeedback,
+      onCopySuccess,
+      onCopyError,
+    ],
   );
 
   /**
@@ -226,7 +235,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       // For code, just copy the raw text without formatting
       return copyText(code);
     },
-    [copyText]
+    [copyText],
   );
 
   /**
@@ -257,15 +266,15 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       if (detectImages && clipboardData.files.length > 0) {
         const file = clipboardData.files[0];
 
-        if (file.type.startsWith('image/')) {
+        if (file.type.startsWith("image/")) {
           event.preventDefault();
 
           const dataUrl = await blobToDataUrl(file);
           result = {
-            type: 'image',
+            type: "image",
             imageDataUrl: dataUrl,
             imageMimeType: file.type,
-            fileName: file.name || 'pasted-image',
+            fileName: file.name || "pasted-image",
           };
 
           onPaste?.(result);
@@ -276,17 +285,17 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       // Check for image in clipboard items
       if (detectImages && clipboardData.items) {
         for (const item of clipboardData.items) {
-          if (item.type.startsWith('image/')) {
+          if (item.type.startsWith("image/")) {
             event.preventDefault();
 
             const blob = item.getAsFile();
             if (blob) {
               const dataUrl = await blobToDataUrl(blob);
               result = {
-                type: 'image',
+                type: "image",
                 imageDataUrl: dataUrl,
                 imageMimeType: item.type,
-                fileName: 'pasted-image',
+                fileName: "pasted-image",
               };
 
               onPaste?.(result);
@@ -297,10 +306,10 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       }
 
       // Handle text paste
-      const text = clipboardData.getData('text/plain');
+      const text = clipboardData.getData("text/plain");
       if (text) {
         result = {
-          type: 'text',
+          type: "text",
           text,
         };
 
@@ -310,67 +319,68 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
 
       return null;
     },
-    [detectImages, blobToDataUrl, onPaste]
+    [detectImages, blobToDataUrl, onPaste],
   );
 
   /**
    * Read clipboard contents
    */
-  const readClipboard = useCallback(async (): Promise<ClipboardContent | null> => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.read) {
-        const items = await navigator.clipboard.read();
+  const readClipboard =
+    useCallback(async (): Promise<ClipboardContent | null> => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.read) {
+          const items = await navigator.clipboard.read();
 
-        for (const item of items) {
-          // Check for image
-          for (const type of item.types) {
-            if (type.startsWith('image/')) {
-              const blob = await item.getType(type);
-              const dataUrl = await blobToDataUrl(blob);
+          for (const item of items) {
+            // Check for image
+            for (const type of item.types) {
+              if (type.startsWith("image/")) {
+                const blob = await item.getType(type);
+                const dataUrl = await blobToDataUrl(blob);
+                return {
+                  type: "image",
+                  imageData: dataUrl,
+                  imageMimeType: type,
+                };
+              }
+            }
+
+            // Check for text
+            if (item.types.includes("text/plain")) {
+              const blob = await item.getType("text/plain");
+              const text = await blob.text();
               return {
-                type: 'image',
-                imageData: dataUrl,
-                imageMimeType: type,
+                type: "text",
+                text,
+              };
+            }
+
+            // Check for HTML
+            if (item.types.includes("text/html")) {
+              const blob = await item.getType("text/html");
+              const html = await blob.text();
+              return {
+                type: "html",
+                html,
               };
             }
           }
+        }
 
-          // Check for text
-          if (item.types.includes('text/plain')) {
-            const blob = await item.getType('text/plain');
-            const text = await blob.text();
-            return {
-              type: 'text',
-              text,
-            };
-          }
-
-          // Check for HTML
-          if (item.types.includes('text/html')) {
-            const blob = await item.getType('text/html');
-            const html = await blob.text();
-            return {
-              type: 'html',
-              html,
-            };
+        // Fallback: try reading text
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            return { type: "text", text };
           }
         }
-      }
 
-      // Fallback: try reading text
-      if (navigator.clipboard && navigator.clipboard.readText) {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          return { type: 'text', text };
-        }
+        return null;
+      } catch {
+        // Clipboard access may be denied
+        return null;
       }
-
-      return null;
-    } catch {
-      // Clipboard access may be denied
-      return null;
-    }
-  }, [blobToDataUrl]);
+    }, [blobToDataUrl]);
 
   /**
    * Check if clipboard has specific content type
@@ -380,7 +390,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
       const content = await readClipboard();
       return content?.type === type;
     },
-    [readClipboard]
+    [readClipboard],
   );
 
   return {
@@ -410,14 +420,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     }
 
     // Fallback
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-9999px';
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    const success = document.execCommand('copy');
+    const success = document.execCommand("copy");
     document.body.removeChild(textArea);
     return success;
   } catch {
@@ -429,5 +439,8 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * Check if clipboard API is available
  */
 export function isClipboardApiAvailable(): boolean {
-  return !!(navigator.clipboard && (navigator.clipboard.writeText || navigator.clipboard.write));
+  return !!(
+    navigator.clipboard &&
+    (navigator.clipboard.writeText || navigator.clipboard.write)
+  );
 }

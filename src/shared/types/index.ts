@@ -5,7 +5,7 @@
 // Message Types
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: number;
   thinking?: ThinkingBlock;
@@ -15,7 +15,7 @@ export interface Message {
   status?: MessageStatus;
 }
 
-export type MessageStatus = 'pending' | 'streaming' | 'complete' | 'error';
+export type MessageStatus = "pending" | "streaming" | "complete" | "error";
 
 export interface ThinkingBlock {
   content: string;
@@ -74,7 +74,7 @@ export interface ClaudeSettings {
 
 export interface ThinkingSettings {
   enabled: boolean;
-  intensity: 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
+  intensity: "think" | "think-hard" | "think-harder" | "ultrathink";
   showProcess: boolean;
 }
 
@@ -111,30 +111,42 @@ export interface ContextSettings {
 
 // WebView Message Types
 export type WebviewMessage =
-  | { type: 'sendMessage'; payload: { content: string; context?: MessageContext } }
-  | { type: 'newConversation' }
-  | { type: 'loadConversation'; payload: { id: string } }
-  | { type: 'deleteConversation'; payload: { id: string } }
-  | { type: 'exportConversation'; payload: { id: string; format: 'json' | 'markdown' } }
-  | { type: 'clearHistory' }
-  | { type: 'updateSettings'; payload: Partial<ExtensionSettings> }
-  | { type: 'cancelRequest' }
-  | { type: 'retryMessage'; payload: { messageId: string } }
-  | { type: 'copyCode'; payload: { code: string } }
-  | { type: 'insertCode'; payload: { code: string; position?: 'cursor' | 'newFile' } }
-  | { type: 'openFile'; payload: { path: string; line?: number } }
-  | { type: 'ready' };
+  | {
+      type: "sendMessage";
+      payload: { content: string; context?: MessageContext };
+    }
+  | { type: "newConversation" }
+  | { type: "loadConversation"; payload: { id: string } }
+  | { type: "deleteConversation"; payload: { id: string } }
+  | {
+      type: "exportConversation";
+      payload: { id: string; format: "json" | "markdown" };
+    }
+  | { type: "clearHistory" }
+  | { type: "updateSettings"; payload: Partial<ExtensionSettings> }
+  | { type: "cancelRequest" }
+  | { type: "retryMessage"; payload: { messageId: string } }
+  | { type: "copyCode"; payload: { code: string } }
+  | {
+      type: "insertCode";
+      payload: { code: string; position?: "cursor" | "newFile" };
+    }
+  | { type: "openFile"; payload: { path: string; line?: number } }
+  | { type: "ready" };
 
 export type ExtensionMessage =
-  | { type: 'message'; payload: Message }
-  | { type: 'messageUpdate'; payload: { id: string; content: string; status: MessageStatus } }
-  | { type: 'messageComplete'; payload: { id: string } }
-  | { type: 'error'; payload: ErrorInfo }
-  | { type: 'conversationLoaded'; payload: Conversation }
-  | { type: 'historyUpdated'; payload: ConversationSummary[] }
-  | { type: 'settingsUpdated'; payload: ExtensionSettings }
-  | { type: 'thinkingUpdate'; payload: { messageId: string; thinking: string } }
-  | { type: 'contextUpdate'; payload: MessageContext };
+  | { type: "message"; payload: Message }
+  | {
+      type: "messageUpdate";
+      payload: { id: string; content: string; status: MessageStatus };
+    }
+  | { type: "messageComplete"; payload: { id: string } }
+  | { type: "error"; payload: ErrorInfo }
+  | { type: "conversationLoaded"; payload: Conversation }
+  | { type: "historyUpdated"; payload: ConversationSummary[] }
+  | { type: "settingsUpdated"; payload: ExtensionSettings }
+  | { type: "thinkingUpdate"; payload: { messageId: string; thinking: string } }
+  | { type: "contextUpdate"; payload: MessageContext };
 
 export interface MessageContext {
   file?: {
@@ -169,7 +181,7 @@ export interface ClaudeProcessConfig {
 }
 
 export interface ClaudeProcessEvent {
-  type: 'output' | 'thinking' | 'error' | 'complete';
+  type: "output" | "thinking" | "error" | "complete";
   data: string;
   timestamp: number;
 }

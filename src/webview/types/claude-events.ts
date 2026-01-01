@@ -24,12 +24,12 @@ export interface BaseClaudeEvent {
  * All possible event types from the Claude CLI stream
  */
 export type ClaudeEventType =
-  | 'system'
-  | 'assistant'
-  | 'user'
-  | 'result'
-  | 'control_request'
-  | 'control_response';
+  | "system"
+  | "assistant"
+  | "user"
+  | "result"
+  | "control_request"
+  | "control_response";
 
 /**
  * Union type of all Claude CLI events
@@ -49,14 +49,14 @@ export type ClaudeEvent =
 /**
  * Subtypes for system events
  */
-export type SystemEventSubtype = 'init' | 'status' | 'compact_boundary';
+export type SystemEventSubtype = "init" | "status" | "compact_boundary";
 
 /**
  * System event - used for session initialization, status changes,
  * and compaction metadata
  */
 export interface SystemEvent extends BaseClaudeEvent {
-  type: 'system';
+  type: "system";
   subtype: SystemEventSubtype;
 }
 
@@ -64,7 +64,7 @@ export interface SystemEvent extends BaseClaudeEvent {
  * System init event - session initialization with tools and MCP servers
  */
 export interface SystemInitEvent extends SystemEvent {
-  subtype: 'init';
+  subtype: "init";
   /** Unique session identifier */
   session_id: string;
   /** List of available tools */
@@ -92,7 +92,7 @@ export interface MCPServerInfo {
   /** Server name */
   name: string;
   /** Server status */
-  status?: 'connected' | 'disconnected' | 'error';
+  status?: "connected" | "disconnected" | "error";
   /** Available tools from this server */
   tools?: string[];
 }
@@ -101,16 +101,16 @@ export interface MCPServerInfo {
  * System status event - indicates status changes like compacting
  */
 export interface SystemStatusEvent extends SystemEvent {
-  subtype: 'status';
+  subtype: "status";
   /** Current status, null when returning to normal */
-  status: 'compacting' | null;
+  status: "compacting" | null;
 }
 
 /**
  * System compact boundary event - marks context window compaction
  */
 export interface SystemCompactBoundaryEvent extends SystemEvent {
-  subtype: 'compact_boundary';
+  subtype: "compact_boundary";
   /** Metadata about the compaction */
   compact_metadata: CompactMetadata;
 }
@@ -120,7 +120,7 @@ export interface SystemCompactBoundaryEvent extends SystemEvent {
  */
 export interface CompactMetadata {
   /** What triggered the compaction */
-  trigger: 'auto' | 'manual' | 'limit';
+  trigger: "auto" | "manual" | "limit";
   /** Number of tokens before compaction */
   pre_tokens: number;
   /** Number of tokens after compaction */
@@ -135,7 +135,7 @@ export interface CompactMetadata {
  * Assistant event - contains assistant messages and usage metadata
  */
 export interface AssistantEvent extends BaseClaudeEvent {
-  type: 'assistant';
+  type: "assistant";
   /** The assistant message */
   message: AssistantMessage;
 }
@@ -147,7 +147,7 @@ export interface AssistantMessage {
   /** Message ID */
   id?: string;
   /** Message role (always 'assistant' for this event type) */
-  role: 'assistant';
+  role: "assistant";
   /** Content blocks in the message */
   content: AssistantContentBlock[];
   /** Token usage information */
@@ -155,7 +155,7 @@ export interface AssistantMessage {
   /** Model that generated the response */
   model?: string;
   /** Stop reason */
-  stop_reason?: 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence';
+  stop_reason?: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
 }
 
 /**
@@ -184,14 +184,14 @@ export type AssistantContentBlock =
  * Base interface for content blocks
  */
 export interface BaseContentBlock {
-  type: 'text' | 'thinking' | 'tool_use';
+  type: "text" | "thinking" | "tool_use";
 }
 
 /**
  * Text content block - regular assistant text output
  */
 export interface TextContentBlock extends BaseContentBlock {
-  type: 'text';
+  type: "text";
   /** The text content */
   text: string;
 }
@@ -200,7 +200,7 @@ export interface TextContentBlock extends BaseContentBlock {
  * Thinking content block - Claude's reasoning/thinking process
  */
 export interface ThinkingContentBlock extends BaseContentBlock {
-  type: 'thinking';
+  type: "thinking";
   /** The thinking content */
   thinking: string;
 }
@@ -209,7 +209,7 @@ export interface ThinkingContentBlock extends BaseContentBlock {
  * Tool use content block - a tool invocation by the assistant
  */
 export interface ToolUseContentBlock extends BaseContentBlock {
-  type: 'tool_use';
+  type: "tool_use";
   /** Unique identifier for this tool use */
   id: string;
   /** Name of the tool being used */
@@ -291,9 +291,9 @@ export interface TodoItem {
   /** Todo content/description */
   content: string;
   /** Todo status */
-  status: 'pending' | 'in_progress' | 'completed';
+  status: "pending" | "in_progress" | "completed";
   /** Priority level */
-  priority?: 'low' | 'medium' | 'high';
+  priority?: "low" | "medium" | "high";
 }
 
 /**
@@ -316,7 +316,7 @@ export interface BashToolInput {
  * User event - contains tool results written as user-role content
  */
 export interface UserEvent extends BaseClaudeEvent {
-  type: 'user';
+  type: "user";
   /** The user message containing tool results */
   message: UserMessage;
 }
@@ -328,7 +328,7 @@ export interface UserMessage {
   /** Message ID */
   id?: string;
   /** Message role (always 'user' for this event type) */
-  role: 'user';
+  role: "user";
   /** Content blocks in the message */
   content: UserContentBlock[];
 }
@@ -342,7 +342,7 @@ export type UserContentBlock = ToolResultContentBlock;
  * Tool result content block
  */
 export interface ToolResultContentBlock {
-  type: 'tool_result';
+  type: "tool_result";
   /** ID of the tool_use this is a result for */
   tool_use_id: string;
   /** Result content (string or array of content items) */
@@ -355,12 +355,12 @@ export interface ToolResultContentBlock {
  * Tool result content item
  */
 export interface ToolResultContent {
-  type: 'text' | 'image';
+  type: "text" | "image";
   /** Text content (for type 'text') */
   text?: string;
   /** Image source (for type 'image') */
   source?: {
-    type: 'base64';
+    type: "base64";
     media_type: string;
     data: string;
   };
@@ -373,13 +373,13 @@ export interface ToolResultContent {
 /**
  * Result event subtype
  */
-export type ResultSubtype = 'success' | 'error';
+export type ResultSubtype = "success" | "error";
 
 /**
  * Result event - final result for the request
  */
 export interface ResultEvent extends BaseClaudeEvent {
-  type: 'result';
+  type: "result";
   /** Result subtype */
   subtype: ResultSubtype;
   /** Session ID */
@@ -407,13 +407,13 @@ export interface ResultEvent extends BaseClaudeEvent {
 /**
  * Control request subtype
  */
-export type ControlRequestSubtype = 'can_use_tool';
+export type ControlRequestSubtype = "can_use_tool";
 
 /**
  * Control request - permission requests delivered via stdio
  */
 export interface ControlRequest extends BaseClaudeEvent {
-  type: 'control_request';
+  type: "control_request";
   /** Request subtype */
   subtype: ControlRequestSubtype;
   /** Unique ID for this request */
@@ -424,7 +424,7 @@ export interface ControlRequest extends BaseClaudeEvent {
  * Can use tool control request - asks permission to use a tool
  */
 export interface CanUseToolRequest extends ControlRequest {
-  subtype: 'can_use_tool';
+  subtype: "can_use_tool";
   /** Name of the tool requesting permission */
   tool_name: string;
   /** Input that would be passed to the tool */
@@ -444,7 +444,7 @@ export interface CanUseToolRequest extends ControlRequest {
  */
 export interface PermissionSuggestion {
   /** Type of permission */
-  type: 'allow_once' | 'allow_session' | 'allow_always' | 'deny';
+  type: "allow_once" | "allow_session" | "allow_always" | "deny";
   /** Human-readable description */
   description?: string;
 }
@@ -457,7 +457,7 @@ export interface PermissionSuggestion {
  * Control response - responses to the extension's control requests
  */
 export interface ControlResponse extends BaseClaudeEvent {
-  type: 'control_response';
+  type: "control_response";
   /** ID of the request this responds to */
   request_id: string;
   /** The response data */
@@ -480,7 +480,7 @@ export interface ControlResponseData {
  */
 export interface AccountInfo {
   /** Subscription type */
-  subscriptionType: 'free' | 'pro' | 'team' | 'enterprise';
+  subscriptionType: "free" | "pro" | "team" | "enterprise";
   /** Account email */
   email?: string;
   /** Account ID */
@@ -497,7 +497,7 @@ export interface AccountInfo {
  * Permission response sent from extension to CLI via stdin
  */
 export interface PermissionResponse {
-  type: 'permission_response';
+  type: "permission_response";
   /** ID of the request being responded to */
   request_id: string;
   /** The permission decision */
@@ -508,10 +508,10 @@ export interface PermissionResponse {
  * Permission decision type
  */
 export type PermissionDecision =
-  | 'allow'
-  | 'deny'
-  | 'allow_session'
-  | 'allow_always';
+  | "allow"
+  | "deny"
+  | "allow_session"
+  | "allow_always";
 
 // ============================================================================
 // Type Guards
@@ -521,96 +521,120 @@ export type PermissionDecision =
  * Type guard for SystemEvent
  */
 export function isSystemEvent(event: ClaudeEvent): event is SystemEvent {
-  return event.type === 'system';
+  return event.type === "system";
 }
 
 /**
  * Type guard for SystemInitEvent
  */
-export function isSystemInitEvent(event: ClaudeEvent): event is SystemInitEvent {
-  return event.type === 'system' && (event as SystemEvent).subtype === 'init';
+export function isSystemInitEvent(
+  event: ClaudeEvent,
+): event is SystemInitEvent {
+  return event.type === "system" && (event as SystemEvent).subtype === "init";
 }
 
 /**
  * Type guard for SystemStatusEvent
  */
-export function isSystemStatusEvent(event: ClaudeEvent): event is SystemStatusEvent {
-  return event.type === 'system' && (event as SystemEvent).subtype === 'status';
+export function isSystemStatusEvent(
+  event: ClaudeEvent,
+): event is SystemStatusEvent {
+  return event.type === "system" && (event as SystemEvent).subtype === "status";
 }
 
 /**
  * Type guard for SystemCompactBoundaryEvent
  */
-export function isSystemCompactBoundaryEvent(event: ClaudeEvent): event is SystemCompactBoundaryEvent {
-  return event.type === 'system' && (event as SystemEvent).subtype === 'compact_boundary';
+export function isSystemCompactBoundaryEvent(
+  event: ClaudeEvent,
+): event is SystemCompactBoundaryEvent {
+  return (
+    event.type === "system" &&
+    (event as SystemEvent).subtype === "compact_boundary"
+  );
 }
 
 /**
  * Type guard for AssistantEvent
  */
 export function isAssistantEvent(event: ClaudeEvent): event is AssistantEvent {
-  return event.type === 'assistant';
+  return event.type === "assistant";
 }
 
 /**
  * Type guard for UserEvent
  */
 export function isUserEvent(event: ClaudeEvent): event is UserEvent {
-  return event.type === 'user';
+  return event.type === "user";
 }
 
 /**
  * Type guard for ResultEvent
  */
 export function isResultEvent(event: ClaudeEvent): event is ResultEvent {
-  return event.type === 'result';
+  return event.type === "result";
 }
 
 /**
  * Type guard for ControlRequest
  */
 export function isControlRequest(event: ClaudeEvent): event is ControlRequest {
-  return event.type === 'control_request';
+  return event.type === "control_request";
 }
 
 /**
  * Type guard for CanUseToolRequest
  */
-export function isCanUseToolRequest(event: ClaudeEvent): event is CanUseToolRequest {
-  return event.type === 'control_request' && (event as ControlRequest).subtype === 'can_use_tool';
+export function isCanUseToolRequest(
+  event: ClaudeEvent,
+): event is CanUseToolRequest {
+  return (
+    event.type === "control_request" &&
+    (event as ControlRequest).subtype === "can_use_tool"
+  );
 }
 
 /**
  * Type guard for ControlResponse
  */
-export function isControlResponse(event: ClaudeEvent): event is ControlResponse {
-  return event.type === 'control_response';
+export function isControlResponse(
+  event: ClaudeEvent,
+): event is ControlResponse {
+  return event.type === "control_response";
 }
 
 /**
  * Type guard for TextContentBlock
  */
-export function isTextContentBlock(block: AssistantContentBlock): block is TextContentBlock {
-  return block.type === 'text';
+export function isTextContentBlock(
+  block: AssistantContentBlock,
+): block is TextContentBlock {
+  return block.type === "text";
 }
 
 /**
  * Type guard for ThinkingContentBlock
  */
-export function isThinkingContentBlock(block: AssistantContentBlock): block is ThinkingContentBlock {
-  return block.type === 'thinking';
+export function isThinkingContentBlock(
+  block: AssistantContentBlock,
+): block is ThinkingContentBlock {
+  return block.type === "thinking";
 }
 
 /**
  * Type guard for ToolUseContentBlock
  */
-export function isToolUseContentBlock(block: AssistantContentBlock): block is ToolUseContentBlock {
-  return block.type === 'tool_use';
+export function isToolUseContentBlock(
+  block: AssistantContentBlock,
+): block is ToolUseContentBlock {
+  return block.type === "tool_use";
 }
 
 /**
  * Type guard for ToolResultContentBlock
  */
-export function isToolResultContentBlock(block: UserContentBlock): block is ToolResultContentBlock {
-  return block.type === 'tool_result';
+export function isToolResultContentBlock(
+  block: UserContentBlock,
+): block is ToolResultContentBlock {
+  return block.type === "tool_result";
 }

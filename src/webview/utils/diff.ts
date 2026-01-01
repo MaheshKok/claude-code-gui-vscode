@@ -8,7 +8,7 @@
  * @module utils/diff
  */
 
-import { escapeHtml } from './markdown';
+import { escapeHtml } from "./markdown";
 
 // ============================================================================
 // Types
@@ -17,7 +17,7 @@ import { escapeHtml } from './markdown';
 /**
  * Types of diff operations
  */
-export type DiffOperation = 'equal' | 'insert' | 'delete';
+export type DiffOperation = "equal" | "insert" | "delete";
 
 /**
  * A single line in a diff
@@ -87,13 +87,17 @@ export interface DiffHtmlOptions {
  * Compute the Longest Common Subsequence of two arrays
  * Returns the length matrix for backtracking
  */
-function computeLcsMatrix<T>(a: T[], b: T[], compare: (x: T, y: T) => boolean): number[][] {
+function computeLcsMatrix<T>(
+  a: T[],
+  b: T[],
+  compare: (x: T, y: T) => boolean,
+): number[][] {
   const m = a.length;
   const n = b.length;
 
   // Create (m+1) x (n+1) matrix initialized to 0
   const matrix: number[][] = Array.from({ length: m + 1 }, () =>
-    Array(n + 1).fill(0)
+    Array(n + 1).fill(0),
   );
 
   // Fill the matrix
@@ -117,25 +121,29 @@ function backtrackDiff<T>(
   matrix: number[][],
   a: T[],
   b: T[],
-  compare: (x: T, y: T) => boolean
+  compare: (x: T, y: T) => boolean,
 ): Array<{ type: DiffOperation; oldIndex?: number; newIndex?: number }> {
-  const diff: Array<{ type: DiffOperation; oldIndex?: number; newIndex?: number }> = [];
+  const diff: Array<{
+    type: DiffOperation;
+    oldIndex?: number;
+    newIndex?: number;
+  }> = [];
   let i = a.length;
   let j = b.length;
 
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && compare(a[i - 1], b[j - 1])) {
       // Equal
-      diff.unshift({ type: 'equal', oldIndex: i - 1, newIndex: j - 1 });
+      diff.unshift({ type: "equal", oldIndex: i - 1, newIndex: j - 1 });
       i--;
       j--;
     } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
       // Insertion in new
-      diff.unshift({ type: 'insert', newIndex: j - 1 });
+      diff.unshift({ type: "insert", newIndex: j - 1 });
       j--;
     } else if (i > 0) {
       // Deletion from old
-      diff.unshift({ type: 'delete', oldIndex: i - 1 });
+      diff.unshift({ type: "delete", oldIndex: i - 1 });
       i--;
     }
   }
@@ -153,16 +161,13 @@ function backtrackDiff<T>(
 export function computeLineDiff(
   oldContent: string,
   newContent: string,
-  options: DiffOptions = {}
+  options: DiffOptions = {},
 ): DiffResult {
-  const {
-    ignoreWhitespace = false,
-    startLine = 1,
-  } = options;
+  const { ignoreWhitespace = false, startLine = 1 } = options;
 
   // Split into lines
-  const oldLines = oldContent.split('\n');
-  const newLines = newContent.split('\n');
+  const oldLines = oldContent.split("\n");
+  const newLines = newContent.split("\n");
 
   // Comparison function
   const compare = (a: string, b: string): boolean => {
@@ -186,9 +191,9 @@ export function computeLineDiff(
 
   for (const item of rawDiff) {
     switch (item.type) {
-      case 'equal':
+      case "equal":
         diffLines.push({
-          type: 'equal',
+          type: "equal",
           content: oldLines[item.oldIndex!],
           oldLineNumber: oldLineNum,
           newLineNumber: newLineNum,
@@ -198,9 +203,9 @@ export function computeLineDiff(
         unchanged++;
         break;
 
-      case 'delete':
+      case "delete":
         diffLines.push({
-          type: 'delete',
+          type: "delete",
           content: oldLines[item.oldIndex!],
           oldLineNumber: oldLineNum,
         });
@@ -208,9 +213,9 @@ export function computeLineDiff(
         deletions++;
         break;
 
-      case 'insert':
+      case "insert":
         diffLines.push({
-          type: 'insert',
+          type: "insert",
           content: newLines[item.newIndex!],
           newLineNumber: newLineNum,
         });
@@ -235,7 +240,7 @@ export function computeLineDiff(
 export function computeContextualDiff(
   oldContent: string,
   newContent: string,
-  options: DiffOptions = {}
+  options: DiffOptions = {},
 ): DiffResult {
   const { contextLines = 3 } = options;
 
@@ -248,11 +253,13 @@ export function computeContextualDiff(
   // Find indices of changed lines
   const changedIndices = new Set<number>();
   fullDiff.lines.forEach((line, index) => {
-    if (line.type !== 'equal') {
+    if (line.type !== "equal") {
       // Add this line and surrounding context
-      for (let i = Math.max(0, index - contextLines);
-           i <= Math.min(fullDiff.lines.length - 1, index + contextLines);
-           i++) {
+      for (
+        let i = Math.max(0, index - contextLines);
+        i <= Math.min(fullDiff.lines.length - 1, index + contextLines);
+        i++
+      ) {
         changedIndices.add(i);
       }
     }
@@ -266,8 +273,8 @@ export function computeContextualDiff(
     // Add separator if there's a gap
     if (lastIndex !== -1 && index > lastIndex + 1) {
       contextualLines.push({
-        type: 'equal',
-        content: '...',
+        type: "equal",
+        content: "...",
         oldLineNumber: undefined,
         newLineNumber: undefined,
       });
@@ -295,12 +302,12 @@ export function computeContextualDiff(
  */
 export function formatDiffHtml(
   diff: DiffResult,
-  options: DiffHtmlOptions = {}
+  options: DiffHtmlOptions = {},
 ): string {
   const {
     showLineNumbers = true,
     sideBySide = false,
-    classPrefix = 'diff',
+    classPrefix = "diff",
     wrapLines = true,
     maxLineWidth = 80,
   } = options;
@@ -316,30 +323,35 @@ export function formatDiffHtml(
 
   for (const line of diff.lines) {
     const lineClass = `${classPrefix}-line ${classPrefix}-${line.type}`;
-    const content = wrapLines && line.content.length > maxLineWidth
-      ? wordWrap(line.content, maxLineWidth)
-      : escapeHtml(line.content);
+    const content =
+      wrapLines && line.content.length > maxLineWidth
+        ? wordWrap(line.content, maxLineWidth)
+        : escapeHtml(line.content);
 
     const prefix = getLinePrefix(line.type);
-    const oldNum = line.oldLineNumber !== undefined ? line.oldLineNumber : '';
-    const newNum = line.newLineNumber !== undefined ? line.newLineNumber : '';
+    const oldNum = line.oldLineNumber !== undefined ? line.oldLineNumber : "";
+    const newNum = line.newLineNumber !== undefined ? line.newLineNumber : "";
 
     lines.push(`<tr class="${lineClass}">`);
 
     if (showLineNumbers) {
-      lines.push(`<td class="${classPrefix}-line-num ${classPrefix}-old-num">${oldNum}</td>`);
-      lines.push(`<td class="${classPrefix}-line-num ${classPrefix}-new-num">${newNum}</td>`);
+      lines.push(
+        `<td class="${classPrefix}-line-num ${classPrefix}-old-num">${oldNum}</td>`,
+      );
+      lines.push(
+        `<td class="${classPrefix}-line-num ${classPrefix}-new-num">${newNum}</td>`,
+      );
     }
 
     lines.push(`<td class="${classPrefix}-prefix">${prefix}</td>`);
     lines.push(`<td class="${classPrefix}-content"><pre>${content}</pre></td>`);
-    lines.push('</tr>');
+    lines.push("</tr>");
   }
 
-  lines.push('</table>');
-  lines.push('</div>');
+  lines.push("</table>");
+  lines.push("</div>");
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -347,11 +359,11 @@ export function formatDiffHtml(
  */
 function formatSideBySideDiff(
   diff: DiffResult,
-  options: DiffHtmlOptions
+  options: DiffHtmlOptions,
 ): string {
   const {
     showLineNumbers = true,
-    classPrefix = 'diff',
+    classPrefix = "diff",
     wrapLines = true,
     maxLineWidth = 40,
   } = options;
@@ -363,13 +375,13 @@ function formatSideBySideDiff(
   let currentGroup: { old: DiffLine[]; new: DiffLine[] } = { old: [], new: [] };
 
   for (const line of diff.lines) {
-    if (line.type === 'equal') {
+    if (line.type === "equal") {
       if (currentGroup.old.length > 0 || currentGroup.new.length > 0) {
         groups.push(currentGroup);
         currentGroup = { old: [], new: [] };
       }
       groups.push({ old: [line], new: [line] });
-    } else if (line.type === 'delete') {
+    } else if (line.type === "delete") {
       currentGroup.old.push(line);
     } else {
       currentGroup.new.push(line);
@@ -380,13 +392,19 @@ function formatSideBySideDiff(
     groups.push(currentGroup);
   }
 
-  lines.push(`<div class="${classPrefix}-container ${classPrefix}-side-by-side">`);
+  lines.push(
+    `<div class="${classPrefix}-container ${classPrefix}-side-by-side">`,
+  );
   lines.push(`<table class="${classPrefix}-table">`);
-  lines.push('<thead><tr>');
-  lines.push(`<th class="${classPrefix}-header" colspan="${showLineNumbers ? 2 : 1}">Old</th>`);
-  lines.push(`<th class="${classPrefix}-header" colspan="${showLineNumbers ? 2 : 1}">New</th>`);
-  lines.push('</tr></thead>');
-  lines.push('<tbody>');
+  lines.push("<thead><tr>");
+  lines.push(
+    `<th class="${classPrefix}-header" colspan="${showLineNumbers ? 2 : 1}">Old</th>`,
+  );
+  lines.push(
+    `<th class="${classPrefix}-header" colspan="${showLineNumbers ? 2 : 1}">New</th>`,
+  );
+  lines.push("</tr></thead>");
+  lines.push("<tbody>");
 
   for (const group of groups) {
     const maxRows = Math.max(group.old.length, group.new.length);
@@ -395,53 +413,67 @@ function formatSideBySideDiff(
       const oldLine = group.old[i];
       const newLine = group.new[i];
 
-      lines.push('<tr>');
+      lines.push("<tr>");
 
       // Old side
       if (oldLine) {
         const lineClass = `${classPrefix}-${oldLine.type}`;
-        const content = wrapLines && oldLine.content.length > maxLineWidth
-          ? wordWrap(oldLine.content, maxLineWidth)
-          : escapeHtml(oldLine.content);
+        const content =
+          wrapLines && oldLine.content.length > maxLineWidth
+            ? wordWrap(oldLine.content, maxLineWidth)
+            : escapeHtml(oldLine.content);
 
         if (showLineNumbers) {
-          lines.push(`<td class="${classPrefix}-line-num">${oldLine.oldLineNumber || ''}</td>`);
+          lines.push(
+            `<td class="${classPrefix}-line-num">${oldLine.oldLineNumber || ""}</td>`,
+          );
         }
-        lines.push(`<td class="${classPrefix}-content ${lineClass}"><pre>${content}</pre></td>`);
+        lines.push(
+          `<td class="${classPrefix}-content ${lineClass}"><pre>${content}</pre></td>`,
+        );
       } else {
         if (showLineNumbers) {
           lines.push(`<td class="${classPrefix}-line-num"></td>`);
         }
-        lines.push(`<td class="${classPrefix}-content ${classPrefix}-empty"></td>`);
+        lines.push(
+          `<td class="${classPrefix}-content ${classPrefix}-empty"></td>`,
+        );
       }
 
       // New side
       if (newLine) {
         const lineClass = `${classPrefix}-${newLine.type}`;
-        const content = wrapLines && newLine.content.length > maxLineWidth
-          ? wordWrap(newLine.content, maxLineWidth)
-          : escapeHtml(newLine.content);
+        const content =
+          wrapLines && newLine.content.length > maxLineWidth
+            ? wordWrap(newLine.content, maxLineWidth)
+            : escapeHtml(newLine.content);
 
         if (showLineNumbers) {
-          lines.push(`<td class="${classPrefix}-line-num">${newLine.newLineNumber || ''}</td>`);
+          lines.push(
+            `<td class="${classPrefix}-line-num">${newLine.newLineNumber || ""}</td>`,
+          );
         }
-        lines.push(`<td class="${classPrefix}-content ${lineClass}"><pre>${content}</pre></td>`);
+        lines.push(
+          `<td class="${classPrefix}-content ${lineClass}"><pre>${content}</pre></td>`,
+        );
       } else {
         if (showLineNumbers) {
           lines.push(`<td class="${classPrefix}-line-num"></td>`);
         }
-        lines.push(`<td class="${classPrefix}-content ${classPrefix}-empty"></td>`);
+        lines.push(
+          `<td class="${classPrefix}-content ${classPrefix}-empty"></td>`,
+        );
       }
 
-      lines.push('</tr>');
+      lines.push("</tr>");
     }
   }
 
-  lines.push('</tbody>');
-  lines.push('</table>');
-  lines.push('</div>');
+  lines.push("</tbody>");
+  lines.push("</table>");
+  lines.push("</div>");
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -449,13 +481,13 @@ function formatSideBySideDiff(
  */
 function getLinePrefix(type: DiffOperation): string {
   switch (type) {
-    case 'insert':
-      return '+';
-    case 'delete':
-      return '-';
-    case 'equal':
+    case "insert":
+      return "+";
+    case "delete":
+      return "-";
+    case "equal":
     default:
-      return ' ';
+      return " ";
   }
 }
 
@@ -466,13 +498,13 @@ function wordWrap(text: string, maxWidth: number): string {
   const escaped = escapeHtml(text);
   const words = escaped.split(/(\s+)/);
   const lines: string[] = [];
-  let currentLine = '';
+  let currentLine = "";
 
   for (const word of words) {
     if (currentLine.length + word.length > maxWidth) {
       if (currentLine) {
         lines.push(currentLine);
-        currentLine = '';
+        currentLine = "";
       }
 
       // Handle very long words
@@ -490,7 +522,7 @@ function wordWrap(text: string, maxWidth: number): string {
     lines.push(currentLine);
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 // ============================================================================
@@ -504,7 +536,11 @@ export function calculateLineMapping(diff: DiffResult): Map<number, number> {
   const mapping = new Map<number, number>();
 
   for (const line of diff.lines) {
-    if (line.type === 'equal' && line.oldLineNumber !== undefined && line.newLineNumber !== undefined) {
+    if (
+      line.type === "equal" &&
+      line.oldLineNumber !== undefined &&
+      line.newLineNumber !== undefined
+    ) {
       mapping.set(line.oldLineNumber, line.newLineNumber);
     }
   }
@@ -517,7 +553,7 @@ export function calculateLineMapping(diff: DiffResult): Map<number, number> {
  */
 export function formatDiffStats(diff: DiffResult): string {
   if (diff.isIdentical) {
-    return 'No changes';
+    return "No changes";
   }
 
   const parts: string[] = [];
@@ -529,7 +565,7 @@ export function formatDiffStats(diff: DiffResult): string {
     parts.push(`-${diff.deletions}`);
   }
 
-  return parts.join(' / ');
+  return parts.join(" / ");
 }
 
 /**
@@ -538,7 +574,7 @@ export function formatDiffStats(diff: DiffResult): string {
 export function formatUnifiedDiff(
   diff: DiffResult,
   oldPath: string,
-  newPath: string
+  newPath: string,
 ): string {
   const lines: string[] = [];
 
@@ -554,7 +590,7 @@ export function formatUnifiedDiff(
     const line = diff.lines[i];
     const prefix = getLinePrefix(line.type);
 
-    if (line.type !== 'equal' && !inHunk) {
+    if (line.type !== "equal" && !inHunk) {
       // Start new hunk
       inHunk = true;
       hunkStart = Math.max(0, i - 3);
@@ -563,7 +599,7 @@ export function formatUnifiedDiff(
       let hunkEnd = i;
       let equalCount = 0;
       for (let j = i + 1; j < diff.lines.length; j++) {
-        if (diff.lines[j].type === 'equal') {
+        if (diff.lines[j].type === "equal") {
           equalCount++;
           if (equalCount > 3) break;
         } else {
@@ -581,8 +617,8 @@ export function formatUnifiedDiff(
 
       for (let j = hunkStart; j <= hunkEnd; j++) {
         const l = diff.lines[j];
-        if (l.type !== 'insert') oldCount++;
-        if (l.type !== 'delete') newCount++;
+        if (l.type !== "insert") oldCount++;
+        if (l.type !== "delete") newCount++;
       }
 
       lines.push(`@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`);
@@ -598,7 +634,7 @@ export function formatUnifiedDiff(
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -608,11 +644,11 @@ export function applyDiff(oldContent: string, diff: DiffResult): string {
   const newLines: string[] = [];
 
   for (const line of diff.lines) {
-    if (line.type === 'equal' || line.type === 'insert') {
+    if (line.type === "equal" || line.type === "insert") {
       newLines.push(line.content);
     }
     // Skip deleted lines
   }
 
-  return newLines.join('\n');
+  return newLines.join("\n");
 }

@@ -7,10 +7,10 @@
  * @module components/History/ConversationHistory
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { ConversationSearch } from './ConversationSearch';
-import { ConversationItem } from './ConversationItem';
-import type { ConversationListItem } from '../../types/history';
+import React, { useState, useCallback, useMemo } from "react";
+import { ConversationSearch } from "./ConversationSearch";
+import { ConversationItem } from "./ConversationItem";
+import type { ConversationListItem } from "../../types/history";
 
 export interface ConversationHistoryProps {
   /** Whether the panel is visible */
@@ -38,7 +38,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
   activeConversationId,
   onConversationDelete,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filter conversations based on search query
   const filteredConversations = useMemo(() => {
@@ -48,10 +48,11 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
     }
     const query = searchQuery.toLowerCase();
     return conversations
-      .filter((conversation) => (
-        conversation.title.toLowerCase().includes(query)
-        || conversation.preview.toLowerCase().includes(query)
-      ))
+      .filter(
+        (conversation) =>
+          conversation.title.toLowerCase().includes(query) ||
+          conversation.preview.toLowerCase().includes(query),
+      )
       .sort((a, b) => b.updatedAt - a.updatedAt);
   }, [conversations, searchQuery]);
 
@@ -66,7 +67,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
       onConversationLoad?.(id);
       onClose();
     },
-    [onConversationLoad, onClose]
+    [onConversationLoad, onClose],
   );
 
   // Handle conversation delete
@@ -74,17 +75,17 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
     (id: string) => {
       onConversationDelete?.(id);
     },
-    [onConversationDelete]
+    [onConversationDelete],
   );
 
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   if (!isOpen) return null;
@@ -160,10 +161,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
 
       {/* Search */}
       <div className="px-3 py-2 border-b border-[var(--vscode-panel-border)]">
-        <ConversationSearch
-          onSearch={handleSearch}
-          autoFocus
-        />
+        <ConversationSearch onSearch={handleSearch} autoFocus />
       </div>
 
       {/* Conversation List */}
@@ -271,9 +269,10 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
       {filteredConversations.length > 0 && (
         <div className="px-4 py-2 border-t border-[var(--vscode-panel-border)]">
           <p className="text-xs text-[var(--vscode-descriptionForeground)]">
-            {filteredConversations.length} of {conversations.length} conversation
-            {conversations.length !== 1 ? 's' : ''}
-            {searchQuery && ' (filtered)'}
+            {filteredConversations.length} of {conversations.length}{" "}
+            conversation
+            {conversations.length !== 1 ? "s" : ""}
+            {searchQuery && " (filtered)"}
           </p>
         </div>
       )}

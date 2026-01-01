@@ -1,2 +1,2 @@
-export { ActivityTimeline } from './ActivityTimeline';
-export { default } from './ActivityTimeline';
+export { ActivityTimeline } from "./ActivityTimeline";
+export { default } from "./ActivityTimeline";

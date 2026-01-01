@@ -13,7 +13,7 @@ import {
   useEffect,
   useState,
   type RefObject,
-} from 'react';
+} from "react";
 
 // ============================================================================
 // Types
@@ -92,12 +92,12 @@ export interface UseAutoScrollReturn<T extends HTMLElement> {
  * ```
  */
 export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
-  options: UseAutoScrollOptions = {}
+  options: UseAutoScrollOptions = {},
 ): UseAutoScrollReturn<T> {
   const {
     threshold = 100,
     enabled = true,
-    behavior = 'smooth',
+    behavior = "smooth",
     dependencies = [],
     onScrollAway,
     onScrollToBottom,
@@ -148,7 +148,7 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
         });
       });
     },
-    [behavior]
+    [behavior],
   );
 
   /**
@@ -212,10 +212,10 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
       return;
     }
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
 
@@ -238,7 +238,7 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
   useEffect(() => {
     if (isAutoScrollEnabled) {
       // Immediate scroll on mount
-      scrollToBottom({ behavior: 'instant' });
+      scrollToBottom({ behavior: "instant" });
     }
     // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,11 +266,11 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
  */
 export function scrollElementToBottom(
   element: HTMLElement,
-  options?: { behavior?: ScrollBehavior }
+  options?: { behavior?: ScrollBehavior },
 ): void {
   element.scrollTo({
     top: element.scrollHeight,
-    behavior: options?.behavior ?? 'smooth',
+    behavior: options?.behavior ?? "smooth",
   });
 }
 
@@ -280,7 +280,7 @@ export function scrollElementToBottom(
  */
 export function isElementAtBottom(
   element: HTMLElement,
-  threshold: number = 100
+  threshold: number = 100,
 ): boolean {
   const { scrollTop, scrollHeight, clientHeight } = element;
   const distanceFromBottom = scrollHeight - scrollTop - clientHeight;

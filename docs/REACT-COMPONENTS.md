@@ -43,17 +43,19 @@ App (Root)
 const [messages, setMessages] = useState<ChatMessage[]>([]);
 const [isProcessing, setIsProcessing] = useState(false);
 const [session, setSession] = useState<SessionInfo | null>(null);
-const [permissionRequest, setPermissionRequest] = useState<PermissionRequest | null>(null);
+const [permissionRequest, setPermissionRequest] =
+  useState<PermissionRequest | null>(null);
 
 // Settings from store
-const selectedModel = useSettingsStore(s => s.selectedModel);
-const thinkingMode = useSettingsStore(s => s.thinkingMode);
-const thinkingIntensity = useSettingsStore(s => s.thinkingIntensity);
-const planMode = useSettingsStore(s => s.planMode);
-const yoloMode = useSettingsStore(s => s.yoloMode);
+const selectedModel = useSettingsStore((s) => s.selectedModel);
+const thinkingMode = useSettingsStore((s) => s.thinkingMode);
+const thinkingIntensity = useSettingsStore((s) => s.thinkingIntensity);
+const planMode = useSettingsStore((s) => s.planMode);
+const yoloMode = useSettingsStore((s) => s.yoloMode);
 ```
 
 **Message Handler Map:**
+
 ```typescript
 const handlers = {
   sessionInfo: (msg) => setSession(msg),
@@ -110,6 +112,7 @@ interface MessageListProps {
 ```
 
 **Features:**
+
 - Auto-scroll to bottom on new messages (smooth)
 - Empty state with quick action buttons
 - Processing indicator with animated dots
@@ -125,7 +128,7 @@ interface MessageListProps {
 interface MessageProps {
   message: {
     id: string;
-    role: 'user' | 'assistant' | 'tool' | 'error';
+    role: "user" | "assistant" | "tool" | "error";
     content: string;
     timestamp: Date;
     toolName?: string;
@@ -139,6 +142,7 @@ interface MessageProps {
 ```
 
 **Content Rendering:**
+
 - Markdown code block detection (``` with language tag)
 - Inline code formatting with backticks
 - Streaming indicator ("streaming..." pulse animation)
@@ -146,6 +150,7 @@ interface MessageProps {
 - Timestamps (12-hour format with AM/PM)
 
 **Tool Message Features:**
+
 - Collapsible layout with chevron toggle (default: collapsed)
 - Clickable header for expand/collapse
 - Duration badge (formatted as ms/s/m)
@@ -153,6 +158,7 @@ interface MessageProps {
 - Monospace code block for content when expanded
 
 **Role Styling:**
+
 - User: Input background with border
 - Assistant: Editor background
 - Tool: Inactive selection background with border
@@ -186,6 +192,7 @@ interface MessageInputProps {
 ```
 
 **Toolbar Controls:**
+
 - Model selector (Sonnet/Opus/Haiku)
 - Plan mode toggle (clipboard icon)
 - Thinking mode dropdown (brain icon with intensity levels)
@@ -196,6 +203,7 @@ interface MessageInputProps {
 - Image attachment button
 
 **Keyboard Shortcuts:**
+
 - `Enter` - Send message
 - `Shift+Enter` - New line
 - `@` - Open file picker
@@ -218,6 +226,7 @@ interface HeaderProps {
 ```
 
 **Layout:**
+
 - Left: Title + session indicator (green dot)
 - Right: History | Settings | New Chat buttons
 
@@ -236,6 +245,7 @@ interface StatusBarProps {
 ```
 
 **Layout:**
+
 - Left: Connection status dot + text
 - Center: Processing spinner (when processing)
 - Right: Stop button (when processing) + keyboard hint
@@ -264,14 +274,27 @@ interface ToolUseCardProps {
 ```
 
 **Features:**
-- Tool icon based on name (Read, Write, Edit, Bash, Glob, Grep, TodoWrite, WebFetch, WebSearch, Task, LSP, NotebookEdit)
+
+- Tool icon based on name (Read, Write, Edit, MultiEdit, Bash, Glob, Grep, TodoWrite, WebFetch, WebSearch, Task, LSP, NotebookEdit)
 - Collapsible card with chevron toggle (default: collapsed)
-- Duration badge (formatted as ms/s/m)
-- Token count badge (formatted with K suffix)
-- Expandable sections for long input values
-- Clickable file paths with file icon
+- Clickable header for expand/collapse (hover state with background change)
+- Duration badge (formatted as ms/s/m) with clock icon
+- Token count badge (formatted with K suffix) with tag icon
+- Expandable sections for long input values (> 200 characters)
+- Clickable file paths with file icon (detects file_path, filePath, path, file keys)
 - Execution spinner with "Executing..." text
-- Raw JSON input view (expandable)
+- Raw JSON input view (expandable via "show more" button)
+
+**Tool Icons Supported:**
+
+- Read, Write, Edit, MultiEdit (file operations)
+- Bash (terminal)
+- Glob, Grep (search)
+- TodoWrite (checklist)
+- WebFetch, WebSearch (web operations)
+- Task (clipboard)
+- LSP (code layers)
+- NotebookEdit (notebook)
 
 ---
 
@@ -296,6 +319,7 @@ interface ToolResultCardProps {
 ```
 
 **Features:**
+
 - Collapsible card with chevron toggle (default: collapsed)
 - Success/error styling with appropriate icons
 - Duration badge (formatted as ms/s/m)
@@ -311,6 +335,7 @@ interface ToolResultCardProps {
 **Purpose:** Shows file changes in diff format.
 
 **Features:**
+
 - Side-by-side view
 - Unified diff view
 - Syntax highlighting
@@ -323,6 +348,7 @@ interface ToolResultCardProps {
 **Purpose:** Renders todo items from TodoWrite tool.
 
 **Features:**
+
 - Status indicators (pending, in_progress, completed)
 - Priority badges
 - Collapsible sections
@@ -341,13 +367,14 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  width?: 'sm' | 'md' | 'lg' | 'xl';
+  width?: "sm" | "md" | "lg" | "xl";
   showCloseButton?: boolean;
   closeOnBackdrop?: boolean;
 }
 ```
 
 **Features:**
+
 - Backdrop blur effect
 - Fade-in/slide-up animations
 - Escape key to close
@@ -358,6 +385,7 @@ interface ModalProps {
 ### SettingsModal
 
 **Sections:**
+
 1. WSL Configuration
 2. Permissions Management
 3. YOLO Mode Toggle
@@ -379,6 +407,7 @@ interface PermissionModalProps {
 ```
 
 **Sections:**
+
 1. Warning banner with tool name
 2. Input preview (JSON formatted)
 3. Deny reason textarea (expandable)
@@ -392,6 +421,7 @@ interface PermissionModalProps {
 **Purpose:** MCP server configuration.
 
 **Features:**
+
 - Server list with status indicators
 - Add/edit server form
 - Test connection button
@@ -404,6 +434,7 @@ interface PermissionModalProps {
 **Purpose:** Claude model selection.
 
 **Available Models:**
+
 - Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Claude Opus 4.5 (claude-opus-4-5-20251101)
 - Claude Haiku 4.5 (claude-haiku-4-5-20251001)
@@ -415,6 +446,7 @@ interface PermissionModalProps {
 **Purpose:** Shows available slash commands.
 
 **Commands:**
+
 - `/help` - Show help
 - `/clear` - Clear conversation
 - `/settings` - Open settings
@@ -428,6 +460,7 @@ interface PermissionModalProps {
 **Purpose:** Select thinking mode intensity.
 
 **Levels:**
+
 - Think (default)
 - Think Hard
 - Think Harder
@@ -461,6 +494,7 @@ interface ConversationHistoryProps {
 ```
 
 **Features:**
+
 - Fixed sidebar (320px width, max-w-full)
 - Slide-in animation (`animate-slide-in-left`)
 - Header with conversation count and close button
@@ -489,6 +523,7 @@ interface ConversationSummary {
 ```
 
 **Features:**
+
 - Header with conversation count
 - Search input with filtering
 - Conversation list with hover delete
@@ -519,6 +554,7 @@ interface ConversationItemProps {
 ```
 
 **Features:**
+
 - Hover state with delete button (opacity transition)
 - Inline delete confirmation (checkmark/X buttons)
 - Relative timestamp formatting ("2 hours ago", "Yesterday", etc.)
@@ -544,6 +580,7 @@ interface ConversationSearchProps {
 ```
 
 **Features:**
+
 - Search icon
 - Clear button
 - Debounced callback (300ms default)

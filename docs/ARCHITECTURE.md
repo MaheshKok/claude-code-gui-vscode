@@ -219,19 +219,19 @@ webview/
 
 ### Stream Event Type Mapping
 
-| CLI Event Type | Subtype/Field | Webview Message | React Store Action |
-|----------------|---------------|-----------------|-------------------|
-| `system` | `init` | `sessionInfo` | `setSession()` |
-| `system` | `status:compacting` | `compacting` | `setCompacting()` |
-| `system` | `compact_boundary` | `compactBoundary` | `resetTokens()` |
-| `assistant` | `content[type=text]` | `output` | `appendMessage()` |
-| `assistant` | `content[type=thinking]` | `thinking` | `appendThinking()` |
-| `assistant` | `content[type=tool_use]` | `toolUse` | `addToolExecution()` |
-| `assistant` | `usage` | `updateTokens` | `updateTokenCount()` |
-| `user` | `content[type=tool_result]` | `toolResult` | `addToolResult()` |
-| `result` | `success` | `updateTotals` | `completeRequest()` |
-| `control_request` | `can_use_tool` | `permissionRequest` | `addPermission()` |
-| `control_response` | `response.account` | `accountInfo` | `setAccount()` |
+| CLI Event Type     | Subtype/Field               | Webview Message     | React Store Action   |
+| ------------------ | --------------------------- | ------------------- | -------------------- |
+| `system`           | `init`                      | `sessionInfo`       | `setSession()`       |
+| `system`           | `status:compacting`         | `compacting`        | `setCompacting()`    |
+| `system`           | `compact_boundary`          | `compactBoundary`   | `resetTokens()`      |
+| `assistant`        | `content[type=text]`        | `output`            | `appendMessage()`    |
+| `assistant`        | `content[type=thinking]`    | `thinking`          | `appendThinking()`   |
+| `assistant`        | `content[type=tool_use]`    | `toolUse`           | `addToolExecution()` |
+| `assistant`        | `usage`                     | `updateTokens`      | `updateTokenCount()` |
+| `user`             | `content[type=tool_result]` | `toolResult`        | `addToolResult()`    |
+| `result`           | `success`                   | `updateTotals`      | `completeRequest()`  |
+| `control_request`  | `can_use_tool`              | `permissionRequest` | `addPermission()`    |
+| `control_response` | `response.account`          | `accountInfo`       | `setAccount()`       |
 
 ## State Management Strategy (Zustand)
 
@@ -272,7 +272,7 @@ interface SettingsState {
   wslClaudePath: string;
 
   // Modes
-  selectedModel: 'opus' | 'sonnet' | 'default';
+  selectedModel: "opus" | "sonnet" | "default";
   planModeEnabled: boolean;
   thinkingModeEnabled: boolean;
   thinkingIntensity: ThinkingIntensity;
@@ -437,12 +437,14 @@ claude-code-gui/
 **Decision**: Use React 18 with Vite for the webview layer.
 
 **Rationale**:
+
 - React provides a robust component model and ecosystem
 - Vite offers fast HMR for development and optimized production builds
 - TypeScript integration is seamless
 - Large community and extensive documentation
 
 **Consequences**:
+
 - Need to configure Vite for webview-specific constraints (CSP, base path)
 - Bundle size considerations for extension package
 
@@ -453,6 +455,7 @@ claude-code-gui/
 **Decision**: Use Zustand instead of Redux or React Context.
 
 **Rationale**:
+
 - Minimal boilerplate compared to Redux
 - TypeScript-first design
 - Small bundle size (~1KB gzipped)
@@ -460,6 +463,7 @@ claude-code-gui/
 - Supports middleware (persist, devtools)
 
 **Consequences**:
+
 - Team needs to learn Zustand patterns
 - Less ecosystem tooling than Redux
 
@@ -470,12 +474,14 @@ claude-code-gui/
 **Decision**: Use TailwindCSS with CSS variables for VSCode theme integration.
 
 **Rationale**:
+
 - Utility-first approach enables rapid UI development
 - Easy to match VSCode's visual language
 - CSS variables allow dynamic theme switching
 - Smaller final CSS bundle through purging
 
 **Consequences**:
+
 - HTML can become verbose with utility classes
 - Team needs to learn Tailwind conventions
 
@@ -486,12 +492,14 @@ claude-code-gui/
 **Decision**: Maintain strict separation between extension host and webview code.
 
 **Rationale**:
+
 - Extension host runs in Node.js context
 - Webview runs in browser-like context with restrictions
 - Separation enables independent testing
 - Clear contracts via postMessage API
 
 **Consequences**:
+
 - All communication must go through message passing
 - Types must be shared between contexts
 - Need separate build pipelines
@@ -503,29 +511,31 @@ claude-code-gui/
 **Decision**: Use a streaming parser with event-based architecture.
 
 **Rationale**:
+
 - Enables real-time UI updates as responses stream
 - Handles incomplete JSON lines gracefully
 - Event-driven design allows loose coupling
 - Easy to add new event handlers
 
 **Consequences**:
+
 - Must handle partial JSON lines
 - Need robust error handling for malformed data
 - UI must handle incremental updates
 
 ## Technology Stack Summary
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Extension Host | Node.js + TypeScript | VSCode API integration |
-| Process Management | child_process | Claude CLI spawning |
-| Webview Framework | React 18 | Component-based UI |
-| Build Tool | Vite | Fast development & optimized builds |
-| State Management | Zustand | Predictable state updates |
-| Styling | TailwindCSS | Utility-first CSS |
-| Type Safety | TypeScript | End-to-end type safety |
-| Markdown | marked + highlight.js | Rich text rendering |
-| Diff Visualization | diff-match-patch | Inline change display |
+| Layer              | Technology            | Purpose                             |
+| ------------------ | --------------------- | ----------------------------------- |
+| Extension Host     | Node.js + TypeScript  | VSCode API integration              |
+| Process Management | child_process         | Claude CLI spawning                 |
+| Webview Framework  | React 18              | Component-based UI                  |
+| Build Tool         | Vite                  | Fast development & optimized builds |
+| State Management   | Zustand               | Predictable state updates           |
+| Styling            | TailwindCSS           | Utility-first CSS                   |
+| Type Safety        | TypeScript            | End-to-end type safety              |
+| Markdown           | marked + highlight.js | Rich text rendering                 |
+| Diff Visualization | diff-match-patch      | Inline change display               |
 
 ## Security Considerations
 

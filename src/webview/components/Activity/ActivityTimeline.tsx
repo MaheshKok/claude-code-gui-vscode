@@ -1,7 +1,11 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import type { Message } from '../App';
-import { ToolUseCard, ToolResultCard, TodoDisplay } from '../Tools';
-import { extractTodosFromInput, formatDuration, formatTokenCount } from '../../utils';
+import React, { useMemo, useState, useCallback } from "react";
+import type { Message } from "../App";
+import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
+import {
+  extractTodosFromInput,
+  formatDuration,
+  formatTokenCount,
+} from "../../utils";
 
 interface ActivityStep {
   id: string;
@@ -16,20 +20,26 @@ interface ActivityTimelineProps {
 }
 
 const statusLabels: Record<string, string> = {
-  executing: 'Running',
-  pending: 'Pending',
-  completed: 'Completed',
-  failed: 'Failed',
-  denied: 'Denied',
+  executing: "Running",
+  pending: "Pending",
+  completed: "Completed",
+  failed: "Failed",
+  denied: "Denied",
 };
 
 const statusClasses: Record<string, string> = {
-  running: 'bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40',
-  executing: 'bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40',
-  pending: 'bg-[var(--vscode-editor-inactiveSelectionBackground)] text-[var(--vscode-descriptionForeground)] border-[var(--vscode-panel-border)]',
-  completed: 'bg-[var(--vscode-terminal-ansiGreen)]/15 text-[var(--vscode-terminal-ansiGreen)] border-[var(--vscode-terminal-ansiGreen)]/40',
-  failed: 'bg-[var(--vscode-errorForeground)]/15 text-[var(--vscode-errorForeground)] border-[var(--vscode-errorForeground)]/40',
-  denied: 'bg-[var(--vscode-terminal-ansiYellow)]/15 text-[var(--vscode-terminal-ansiYellow)] border-[var(--vscode-terminal-ansiYellow)]/40',
+  running:
+    "bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40",
+  executing:
+    "bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40",
+  pending:
+    "bg-[var(--vscode-editor-inactiveSelectionBackground)] text-[var(--vscode-descriptionForeground)] border-[var(--vscode-panel-border)]",
+  completed:
+    "bg-[var(--vscode-terminal-ansiGreen)]/15 text-[var(--vscode-terminal-ansiGreen)] border-[var(--vscode-terminal-ansiGreen)]/40",
+  failed:
+    "bg-[var(--vscode-errorForeground)]/15 text-[var(--vscode-errorForeground)] border-[var(--vscode-errorForeground)]/40",
+  denied:
+    "bg-[var(--vscode-terminal-ansiYellow)]/15 text-[var(--vscode-terminal-ansiYellow)] border-[var(--vscode-terminal-ansiYellow)]/40",
 };
 
 const getStepStatus = (step: ActivityStep): string => {
@@ -37,18 +47,18 @@ const getStepStatus = (step: ActivityStep): string => {
     return step.toolUse.status;
   }
   if (step.toolResult?.isError) {
-    return 'failed';
+    return "failed";
   }
   if (step.toolResult) {
-    return 'completed';
+    return "completed";
   }
-  return 'pending';
+  return "pending";
 };
 
 const formatTimestamp = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   }).format(date);
 };
@@ -58,17 +68,22 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   defaultCollapsed = true,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const [collapsedSteps, setCollapsedSteps] = useState<Record<string, boolean>>({});
+  const [collapsedSteps, setCollapsedSteps] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const steps = useMemo<ActivityStep[]>(() => {
     const ordered: ActivityStep[] = [];
     const stepMap = new Map<string, ActivityStep>();
 
     messages.forEach((message) => {
-      if (message.role !== 'tool') {
+      if (message.role !== "tool") {
         return;
       }
-      if (message.messageType !== 'tool_use' && message.messageType !== 'tool_result') {
+      if (
+        message.messageType !== "tool_use" &&
+        message.messageType !== "tool_result"
+      ) {
         return;
       }
 
@@ -83,10 +98,10 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         ordered.push(step);
       }
 
-      if (message.messageType === 'tool_use') {
+      if (message.messageType === "tool_use") {
         step.toolUse = message;
         step.timestamp = message.timestamp;
-      } else if (message.messageType === 'tool_result') {
+      } else if (message.messageType === "tool_result") {
         step.toolResult = message;
       }
     });
@@ -112,18 +127,18 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   const statusCounts = steps.reduce(
     (acc, step) => {
       const status = getStepStatus(step);
-      if (status === 'failed') {
+      if (status === "failed") {
         acc.failed += 1;
-      } else if (status === 'completed') {
+      } else if (status === "completed") {
         acc.completed += 1;
-      } else if (status === 'executing') {
+      } else if (status === "executing") {
         acc.running += 1;
       } else {
         acc.pending += 1;
       }
       return acc;
     },
-    { completed: 0, failed: 0, running: 0, pending: 0 }
+    { completed: 0, failed: 0, running: 0, pending: 0 },
   );
 
   return (
@@ -143,19 +158,29 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
-          <span className="font-medium text-sm text-[var(--vscode-foreground)]">Activity</span>
+          <span className="font-medium text-sm text-[var(--vscode-foreground)]">
+            Activity
+          </span>
           <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-            {steps.length} step{steps.length === 1 ? '' : 's'}
+            {steps.length} step{steps.length === 1 ? "" : "s"}
           </span>
           <div className="ml-auto flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
-            {statusCounts.running > 0 && <span>{statusCounts.running} running</span>}
-            {statusCounts.pending > 0 && <span>{statusCounts.pending} pending</span>}
-            {statusCounts.completed > 0 && <span>{statusCounts.completed} completed</span>}
-            {statusCounts.failed > 0 && <span>{statusCounts.failed} failed</span>}
+            {statusCounts.running > 0 && (
+              <span>{statusCounts.running} running</span>
+            )}
+            {statusCounts.pending > 0 && (
+              <span>{statusCounts.pending} pending</span>
+            )}
+            {statusCounts.completed > 0 && (
+              <span>{statusCounts.completed} completed</span>
+            )}
+            {statusCounts.failed > 0 && (
+              <span>{statusCounts.failed} failed</span>
+            )}
           </div>
         </div>
 
@@ -164,10 +189,13 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             {steps.map((step, index) => {
               const status = getStepStatus(step);
               const statusLabel = statusLabels[status] || status;
-              const statusClass = statusClasses[status] || statusClasses.pending;
+              const statusClass =
+                statusClasses[status] || statusClasses.pending;
               const stepCollapsed = collapsedSteps[step.id] ?? defaultCollapsed;
-              const toolName = step.toolUse?.toolName || step.toolResult?.toolName || 'Tool';
-              const duration = step.toolUse?.duration ?? step.toolResult?.duration;
+              const toolName =
+                step.toolUse?.toolName || step.toolResult?.toolName || "Tool";
+              const duration =
+                step.toolUse?.duration ?? step.toolResult?.duration;
               const tokens = step.toolUse?.tokens ?? step.toolResult?.tokens;
 
               return (
@@ -188,7 +216,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className={`text-[var(--vscode-descriptionForeground)] transition-transform ${stepCollapsed ? '' : 'rotate-90'}`}
+                        className={`text-[var(--vscode-descriptionForeground)] transition-transform ${stepCollapsed ? "" : "rotate-90"}`}
                       >
                         <polyline points="9 18 15 12 9 6" />
                       </svg>
@@ -212,7 +240,9 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                             {formatTokenCount(tokens, { includeSuffix: false })}
                           </span>
                         )}
-                        <span className={`px-2 py-0.5 rounded-full border text-[10px] ${statusClass}`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-full border text-[10px] ${statusClass}`}
+                        >
                           {statusLabel}
                         </span>
                       </div>
@@ -220,18 +250,20 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
 
                     {!stepCollapsed && (
                       <div className="mt-3 space-y-3 pl-3">
-                        {step.toolUse && step.toolUse.toolName === 'TodoWrite'
-                          ? (
-                            <TodoDisplay
-                              todos={extractTodosFromInput(step.toolUse.rawInput || {})}
-                              title="Todo Update"
-                            />
-                          )
-                          : step.toolUse && (
+                        {step.toolUse &&
+                        step.toolUse.toolName === "TodoWrite" ? (
+                          <TodoDisplay
+                            todos={extractTodosFromInput(
+                              step.toolUse.rawInput || {},
+                            )}
+                            title="Todo Update"
+                          />
+                        ) : (
+                          step.toolUse && (
                             <ToolUseCard
-                              toolName={step.toolUse.toolName || 'Tool'}
+                              toolName={step.toolUse.toolName || "Tool"}
                               input={step.toolUse.rawInput || {}}
-                              isExecuting={status === 'executing'}
+                              isExecuting={status === "executing"}
                               duration={step.toolUse.duration}
                               tokens={step.toolUse.tokens}
                               fileContentBefore={step.toolUse.fileContentBefore}
@@ -240,7 +272,8 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                               startLines={step.toolUse.startLines}
                               defaultCollapsed={true}
                             />
-                          )}
+                          )
+                        )}
 
                         {step.toolResult && !step.toolResult.hidden && (
                           <ToolResultCard
@@ -253,7 +286,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                           />
                         )}
 
-                        {!step.toolResult && status === 'executing' && (
+                        {!step.toolResult && status === "executing" && (
                           <div className="text-xs text-[var(--vscode-descriptionForeground)]">
                             Awaiting result...
                           </div>

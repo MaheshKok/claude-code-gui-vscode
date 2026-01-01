@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 
 export interface ToolResultCardProps {
   content: string;
@@ -17,7 +17,7 @@ export interface ToolResultCardProps {
 /** Format duration in human readable format */
 const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, "")}s`;
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor((ms % 60000) / 1000);
   return `${minutes}m ${seconds}s`;
@@ -26,15 +26,18 @@ const formatDuration = (ms: number): string => {
 /** Format tokens in human readable format */
 const formatTokens = (tokens: number): string => {
   if (tokens < 1000) return `${tokens}`;
-  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K`;
 };
 
-const truncateContent = (content: string, maxLines: number): { truncated: string; isTruncated: boolean; hiddenCount: number } => {
-  const lines = content.split('\n');
+const truncateContent = (
+  content: string,
+  maxLines: number,
+): { truncated: string; isTruncated: boolean; hiddenCount: number } => {
+  const lines = content.split("\n");
   if (lines.length <= maxLines) {
     return { truncated: content, isTruncated: false, hiddenCount: 0 };
   }
-  const truncated = lines.slice(0, maxLines).join('\n');
+  const truncated = lines.slice(0, maxLines).join("\n");
   return {
     truncated,
     isTruncated: true,
@@ -54,9 +57,12 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+  const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
 
-  const { truncated, isTruncated, hiddenCount } = truncateContent(content, maxLines);
+  const { truncated, isTruncated, hiddenCount } = truncateContent(
+    content,
+    maxLines,
+  );
 
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => !prev);
@@ -69,13 +75,13 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(content);
-      setCopyState('copied');
+      setCopyState("copied");
       if (onCopy) {
         onCopy(content);
       }
-      setTimeout(() => setCopyState('idle'), 2000);
+      setTimeout(() => setCopyState("idle"), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   }, [content, onCopy]);
 
@@ -85,16 +91,16 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
     <div
       className={`rounded-md overflow-hidden border ${
         isError
-          ? 'border-[var(--vscode-inputValidation-errorBorder)] bg-[var(--vscode-inputValidation-errorBackground)]'
-          : 'border-[var(--vscode-panel-border)] bg-[var(--vscode-textCodeBlock-background)]'
+          ? "border-[var(--vscode-inputValidation-errorBorder)] bg-[var(--vscode-inputValidation-errorBackground)]"
+          : "border-[var(--vscode-panel-border)] bg-[var(--vscode-textCodeBlock-background)]"
       }`}
     >
       {/* Header - Clickable for collapse toggle */}
       <div
         className={`flex items-center justify-between px-3 py-1.5 text-xs cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors ${
           isError
-            ? 'bg-[var(--vscode-inputValidation-errorBackground)]'
-            : 'bg-[var(--vscode-editorGroupHeader-tabsBackground)]'
+            ? "bg-[var(--vscode-inputValidation-errorBackground)]"
+            : "bg-[var(--vscode-editorGroupHeader-tabsBackground)]"
         } border-b border-[var(--vscode-panel-border)]`}
         onClick={toggleCollapsed}
       >
@@ -110,7 +116,7 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
@@ -149,10 +155,12 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
           )}
           <span
             className={`font-medium ${
-              isError ? 'text-[var(--vscode-errorForeground)]' : 'text-[var(--vscode-descriptionForeground)]'
+              isError
+                ? "text-[var(--vscode-errorForeground)]"
+                : "text-[var(--vscode-descriptionForeground)]"
             }`}
           >
-            {isError ? 'Error' : 'Result'}
+            {isError ? "Error" : "Result"}
             {toolName && ` - ${toolName}`}
           </span>
         </div>
@@ -199,10 +207,13 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
           )}
           <button
             className="flex items-center gap-1 px-2 py-0.5 rounded text-[var(--vscode-descriptionForeground)] hover:bg-[var(--vscode-toolbar-hoverBackground)] transition-colors"
-            onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy();
+            }}
             title="Copy to clipboard"
           >
-            {copyState === 'copied' ? (
+            {copyState === "copied" ? (
               <>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -218,7 +229,9 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span className="text-[var(--vscode-terminal-ansiGreen)]">Copied</span>
+                <span className="text-[var(--vscode-terminal-ansiGreen)]">
+                  Copied
+                </span>
               </>
             ) : (
               <>
@@ -248,7 +261,9 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
         <div className="px-3 py-2">
           <pre
             className={`text-xs font-mono whitespace-pre-wrap break-words ${
-              isError ? 'text-[var(--vscode-errorForeground)]' : 'text-[var(--vscode-foreground)]'
+              isError
+                ? "text-[var(--vscode-errorForeground)]"
+                : "text-[var(--vscode-foreground)]"
             }`}
           >
             {displayContent}
@@ -259,7 +274,10 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
             <div className="mt-2 pt-2 border-t border-[var(--vscode-panel-border)]">
               <button
                 className="flex items-center gap-1 text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
-                onClick={(e) => { e.stopPropagation(); toggleExpanded(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpanded();
+                }}
               >
                 {isExpanded ? (
                   <>

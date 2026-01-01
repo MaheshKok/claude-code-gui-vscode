@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { Modal } from './Modal';
+import React, { useState, useCallback } from "react";
+import { Modal } from "./Modal";
 
-export type MCPServerType = 'http' | 'sse' | 'stdio';
+export type MCPServerType = "http" | "sse" | "stdio";
 
 export interface MCPServer {
   id: string;
@@ -24,59 +24,59 @@ export interface PopularServer {
 
 const POPULAR_SERVERS: PopularServer[] = [
   {
-    name: 'Context7',
-    icon: '\uD83D\uDCDA',
-    description: 'Up-to-date Code Docs For Any Prompt',
-    config: { type: 'http', url: 'https://context7.liam.sh/mcp' },
+    name: "Context7",
+    icon: "\uD83D\uDCDA",
+    description: "Up-to-date Code Docs For Any Prompt",
+    config: { type: "http", url: "https://context7.liam.sh/mcp" },
   },
   {
-    name: 'Sequential Thinking',
-    icon: '\uD83D\uDD17',
-    description: 'Step-by-step reasoning capabilities',
+    name: "Sequential Thinking",
+    icon: "\uD83D\uDD17",
+    description: "Step-by-step reasoning capabilities",
     config: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-sequential-thinking'],
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-sequential-thinking"],
     },
   },
   {
-    name: 'Memory',
-    icon: '\uD83E\uDDE0',
-    description: 'Knowledge graph storage',
+    name: "Memory",
+    icon: "\uD83E\uDDE0",
+    description: "Knowledge graph storage",
     config: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-memory'],
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-memory"],
     },
   },
   {
-    name: 'Puppeteer',
-    icon: '\uD83C\uDFAD',
-    description: 'Browser automation',
+    name: "Puppeteer",
+    icon: "\uD83C\uDFAD",
+    description: "Browser automation",
     config: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-puppeteer'],
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-puppeteer"],
     },
   },
   {
-    name: 'Fetch',
-    icon: '\uD83C\uDF10',
-    description: 'HTTP requests & web scraping',
+    name: "Fetch",
+    icon: "\uD83C\uDF10",
+    description: "HTTP requests & web scraping",
     config: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-fetch'],
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-fetch"],
     },
   },
   {
-    name: 'Filesystem',
-    icon: '\uD83D\uDCC1',
-    description: 'File operations & management',
+    name: "Filesystem",
+    icon: "\uD83D\uDCC1",
+    description: "File operations & management",
     config: {
-      type: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem'],
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-filesystem"],
     },
   },
 ];
@@ -87,7 +87,7 @@ export interface MCPModalProps {
   servers?: MCPServer[];
   onToggleServer?: (id: string, enabled: boolean) => void;
   onDeleteServer?: (id: string) => void;
-  onAddServer?: (server: Omit<MCPServer, 'id'>) => void;
+  onAddServer?: (server: Omit<MCPServer, "id">) => void;
 }
 
 export const MCPModal: React.FC<MCPModalProps> = ({
@@ -108,24 +108,24 @@ export const MCPModal: React.FC<MCPModalProps> = ({
     env: string;
     headers: string;
   }>({
-    name: '',
-    type: 'http',
-    url: '',
-    command: '',
-    args: '',
-    env: '',
-    headers: '',
+    name: "",
+    type: "http",
+    url: "",
+    command: "",
+    args: "",
+    env: "",
+    headers: "",
   });
 
   const resetForm = useCallback(() => {
     setFormData({
-      name: '',
-      type: 'http',
-      url: '',
-      command: '',
-      args: '',
-      env: '',
-      headers: '',
+      name: "",
+      type: "http",
+      url: "",
+      command: "",
+      args: "",
+      env: "",
+      headers: "",
     });
     setShowAddForm(false);
   }, []);
@@ -133,25 +133,25 @@ export const MCPModal: React.FC<MCPModalProps> = ({
   const handleSubmit = useCallback(() => {
     const parseKeyValue = (text: string): Record<string, string> => {
       const result: Record<string, string> = {};
-      text.split('\n').forEach((line) => {
-        const [key, ...valueParts] = line.split('=');
+      text.split("\n").forEach((line) => {
+        const [key, ...valueParts] = line.split("=");
         if (key && valueParts.length > 0) {
-          result[key.trim()] = valueParts.join('=').trim();
+          result[key.trim()] = valueParts.join("=").trim();
         }
       });
       return result;
     };
 
-    const server: Omit<MCPServer, 'id'> = {
+    const server: Omit<MCPServer, "id"> = {
       name: formData.name,
       type: formData.type,
       enabled: true,
     };
 
-    if (formData.type === 'stdio') {
+    if (formData.type === "stdio") {
       server.command = formData.command;
       server.args = formData.args
-        .split('\n')
+        .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
       if (formData.env) {
@@ -171,18 +171,17 @@ export const MCPModal: React.FC<MCPModalProps> = ({
   const handleAddPopular = useCallback(
     (popular: PopularServer) => {
       onAddServer({
-        name: popular.name.toLowerCase().replace(/\s+/g, '-'),
+        name: popular.name.toLowerCase().replace(/\s+/g, "-"),
         enabled: true,
         ...popular.config,
-      } as Omit<MCPServer, 'id'>);
+      } as Omit<MCPServer, "id">);
     },
-    [onAddServer]
+    [onAddServer],
   );
 
-  const isStdio = formData.type === 'stdio';
+  const isStdio = formData.type === "stdio";
   const canSubmit =
-    formData.name &&
-    (isStdio ? formData.command : formData.url);
+    formData.name && (isStdio ? formData.command : formData.url);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="MCP Servers" width="lg">
@@ -214,11 +213,13 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                     </label>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{server.name}</span>
+                        <span className="text-sm font-medium">
+                          {server.name}
+                        </span>
                         <span className="badge text-xs">{server.type}</span>
                       </div>
                       <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-                        {server.type === 'stdio' ? server.command : server.url}
+                        {server.type === "stdio" ? server.command : server.url}
                       </span>
                     </div>
                   </div>
@@ -308,7 +309,10 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                     type="text"
                     value={formData.command}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, command: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        command: e.target.value,
+                      }))
                     }
                     placeholder="/path/to/server"
                     className="input"
@@ -385,7 +389,10 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                     id="server-headers"
                     value={formData.headers}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, headers: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        headers: e.target.value,
+                      }))
                     }
                     placeholder="Authorization=Bearer token&#10;X-API-Key=key"
                     rows={3}
@@ -407,8 +414,8 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                 onClick={resetForm}
                 className="btn-secondary px-3 py-1.5 text-sm rounded"
                 style={{
-                  backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                  color: 'var(--vscode-button-secondaryForeground)',
+                  backgroundColor: "var(--vscode-button-secondaryBackground)",
+                  color: "var(--vscode-button-secondaryForeground)",
                 }}
               >
                 Cancel
@@ -420,8 +427,8 @@ export const MCPModal: React.FC<MCPModalProps> = ({
             onClick={() => setShowAddForm(true)}
             className="btn-secondary w-full py-2 text-sm rounded border border-dashed border-[var(--vscode-editorWidget-border)] hover:border-[var(--vscode-focusBorder)]"
             style={{
-              backgroundColor: 'transparent',
-              color: 'var(--vscode-foreground)',
+              backgroundColor: "transparent",
+              color: "var(--vscode-foreground)",
             }}
           >
             + Add MCP Server
@@ -442,7 +449,9 @@ export const MCPModal: React.FC<MCPModalProps> = ({
               >
                 <span className="text-xl flex-shrink-0">{server.icon}</span>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{server.name}</div>
+                  <div className="text-sm font-medium truncate">
+                    {server.name}
+                  </div>
                   <div className="text-xs text-[var(--vscode-descriptionForeground)] line-clamp-2">
                     {server.description}
                   </div>

@@ -7,9 +7,9 @@
  * @module stores/mcpStore
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ToolDefinition } from '../types';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { ToolDefinition } from "../types";
 
 // ============================================================================
 // Types
@@ -19,11 +19,11 @@ import type { ToolDefinition } from '../types';
  * MCP server status
  */
 export type MCPServerStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'error'
-  | 'disabled';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "disabled";
 
 /**
  * MCP server configuration
@@ -90,7 +90,11 @@ export interface MCPActions {
   /** Toggle server enabled state */
   toggleServer: (id: string) => void;
   /** Set server status */
-  setServerStatus: (id: string, status: MCPServerStatus, error?: string) => void;
+  setServerStatus: (
+    id: string,
+    status: MCPServerStatus,
+    error?: string,
+  ) => void;
   /** Set server tools */
   setServerTools: (id: string, tools: ToolDefinition[]) => void;
   /** Set selected server */
@@ -135,7 +139,7 @@ const initialState: MCPState = {
  */
 const createServerState = (config: MCPServerConfig): MCPServerState => ({
   config,
-  status: config.enabled ? 'disconnected' : 'disabled',
+  status: config.enabled ? "disconnected" : "disabled",
   tools: [],
   retryCount: 0,
 });
@@ -165,7 +169,7 @@ export const useMCPStore = create<MCPStore>()(
                   ...server,
                   config: { ...server.config, ...updates },
                 }
-              : server
+              : server,
           ),
         })),
 
@@ -183,32 +187,27 @@ export const useMCPStore = create<MCPStore>()(
               ? {
                   ...server,
                   config: { ...server.config, enabled: !server.config.enabled },
-                  status: server.config.enabled ? 'disabled' : 'disconnected',
+                  status: server.config.enabled ? "disabled" : "disconnected",
                 }
-              : server
+              : server,
           ),
         })),
 
       setServerStatus: (id, status, error) =>
         set((state) => ({
           servers: state.servers.map((server) =>
-            server.config.id === id
-              ? { ...server, status, error }
-              : server
+            server.config.id === id ? { ...server, status, error } : server,
           ),
         })),
 
       setServerTools: (id, tools) =>
         set((state) => ({
           servers: state.servers.map((server) =>
-            server.config.id === id
-              ? { ...server, tools }
-              : server
+            server.config.id === id ? { ...server, tools } : server,
           ),
         })),
 
-      setSelectedServer: (id) =>
-        set({ selectedServerId: id }),
+      setSelectedServer: (id) => set({ selectedServerId: id }),
 
       getServerById: (id) => {
         const state = get();
@@ -222,7 +221,7 @@ export const useMCPStore = create<MCPStore>()(
 
       getConnectedServers: () => {
         const state = get();
-        return state.servers.filter((server) => server.status === 'connected');
+        return state.servers.filter((server) => server.status === "connected");
       },
 
       incrementRetryCount: (id) =>
@@ -230,16 +229,14 @@ export const useMCPStore = create<MCPStore>()(
           servers: state.servers.map((server) =>
             server.config.id === id
               ? { ...server, retryCount: server.retryCount + 1 }
-              : server
+              : server,
           ),
         })),
 
       resetRetryCount: (id) =>
         set((state) => ({
           servers: state.servers.map((server) =>
-            server.config.id === id
-              ? { ...server, retryCount: 0 }
-              : server
+            server.config.id === id ? { ...server, retryCount: 0 } : server,
           ),
         })),
 
@@ -248,7 +245,7 @@ export const useMCPStore = create<MCPStore>()(
           servers: state.servers.map((server) =>
             server.config.id === id
               ? { ...server, lastConnected: Date.now() }
-              : server
+              : server,
           ),
         })),
 
@@ -256,7 +253,7 @@ export const useMCPStore = create<MCPStore>()(
         set((state) => ({
           servers: state.servers.map((server) => ({
             ...server,
-            status: server.config.enabled ? 'disconnected' : 'disabled',
+            status: server.config.enabled ? "disconnected" : "disabled",
             error: undefined,
             tools: [],
             retryCount: 0,
@@ -280,19 +277,19 @@ export const useMCPStore = create<MCPStore>()(
       },
     }),
     {
-      name: 'claude-flow-mcp-store',
+      name: "claude-flow-mcp-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist server configurations
         servers: state.servers.map((server) => ({
           config: server.config,
-          status: 'disconnected' as MCPServerStatus,
+          status: "disconnected" as MCPServerStatus,
           tools: [],
           retryCount: 0,
         })),
       }),
-    }
-  )
+    },
+  ),
 );
 
 // ============================================================================
@@ -314,7 +311,7 @@ export const selectEnabledServers = (state: MCPStore) =>
  * Select connected servers
  */
 export const selectConnectedServers = (state: MCPStore) =>
-  state.servers.filter((s) => s.status === 'connected');
+  state.servers.filter((s) => s.status === "connected");
 
 /**
  * Select selected server
@@ -332,9 +329,7 @@ export const selectServerById = (id: string) => (state: MCPStore) =>
  * Select all available tools across all servers
  */
 export const selectAllTools = (state: MCPStore) =>
-  state.servers
-    .filter((s) => s.status === 'connected')
-    .flatMap((s) => s.tools);
+  state.servers.filter((s) => s.status === "connected").flatMap((s) => s.tools);
 
 /**
  * Select server count
@@ -342,11 +337,11 @@ export const selectAllTools = (state: MCPStore) =>
 export const selectServerCount = (state: MCPStore) => ({
   total: state.servers.length,
   enabled: state.servers.filter((s) => s.config.enabled).length,
-  connected: state.servers.filter((s) => s.status === 'connected').length,
+  connected: state.servers.filter((s) => s.status === "connected").length,
 });
 
 /**
  * Select servers with errors
  */
 export const selectServersWithErrors = (state: MCPStore) =>
-  state.servers.filter((s) => s.status === 'error');
+  state.servers.filter((s) => s.status === "error");

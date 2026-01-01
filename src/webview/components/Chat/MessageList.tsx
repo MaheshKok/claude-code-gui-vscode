@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { Message as MessageComponent } from './Message';
-import type { Message } from '../App';
+import React, { useRef, useEffect } from "react";
+import { Message as MessageComponent } from "./Message";
+import type { Message } from "../App";
 
 interface MessageListProps {
   messages: Message[];
@@ -21,7 +21,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isProcessing]);
 
@@ -47,8 +47,8 @@ export const MessageList: React.FC<MessageListProps> = ({
           Start a conversation
         </h2>
         <p className="text-sm text-[var(--vscode-descriptionForeground)] max-w-md">
-          Ask Claude anything about your code, get help with debugging,
-          or request code generation. Use slash commands for quick actions.
+          Ask Claude anything about your code, get help with debugging, or
+          request code generation. Use slash commands for quick actions.
         </p>
         <div className="flex flex-wrap justify-center gap-2 mt-6">
           <QuickAction label="Explain code" icon="?" />
@@ -61,8 +61,8 @@ export const MessageList: React.FC<MessageListProps> = ({
   }
 
   const containerClasses = isScrollable
-    ? 'flex-1 overflow-y-auto px-4 py-4 space-y-4'
-    : 'px-4 py-4 space-y-4';
+    ? "flex-1 overflow-y-auto px-4 py-4 space-y-4"
+    : "px-4 py-4 space-y-4";
 
   return (
     <div ref={containerRef} className={containerClasses}>
@@ -73,9 +73,18 @@ export const MessageList: React.FC<MessageListProps> = ({
       {isProcessing && (
         <div className="flex items-center gap-2 p-4 rounded-lg bg-[var(--vscode-editor-inactiveSelectionBackground)]">
           <div className="flex gap-1">
-            <span className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span
+              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            />
+            <span
+              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
           <span className="text-sm text-[var(--vscode-descriptionForeground)]">
             Claude is thinking...

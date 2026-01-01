@@ -13,7 +13,7 @@ import type {
   TokenUsage,
   PermissionSuggestion,
   PermissionDecision,
-} from './claude-events';
+} from "./claude-events";
 
 // ============================================================================
 // Base Message Types
@@ -23,18 +23,18 @@ import type {
  * All possible message types in the chat
  */
 export type MessageType =
-  | 'user'
-  | 'assistant'
-  | 'tool_use'
-  | 'tool_result'
-  | 'thinking'
-  | 'error'
-  | 'system';
+  | "user"
+  | "assistant"
+  | "tool_use"
+  | "tool_result"
+  | "thinking"
+  | "error"
+  | "system";
 
 /**
  * Message sender role
  */
-export type MessageRole = 'user' | 'assistant' | 'system';
+export type MessageRole = "user" | "assistant" | "system";
 
 /**
  * Base interface for all chat messages
@@ -70,7 +70,7 @@ export type ChatMessage =
  * A message sent by the user
  */
 export interface UserMessage extends BaseMessage {
-  type: 'user';
+  type: "user";
   /** The message content */
   content: string;
   /** Optional file attachments */
@@ -82,7 +82,7 @@ export interface UserMessage extends BaseMessage {
  */
 export interface MessageAttachment {
   /** Attachment type */
-  type: 'file' | 'image';
+  type: "file" | "image";
   /** File name */
   name: string;
   /** File path (for files) */
@@ -103,7 +103,7 @@ export interface MessageAttachment {
  * A message from the assistant (Claude)
  */
 export interface AssistantMessage extends BaseMessage {
-  type: 'assistant';
+  type: "assistant";
   /** The text content of the message */
   content: string;
   /** Token usage for this message */
@@ -122,7 +122,7 @@ export interface AssistantMessage extends BaseMessage {
  * A message representing a tool invocation
  */
 export interface ToolUseMessage extends BaseMessage {
-  type: 'tool_use';
+  type: "tool_use";
   /** Unique ID for this tool use (from Claude) */
   toolUseId: string;
   /** Name of the tool being used */
@@ -151,12 +151,12 @@ export interface ToolUseMessage extends BaseMessage {
  * Tool execution status
  */
 export type ToolExecutionStatus =
-  | 'pending'      // Waiting for permission
-  | 'approved'     // Permission granted, executing
-  | 'executing'    // Currently executing
-  | 'completed'    // Successfully completed
-  | 'failed'       // Execution failed
-  | 'denied';      // Permission denied
+  | "pending" // Waiting for permission
+  | "approved" // Permission granted, executing
+  | "executing" // Currently executing
+  | "completed" // Successfully completed
+  | "failed" // Execution failed
+  | "denied"; // Permission denied
 
 // ============================================================================
 // Tool Result Message
@@ -166,7 +166,7 @@ export type ToolExecutionStatus =
  * A message representing the result of a tool execution
  */
 export interface ToolResultMessage extends BaseMessage {
-  type: 'tool_result';
+  type: "tool_result";
   /** ID of the tool_use this is a result for */
   toolUseId: string;
   /** Tool name (for display purposes) */
@@ -197,7 +197,7 @@ export interface ToolResultMessage extends BaseMessage {
  * A message representing Claude's thinking/reasoning process
  */
 export interface ThinkingMessage extends BaseMessage {
-  type: 'thinking';
+  type: "thinking";
   /** The thinking content */
   content: string;
   /** Whether this thinking block is expanded in the UI */
@@ -214,7 +214,7 @@ export interface ThinkingMessage extends BaseMessage {
  * An error message
  */
 export interface ErrorMessage extends BaseMessage {
-  type: 'error';
+  type: "error";
   /** Error message content */
   content: string;
   /** Error code (if available) */
@@ -229,11 +229,11 @@ export interface ErrorMessage extends BaseMessage {
  * Suggested error recovery action
  */
 export type ErrorAction =
-  | 'retry'
-  | 'login'
-  | 'install'
-  | 'configure'
-  | 'contact_support';
+  | "retry"
+  | "login"
+  | "install"
+  | "configure"
+  | "contact_support";
 
 // ============================================================================
 // System Message
@@ -243,7 +243,7 @@ export type ErrorAction =
  * A system message (non-interactive informational message)
  */
 export interface SystemMessage extends BaseMessage {
-  type: 'system';
+  type: "system";
   /** System message content */
   content: string;
   /** System message severity */
@@ -253,7 +253,7 @@ export interface SystemMessage extends BaseMessage {
 /**
  * System message severity level
  */
-export type SystemMessageSeverity = 'info' | 'warning' | 'success';
+export type SystemMessageSeverity = "info" | "warning" | "success";
 
 // ============================================================================
 // Permission Request
@@ -290,7 +290,11 @@ export interface PermissionRequest {
 /**
  * Permission request status
  */
-export type PermissionRequestStatus = 'pending' | 'approved' | 'denied' | 'expired';
+export type PermissionRequestStatus =
+  | "pending"
+  | "approved"
+  | "denied"
+  | "expired";
 
 // ============================================================================
 // Message Groups
@@ -314,9 +318,9 @@ export interface MessageGroup {
  * Types of message groups
  */
 export type MessageGroupType =
-  | 'tool_interaction'  // A tool_use + tool_result pair
-  | 'thinking_block'    // A thinking block
-  | 'conversation';     // A user message + assistant response
+  | "tool_interaction" // A tool_use + tool_result pair
+  | "thinking_block" // A thinking block
+  | "conversation"; // A user message + assistant response
 
 // ============================================================================
 // Conversation Thread
@@ -361,7 +365,7 @@ export interface MessageRenderOptions {
   /** Maximum content length before truncation */
   maxContentLength?: number;
   /** Code theme for syntax highlighting */
-  codeTheme?: 'light' | 'dark' | 'auto';
+  codeTheme?: "light" | "dark" | "auto";
 }
 
 /**
@@ -388,47 +392,57 @@ export interface DiffInfo {
  * Type guard for UserMessage
  */
 export function isUserMessage(message: ChatMessage): message is UserMessage {
-  return message.type === 'user';
+  return message.type === "user";
 }
 
 /**
  * Type guard for AssistantMessage
  */
-export function isAssistantMessage(message: ChatMessage): message is AssistantMessage {
-  return message.type === 'assistant';
+export function isAssistantMessage(
+  message: ChatMessage,
+): message is AssistantMessage {
+  return message.type === "assistant";
 }
 
 /**
  * Type guard for ToolUseMessage
  */
-export function isToolUseMessage(message: ChatMessage): message is ToolUseMessage {
-  return message.type === 'tool_use';
+export function isToolUseMessage(
+  message: ChatMessage,
+): message is ToolUseMessage {
+  return message.type === "tool_use";
 }
 
 /**
  * Type guard for ToolResultMessage
  */
-export function isToolResultMessage(message: ChatMessage): message is ToolResultMessage {
-  return message.type === 'tool_result';
+export function isToolResultMessage(
+  message: ChatMessage,
+): message is ToolResultMessage {
+  return message.type === "tool_result";
 }
 
 /**
  * Type guard for ThinkingMessage
  */
-export function isThinkingMessage(message: ChatMessage): message is ThinkingMessage {
-  return message.type === 'thinking';
+export function isThinkingMessage(
+  message: ChatMessage,
+): message is ThinkingMessage {
+  return message.type === "thinking";
 }
 
 /**
  * Type guard for ErrorMessage
  */
 export function isErrorMessage(message: ChatMessage): message is ErrorMessage {
-  return message.type === 'error';
+  return message.type === "error";
 }
 
 /**
  * Type guard for SystemMessage
  */
-export function isSystemMessage(message: ChatMessage): message is SystemMessage {
-  return message.type === 'system';
+export function isSystemMessage(
+  message: ChatMessage,
+): message is SystemMessage {
+  return message.type === "system";
 }

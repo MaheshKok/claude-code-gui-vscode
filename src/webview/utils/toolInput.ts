@@ -8,9 +8,9 @@
  * @module utils/toolInput
  */
 
-import { formatFilePath, formatBytes, truncateMiddle } from './format';
-import { escapeHtml, extractCodeBlocks } from './markdown';
-import type { ToolInput } from '../types/claude-events';
+import { formatFilePath, formatBytes, truncateMiddle } from "./format";
+import { escapeHtml, extractCodeBlocks } from "./markdown";
+import type { ToolInput } from "../types/claude-events";
 
 // ============================================================================
 // Types
@@ -58,8 +58,11 @@ const defaultOptions: ToolInputFormatOptions = {
 /**
  * Format Read tool input
  */
-function formatReadInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const filePath = input.file_path as string || '';
+function formatReadInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const filePath = (input.file_path as string) || "";
   const startLine = input.start_line as number | undefined;
   const endLine = input.end_line as number | undefined;
   const offset = input.offset as number | undefined;
@@ -73,7 +76,7 @@ function formatReadInput(input: ToolInput, options: ToolInputFormatOptions): For
     const parts: string[] = [];
     if (offset !== undefined) parts.push(`offset: ${offset}`);
     if (limit !== undefined) parts.push(`limit: ${limit}`);
-    summary += ` (${parts.join(', ')})`;
+    summary += ` (${parts.join(", ")})`;
   }
 
   const fullContent = `
@@ -82,24 +85,36 @@ function formatReadInput(input: ToolInput, options: ToolInputFormatOptions): For
         <span class="field-label">File:</span>
         <span class="field-value file-path">${escapeHtml(filePath)}</span>
       </div>
-      ${startLine !== undefined ? `
+      ${
+        startLine !== undefined
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Lines:</span>
-          <span class="field-value">${startLine}${endLine !== undefined ? ` - ${endLine}` : ''}</span>
+          <span class="field-value">${startLine}${endLine !== undefined ? ` - ${endLine}` : ""}</span>
         </div>
-      ` : ''}
-      ${offset !== undefined ? `
+      `
+          : ""
+      }
+      ${
+        offset !== undefined
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Offset:</span>
           <span class="field-value">${offset}</span>
         </div>
-      ` : ''}
-      ${limit !== undefined ? `
+      `
+          : ""
+      }
+      ${
+        limit !== undefined
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Limit:</span>
           <span class="field-value">${limit} lines</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
   `.trim();
 
@@ -114,11 +129,14 @@ function formatReadInput(input: ToolInput, options: ToolInputFormatOptions): For
 /**
  * Format Write tool input
  */
-function formatWriteInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const filePath = input.file_path as string || '';
-  const content = input.content as string || '';
+function formatWriteInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const filePath = (input.file_path as string) || "";
+  const content = (input.content as string) || "";
 
-  const lineCount = content.split('\n').length;
+  const lineCount = content.split("\n").length;
   const summary = `Write ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 20 })} (${lineCount} lines)`;
 
   const isExpandable = content.length > options.expandableThreshold!;
@@ -153,22 +171,28 @@ function formatWriteInput(input: ToolInput, options: ToolInputFormatOptions): Fo
 /**
  * Format Edit tool input
  */
-function formatEditInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const filePath = input.file_path as string || '';
-  const oldString = input.old_string as string || '';
-  const newString = input.new_string as string || '';
+function formatEditInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const filePath = (input.file_path as string) || "";
+  const oldString = (input.old_string as string) || "";
+  const newString = (input.new_string as string) || "";
 
   const summary = `Edit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 5 })}`;
 
-  const isExpandable = (oldString.length + newString.length) > options.expandableThreshold!;
+  const isExpandable =
+    oldString.length + newString.length > options.expandableThreshold!;
 
-  const displayOld = isExpandable && oldString.length > options.expandableThreshold! / 2
-    ? truncateMiddle(oldString, options.expandableThreshold! / 2)
-    : oldString;
+  const displayOld =
+    isExpandable && oldString.length > options.expandableThreshold! / 2
+      ? truncateMiddle(oldString, options.expandableThreshold! / 2)
+      : oldString;
 
-  const displayNew = isExpandable && newString.length > options.expandableThreshold! / 2
-    ? truncateMiddle(newString, options.expandableThreshold! / 2)
-    : newString;
+  const displayNew =
+    isExpandable && newString.length > options.expandableThreshold! / 2
+      ? truncateMiddle(newString, options.expandableThreshold! / 2)
+      : newString;
 
   const fullContent = `
     <div class="tool-input-edit">
@@ -193,31 +217,45 @@ function formatEditInput(input: ToolInput, options: ToolInputFormatOptions): For
     summary,
     fullContent,
     isExpandable,
-    metadata: { filePath, oldLength: oldString.length, newLength: newString.length },
+    metadata: {
+      filePath,
+      oldLength: oldString.length,
+      newLength: newString.length,
+    },
   };
 }
 
 /**
  * Format MultiEdit tool input
  */
-function formatMultiEditInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const filePath = input.file_path as string || '';
-  const edits = (input.edits as Array<{ old_string: string; new_string: string }>) || [];
+function formatMultiEditInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const filePath = (input.file_path as string) || "";
+  const edits =
+    (input.edits as Array<{ old_string: string; new_string: string }>) || [];
 
   const summary = `MultiEdit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 20 })} (${edits.length} edits)`;
 
-  const totalLength = edits.reduce((sum, e) => sum + e.old_string.length + e.new_string.length, 0);
+  const totalLength = edits.reduce(
+    (sum, e) => sum + e.old_string.length + e.new_string.length,
+    0,
+  );
   const isExpandable = totalLength > options.expandableThreshold!;
 
-  const editsHtml = edits.map((edit, index) => {
-    const displayOld = edit.old_string.length > 100
-      ? truncateMiddle(edit.old_string, 100)
-      : edit.old_string;
-    const displayNew = edit.new_string.length > 100
-      ? truncateMiddle(edit.new_string, 100)
-      : edit.new_string;
+  const editsHtml = edits
+    .map((edit, index) => {
+      const displayOld =
+        edit.old_string.length > 100
+          ? truncateMiddle(edit.old_string, 100)
+          : edit.old_string;
+      const displayNew =
+        edit.new_string.length > 100
+          ? truncateMiddle(edit.new_string, 100)
+          : edit.new_string;
 
-    return `
+      return `
       <div class="multi-edit-item">
         <span class="edit-index">Edit ${index + 1}</span>
         <div class="diff-section diff-old">
@@ -228,7 +266,8 @@ function formatMultiEditInput(input: ToolInput, options: ToolInputFormatOptions)
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join("");
 
   const fullContent = `
     <div class="tool-input-multiedit">
@@ -238,7 +277,7 @@ function formatMultiEditInput(input: ToolInput, options: ToolInputFormatOptions)
       </div>
       <div class="tool-input-field">
         <span class="field-label">Edits:</span>
-        <span class="field-value">${edits.length} edit${edits.length !== 1 ? 's' : ''}</span>
+        <span class="field-value">${edits.length} edit${edits.length !== 1 ? "s" : ""}</span>
       </div>
       <div class="multi-edit-list">
         ${editsHtml}
@@ -257,45 +296,61 @@ function formatMultiEditInput(input: ToolInput, options: ToolInputFormatOptions)
 /**
  * Format Bash tool input
  */
-function formatBashInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const command = input.command as string || '';
+function formatBashInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const command = (input.command as string) || "";
   const cwd = input.cwd as string | undefined;
   const timeout = input.timeout as number | undefined;
   const description = input.description as string | undefined;
 
-  const displayCommand = command.length > options.maxSummaryLength!
-    ? truncateMiddle(command, options.maxSummaryLength!)
-    : command;
+  const displayCommand =
+    command.length > options.maxSummaryLength!
+      ? truncateMiddle(command, options.maxSummaryLength!)
+      : command;
 
   const summary = description || `Run: ${displayCommand}`;
   const isExpandable = command.length > options.expandableThreshold!;
 
   const fullContent = `
     <div class="tool-input-bash">
-      ${description ? `
+      ${
+        description
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Description:</span>
           <span class="field-value">${escapeHtml(description)}</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
       <div class="tool-input-field">
         <span class="field-label">Command:</span>
       </div>
       <div class="command-block">
         <pre class="command-content">${escapeHtml(command)}</pre>
       </div>
-      ${cwd ? `
+      ${
+        cwd
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Working Dir:</span>
           <span class="field-value file-path">${escapeHtml(cwd)}</span>
         </div>
-      ` : ''}
-      ${timeout ? `
+      `
+          : ""
+      }
+      ${
+        timeout
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Timeout:</span>
           <span class="field-value">${timeout}ms</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
   `.trim();
 
@@ -310,11 +365,14 @@ function formatBashInput(input: ToolInput, options: ToolInputFormatOptions): For
 /**
  * Format Glob tool input
  */
-function formatGlobInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const pattern = input.pattern as string || '';
+function formatGlobInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const pattern = (input.pattern as string) || "";
   const path = input.path as string | undefined;
 
-  const summary = `Search: ${pattern}${path ? ` in ${formatFilePath(path, { maxLength: 20 })}` : ''}`;
+  const summary = `Search: ${pattern}${path ? ` in ${formatFilePath(path, { maxLength: 20 })}` : ""}`;
 
   const fullContent = `
     <div class="tool-input-glob">
@@ -322,12 +380,16 @@ function formatGlobInput(input: ToolInput, options: ToolInputFormatOptions): For
         <span class="field-label">Pattern:</span>
         <span class="field-value code">${escapeHtml(pattern)}</span>
       </div>
-      ${path ? `
+      ${
+        path
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Path:</span>
           <span class="field-value file-path">${escapeHtml(path)}</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
   `.trim();
 
@@ -342,8 +404,11 @@ function formatGlobInput(input: ToolInput, options: ToolInputFormatOptions): For
 /**
  * Format Grep tool input
  */
-function formatGrepInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const pattern = input.pattern as string || '';
+function formatGrepInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const pattern = (input.pattern as string) || "";
   const path = input.path as string | undefined;
   const glob = input.glob as string | undefined;
 
@@ -358,18 +423,26 @@ function formatGrepInput(input: ToolInput, options: ToolInputFormatOptions): For
         <span class="field-label">Pattern:</span>
         <span class="field-value code">${escapeHtml(pattern)}</span>
       </div>
-      ${path ? `
+      ${
+        path
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Path:</span>
           <span class="field-value file-path">${escapeHtml(path)}</span>
         </div>
-      ` : ''}
-      ${glob ? `
+      `
+          : ""
+      }
+      ${
+        glob
+          ? `
         <div class="tool-input-field">
           <span class="field-label">File Pattern:</span>
           <span class="field-value code">${escapeHtml(glob)}</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
   `.trim();
 
@@ -384,35 +457,44 @@ function formatGrepInput(input: ToolInput, options: ToolInputFormatOptions): For
 /**
  * Format TodoWrite tool input
  */
-function formatTodoWriteInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const todos = (input.todos as Array<{
-    id?: string;
-    content: string;
-    status: string;
-    priority?: string;
-  }>) || [];
+function formatTodoWriteInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const todos =
+    (input.todos as Array<{
+      id?: string;
+      content: string;
+      status: string;
+      priority?: string;
+    }>) || [];
 
-  const summary = `Update todos (${todos.length} item${todos.length !== 1 ? 's' : ''})`;
+  const summary = `Update todos (${todos.length} item${todos.length !== 1 ? "s" : ""})`;
 
-  const todosHtml = todos.map(todo => {
-    const statusIcon = todo.status === 'completed' ? '[ ]'
-      : todo.status === 'in_progress' ? '[-]'
-      : '[ ]';
-    const priorityClass = todo.priority || 'medium';
+  const todosHtml = todos
+    .map((todo) => {
+      const statusIcon =
+        todo.status === "completed"
+          ? "[ ]"
+          : todo.status === "in_progress"
+            ? "[-]"
+            : "[ ]";
+      const priorityClass = todo.priority || "medium";
 
-    return `
+      return `
       <div class="todo-item todo-${todo.status} priority-${priorityClass}">
         <span class="todo-status">${statusIcon}</span>
         <span class="todo-content">${escapeHtml(todo.content)}</span>
       </div>
     `;
-  }).join('');
+    })
+    .join("");
 
   const fullContent = `
     <div class="tool-input-todowrite">
       <div class="tool-input-field">
         <span class="field-label">Todos:</span>
-        <span class="field-value">${todos.length} item${todos.length !== 1 ? 's' : ''}</span>
+        <span class="field-value">${todos.length} item${todos.length !== 1 ? "s" : ""}</span>
       </div>
       <div class="todo-list">
         ${todosHtml}
@@ -431,13 +513,17 @@ function formatTodoWriteInput(input: ToolInput, options: ToolInputFormatOptions)
 /**
  * Format WebFetch tool input
  */
-function formatWebFetchInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const url = input.url as string || '';
-  const prompt = input.prompt as string || '';
+function formatWebFetchInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const url = (input.url as string) || "";
+  const prompt = (input.prompt as string) || "";
 
-  const displayUrl = url.length > options.maxSummaryLength! - 10
-    ? truncateMiddle(url, options.maxSummaryLength! - 10)
-    : url;
+  const displayUrl =
+    url.length > options.maxSummaryLength! - 10
+      ? truncateMiddle(url, options.maxSummaryLength! - 10)
+      : url;
 
   const summary = `Fetch: ${displayUrl}`;
 
@@ -447,12 +533,16 @@ function formatWebFetchInput(input: ToolInput, options: ToolInputFormatOptions):
         <span class="field-label">URL:</span>
         <span class="field-value url">${escapeHtml(url)}</span>
       </div>
-      ${prompt ? `
+      ${
+        prompt
+          ? `
         <div class="tool-input-field">
           <span class="field-label">Prompt:</span>
           <span class="field-value">${escapeHtml(prompt)}</span>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
   `.trim();
 
@@ -467,8 +557,12 @@ function formatWebFetchInput(input: ToolInput, options: ToolInputFormatOptions):
 /**
  * Format Task tool input
  */
-function formatTaskInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
-  const description = input.description as string || input.prompt as string || '';
+function formatTaskInput(
+  input: ToolInput,
+  options: ToolInputFormatOptions,
+): FormattedToolInput {
+  const description =
+    (input.description as string) || (input.prompt as string) || "";
 
   const summary = `Task: ${truncateMiddle(description, options.maxSummaryLength! - 6)}`;
 
@@ -497,10 +591,10 @@ function formatTaskInput(input: ToolInput, options: ToolInputFormatOptions): For
 function formatGenericInput(
   toolName: string,
   input: ToolInput,
-  options: ToolInputFormatOptions
+  options: ToolInputFormatOptions,
 ): FormattedToolInput {
   const jsonStr = JSON.stringify(input, null, 2);
-  const summary = `${toolName}: ${truncateMiddle(Object.keys(input).join(', '), options.maxSummaryLength! - toolName.length - 2)}`;
+  const summary = `${toolName}: ${truncateMiddle(Object.keys(input).join(", "), options.maxSummaryLength! - toolName.length - 2)}`;
 
   const isExpandable = jsonStr.length > options.expandableThreshold!;
   const displayJson = isExpandable
@@ -537,31 +631,31 @@ function formatGenericInput(
 export function formatToolInput(
   toolName: string,
   input: ToolInput,
-  options: ToolInputFormatOptions = {}
+  options: ToolInputFormatOptions = {},
 ): FormattedToolInput {
   const opts = { ...defaultOptions, ...options };
 
   // Select appropriate formatter based on tool name
   switch (toolName) {
-    case 'Read':
+    case "Read":
       return formatReadInput(input, opts);
-    case 'Write':
+    case "Write":
       return formatWriteInput(input, opts);
-    case 'Edit':
+    case "Edit":
       return formatEditInput(input, opts);
-    case 'MultiEdit':
+    case "MultiEdit":
       return formatMultiEditInput(input, opts);
-    case 'Bash':
+    case "Bash":
       return formatBashInput(input, opts);
-    case 'Glob':
+    case "Glob":
       return formatGlobInput(input, opts);
-    case 'Grep':
+    case "Grep":
       return formatGrepInput(input, opts);
-    case 'TodoWrite':
+    case "TodoWrite":
       return formatTodoWriteInput(input, opts);
-    case 'WebFetch':
+    case "WebFetch":
       return formatWebFetchInput(input, opts);
-    case 'Task':
+    case "Task":
       return formatTaskInput(input, opts);
     default:
       return formatGenericInput(toolName, input, opts);
@@ -571,8 +665,18 @@ export function formatToolInput(
 /**
  * Get the primary file path from tool input (if applicable)
  */
-export function getToolFilePath(toolName: string, input: ToolInput): string | undefined {
-  const fileTools = ['Read', 'Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'NotebookRead'];
+export function getToolFilePath(
+  toolName: string,
+  input: ToolInput,
+): string | undefined {
+  const fileTools = [
+    "Read",
+    "Write",
+    "Edit",
+    "MultiEdit",
+    "NotebookEdit",
+    "NotebookRead",
+  ];
 
   if (fileTools.includes(toolName)) {
     return (input.file_path as string) || (input.notebook_path as string);
@@ -586,21 +690,21 @@ export function getToolFilePath(toolName: string, input: ToolInput): string | un
  */
 export function getToolDescription(toolName: string): string {
   const descriptions: Record<string, string> = {
-    Read: 'Read file contents',
-    Write: 'Create or overwrite file',
-    Edit: 'Edit file with search/replace',
-    MultiEdit: 'Apply multiple edits to a file',
-    Bash: 'Execute shell command',
-    Glob: 'Search for files by pattern',
-    Grep: 'Search file contents',
-    Task: 'Run a subtask',
-    TodoRead: 'Read current todo list',
-    TodoWrite: 'Update todo list',
-    WebFetch: 'Fetch and analyze web content',
-    WebSearch: 'Search the web',
-    NotebookRead: 'Read Jupyter notebook',
-    NotebookEdit: 'Edit Jupyter notebook cell',
-    LSP: 'Language server operation',
+    Read: "Read file contents",
+    Write: "Create or overwrite file",
+    Edit: "Edit file with search/replace",
+    MultiEdit: "Apply multiple edits to a file",
+    Bash: "Execute shell command",
+    Glob: "Search for files by pattern",
+    Grep: "Search file contents",
+    Task: "Run a subtask",
+    TodoRead: "Read current todo list",
+    TodoWrite: "Update todo list",
+    WebFetch: "Fetch and analyze web content",
+    WebSearch: "Search the web",
+    NotebookRead: "Read Jupyter notebook",
+    NotebookEdit: "Edit Jupyter notebook cell",
+    LSP: "Language server operation",
   };
 
   return descriptions[toolName] || `Use ${toolName} tool`;
@@ -609,26 +713,42 @@ export function getToolDescription(toolName: string): string {
 /**
  * Check if a tool input represents a destructive operation
  */
-export function isDestructiveOperation(toolName: string, input: ToolInput): boolean {
-  const destructiveTools = ['Write', 'Edit', 'MultiEdit', 'Bash', 'NotebookEdit'];
+export function isDestructiveOperation(
+  toolName: string,
+  input: ToolInput,
+): boolean {
+  const destructiveTools = [
+    "Write",
+    "Edit",
+    "MultiEdit",
+    "Bash",
+    "NotebookEdit",
+  ];
 
   if (!destructiveTools.includes(toolName)) {
     return false;
   }
 
   // Bash commands that are potentially destructive
-  if (toolName === 'Bash') {
-    const command = (input.command as string || '').toLowerCase();
+  if (toolName === "Bash") {
+    const command = ((input.command as string) || "").toLowerCase();
     const destructivePatterns = [
-      /\brm\b/, /\brmdir\b/, /\bdel\b/, /\berase\b/,
-      /\bmv\b.*\s+\//, /\bcp\b.*-r?f/,
-      /\bchmod\b/, /\bchown\b/,
-      /\bkill\b/, /\bpkill\b/,
+      /\brm\b/,
+      /\brmdir\b/,
+      /\bdel\b/,
+      /\berase\b/,
+      /\bmv\b.*\s+\//,
+      /\bcp\b.*-r?f/,
+      /\bchmod\b/,
+      /\bchown\b/,
+      /\bkill\b/,
+      /\bpkill\b/,
       />\s*\//, // redirect to root paths
-      /\bsudo\b/, /\bdoas\b/,
+      /\bsudo\b/,
+      /\bdoas\b/,
     ];
 
-    return destructivePatterns.some(pattern => pattern.test(command));
+    return destructivePatterns.some((pattern) => pattern.test(command));
   }
 
   return true;

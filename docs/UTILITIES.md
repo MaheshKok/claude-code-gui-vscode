@@ -6,15 +6,15 @@ The utility modules provide reusable functions for common operations.
 
 ## Utility Modules
 
-| Module | Purpose | Location |
-|--------|---------|----------|
-| `markdown.ts` | Markdown parsing/rendering | `src/webview/utils/` |
-| `diff.ts` | Diff computation and display | `src/webview/utils/` |
-| `format.ts` | Data formatting | `src/webview/utils/` |
-| `toolInput.ts` | Tool input formatting | `src/webview/utils/` |
-| `clipboard.ts` | Clipboard operations | `src/webview/utils/` |
-| `validation.ts` | Input validation | `src/webview/utils/` |
-| `constants.ts` | App constants | `src/webview/utils/` |
+| Module          | Purpose                      | Location             |
+| --------------- | ---------------------------- | -------------------- |
+| `markdown.ts`   | Markdown parsing/rendering   | `src/webview/utils/` |
+| `diff.ts`       | Diff computation and display | `src/webview/utils/` |
+| `format.ts`     | Data formatting              | `src/webview/utils/` |
+| `toolInput.ts`  | Tool input formatting        | `src/webview/utils/` |
+| `clipboard.ts`  | Clipboard operations         | `src/webview/utils/` |
+| `validation.ts` | Input validation             | `src/webview/utils/` |
+| `constants.ts`  | App constants                | `src/webview/utils/` |
 
 ---
 
@@ -50,11 +50,11 @@ getMarkdownTextLength(markdown: string): number
 ### Usage
 
 ```typescript
-const html = parseMarkdown('# Title\nSome **bold** text with `code`', {
+const html = parseMarkdown("# Title\nSome **bold** text with `code`", {
   escapeHtml: true,
   renderCodeBlocks: true,
   renderLinks: true,
-  linkTarget: '_blank'
+  linkTarget: "_blank",
 });
 ```
 
@@ -93,7 +93,7 @@ interface DiffResult {
 }
 
 interface DiffLine {
-  type: 'equal' | 'insert' | 'delete';
+  type: "equal" | "insert" | "delete";
   content: string;
   oldLineNumber?: number;
   newLineNumber?: number;
@@ -232,18 +232,18 @@ interface FormattedToolInput {
 
 ### Supported Tools
 
-| Tool | Summary Format |
-|------|---------------|
-| Read | "Read /path/to/file.ts (lines 1-50)" |
-| Write | "Write /path/to/file.ts (42 lines)" |
-| Edit | "Edit /path/to/file.ts (replace 5 chars)" |
-| MultiEdit | "MultiEdit /path/to/file.ts (3 edits)" |
-| Bash | "Bash: npm install express" |
-| Glob | "Glob: **/*.ts" |
-| Grep | "Grep: 'TODO' in src/" |
-| TodoWrite | "TodoWrite: 5 items" |
-| WebFetch | "WebFetch: https://example.com" |
-| Task | "Task: Research API options" |
+| Tool      | Summary Format                            |
+| --------- | ----------------------------------------- |
+| Read      | "Read /path/to/file.ts (lines 1-50)"      |
+| Write     | "Write /path/to/file.ts (42 lines)"       |
+| Edit      | "Edit /path/to/file.ts (replace 5 chars)" |
+| MultiEdit | "MultiEdit /path/to/file.ts (3 edits)"    |
+| Bash      | "Bash: npm install express"               |
+| Glob      | "Glob: \*_/_.ts"                          |
+| Grep      | "Grep: 'TODO' in src/"                    |
+| TodoWrite | "TodoWrite: 5 items"                      |
+| WebFetch  | "WebFetch: https://example.com"           |
+| Task      | "Task: Research API options"              |
 
 ### Helper Functions
 
@@ -388,92 +388,92 @@ getToolIcon(toolName: string): string
 
 ```typescript
 TOKEN_PRICING = {
-  'claude-sonnet-4-5-20250929': {
-    input: 3.00,      // per million tokens
-    output: 15.00,
-    cacheRead: 0.30,
+  "claude-sonnet-4-5-20250929": {
+    input: 3.0, // per million tokens
+    output: 15.0,
+    cacheRead: 0.3,
     cacheWrite: 3.75,
   },
-  'claude-opus-4-5-20251101': {
-    input: 15.00,
-    output: 75.00,
-    cacheRead: 1.50,
+  "claude-opus-4-5-20251101": {
+    input: 15.0,
+    output: 75.0,
+    cacheRead: 1.5,
     cacheWrite: 18.75,
   },
-  'claude-haiku-4-5-20251001': {
-    input: 1.00,
-    output: 5.00,
-    cacheRead: 0.10,
+  "claude-haiku-4-5-20251001": {
+    input: 1.0,
+    output: 5.0,
+    cacheRead: 0.1,
     cacheWrite: 1.25,
   },
-}
+};
 
-CONTEXT_WINDOW_SIZES: Record<string, number>
+CONTEXT_WINDOW_SIZES: Record<string, number>;
 // Model → max tokens
 ```
 
 ### Default Settings
 
 ```typescript
-DEFAULT_THEME_SETTINGS
-DEFAULT_EDITOR_SETTINGS
-DEFAULT_CLAUDE_SETTINGS
-DEFAULT_PERMISSION_SETTINGS
-DEFAULT_DISPLAY_SETTINGS
-DEFAULT_SHORTCUTS
+DEFAULT_THEME_SETTINGS;
+DEFAULT_EDITOR_SETTINGS;
+DEFAULT_CLAUDE_SETTINGS;
+DEFAULT_PERMISSION_SETTINGS;
+DEFAULT_DISPLAY_SETTINGS;
+DEFAULT_SHORTCUTS;
 ```
 
 ### UI Configuration
 
 ```typescript
-BREAKPOINTS = { xs: 480, sm: 640, md: 768, lg: 1024, xl: 1280 }
+BREAKPOINTS = { xs: 480, sm: 640, md: 768, lg: 1024, xl: 1280 };
 
 SIDEBAR_CONFIG = {
   minWidth: 200,
   maxWidth: 500,
   defaultWidth: 280,
   collapsedWidth: 48,
-}
+};
 
 INPUT_CONFIG = {
   minHeight: 40,
   maxHeight: 300,
   defaultHeight: 80,
-}
+};
 
-ANIMATION_DURATIONS = { fast: 150, normal: 300, slow: 500 }
-DEBOUNCE_DELAYS = { input: 150, search: 300, resize: 100, autosave: 1000 }
+ANIMATION_DURATIONS = { fast: 150, normal: 300, slow: 500 };
+DEBOUNCE_DELAYS = { input: 150, search: 300, resize: 100, autosave: 1000 };
 ```
 
 ### Status Colors
 
 ```typescript
 STATUS_COLORS = {
-  connected: '#22c55e',
-  disconnected: '#ef4444',
-  connecting: '#eab308',
-  error: '#ef4444',
-}
+  connected: "#22c55e",
+  disconnected: "#ef4444",
+  connecting: "#eab308",
+  error: "#ef4444",
+};
 
 TOOL_STATUS_COLORS = {
-  pending: '#eab308',
-  executing: '#3b82f6',
-  completed: '#22c55e',
-  failed: '#ef4444',
-  denied: '#ef4444',
-}
+  pending: "#eab308",
+  executing: "#3b82f6",
+  completed: "#22c55e",
+  failed: "#ef4444",
+  denied: "#ef4444",
+};
 ```
 
 ### Patterns
 
-```typescript
+````typescript
 PATTERNS = {
   filePath: /^[\/\\]?(?:[^\/\\:*?"<>|\n]+[\/\\])*[^\/\\:*?"<>|\n]*$/,
   glob: /^[\w\-.*?\/\[\]{}]+$/,
   url: /^https?:\/\/.+/,
   codeBlock: /```(\w+)?\n([\s\S]*?)```/g,
-}
-```
+};
+````
 
 ### Language Mappings
 

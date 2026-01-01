@@ -1,7 +1,7 @@
-import React from 'react';
-import type { TodoStats } from '../../utils';
-import { formatCost, formatTokenCount } from '../../utils';
-import type { SessionInfo } from '../App';
+import React from "react";
+import type { TodoStats } from "../../utils";
+import { formatCost, formatTokenCount } from "../../utils";
+import type { SessionInfo } from "../App";
 
 interface ProgressSummary {
   totalTokens: number;
@@ -29,17 +29,19 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const tokensLabel = summary
     ? formatTokenCount(summary.totalTokens, { includeSuffix: false })
-    : '';
+    : "";
   const costLabel = summary
     ? formatCost(summary.sessionCostUsd, { showFreeForZero: true })
-    : '';
+    : "";
   const todoStats = summary?.todoStats ?? null;
-  const todoSummary = todoStats && todoStats.total > 0
-    ? `${todoStats.completed}/${todoStats.total}`
-    : '0';
-  const todoPercent = todoStats && todoStats.total > 0
-    ? Math.round((todoStats.completed / todoStats.total) * 100)
-    : 0;
+  const todoSummary =
+    todoStats && todoStats.total > 0
+      ? `${todoStats.completed}/${todoStats.total}`
+      : "0";
+  const todoPercent =
+    todoStats && todoStats.total > 0
+      ? Math.round((todoStats.completed / todoStats.total) * 100)
+      : 0;
 
   return (
     <header className="border-b border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBar-background)]">
@@ -53,9 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2 text-sm text-[var(--vscode-descriptionForeground)]">
               <span className="w-2 h-2 rounded-full bg-green-500" />
               <span>{session.name}</span>
-              <span className="text-xs">
-                ({session.messageCount} messages)
-              </span>
+              <span className="text-xs">({session.messageCount} messages)</span>
             </div>
           )}
         </div>
@@ -65,13 +65,16 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleHistory}
             className={`
               p-2 rounded transition-colors
-              ${isHistoryOpen
-                ? 'bg-[var(--vscode-toolbar-activeBackground)] text-[var(--vscode-foreground)]'
-                : 'hover:bg-[var(--vscode-toolbar-hoverBackground)]'
+              ${
+                isHistoryOpen
+                  ? "bg-[var(--vscode-toolbar-activeBackground)] text-[var(--vscode-foreground)]"
+                  : "hover:bg-[var(--vscode-toolbar-hoverBackground)]"
               }
             `}
-            title={isHistoryOpen ? 'Close History' : 'Chat History'}
-            aria-label={isHistoryOpen ? 'Close chat history' : 'Open chat history'}
+            title={isHistoryOpen ? "Close History" : "Chat History"}
+            aria-label={
+              isHistoryOpen ? "Close chat history" : "Open chat history"
+            }
             aria-pressed={isHistoryOpen}
           >
             <svg

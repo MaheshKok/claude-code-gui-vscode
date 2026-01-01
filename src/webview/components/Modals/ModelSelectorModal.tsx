@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { Modal } from './Modal';
+import React, { useCallback } from "react";
+import { Modal } from "./Modal";
 
-export type ModelOption = 'opus' | 'sonnet' | 'haiku' | 'default';
+export type ModelOption = "opus" | "sonnet" | "haiku" | "default";
 
 export interface ModelInfo {
   id: ModelOption;
@@ -12,22 +12,22 @@ export interface ModelInfo {
 
 const MODELS: ModelInfo[] = [
   {
-    id: 'sonnet',
-    name: 'Sonnet 4.5 - Balanced model',
-    description: 'Good balance of speed and capability (recommended)',
-    modelId: 'claude-sonnet-4-5-20250929',
+    id: "sonnet",
+    name: "Sonnet 4.5 - Balanced model",
+    description: "Good balance of speed and capability (recommended)",
+    modelId: "claude-sonnet-4-5-20250929",
   },
   {
-    id: 'opus',
-    name: 'Opus 4.5 - Most capable model',
-    description: 'Best for complex tasks and highest quality output',
-    modelId: 'claude-opus-4-5-20251101',
+    id: "opus",
+    name: "Opus 4.5 - Most capable model",
+    description: "Best for complex tasks and highest quality output",
+    modelId: "claude-opus-4-5-20251101",
   },
   {
-    id: 'haiku',
-    name: 'Haiku 4.5 - Fast model',
-    description: 'Fastest responses for simpler tasks',
-    modelId: 'claude-haiku-4-5-20251001',
+    id: "haiku",
+    name: "Haiku 4.5 - Fast model",
+    description: "Fastest responses for simpler tasks",
+    modelId: "claude-haiku-4-5-20251001",
   },
 ];
 
@@ -51,16 +51,11 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
       onSelectModel(model);
       onClose();
     },
-    [onSelectModel, onClose]
+    [onSelectModel, onClose],
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Enforce Model"
-      width="sm"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Enforce Model" width="sm">
       <div className="space-y-4">
         <p className="text-xs text-[var(--vscode-descriptionForeground)]">
           This overrides your default model setting for this conversation only.
@@ -75,8 +70,8 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                 border border-[var(--vscode-editorWidget-border)]
                 ${
                   selectedModel === model.id
-                    ? 'bg-[var(--vscode-list-activeSelectionBackground)] border-[var(--vscode-focusBorder)]'
-                    : 'hover:bg-[var(--vscode-list-hoverBackground)]'
+                    ? "bg-[var(--vscode-list-activeSelectionBackground)] border-[var(--vscode-focusBorder)]"
+                    : "hover:bg-[var(--vscode-list-hoverBackground)]"
                 }
               `}
               onClick={() => handleSelect(model.id)}
@@ -92,7 +87,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium">{model.name}</span>
-                  {model.id === 'default' && (
+                  {model.id === "default" && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

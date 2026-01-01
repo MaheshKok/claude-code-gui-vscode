@@ -7,15 +7,15 @@
  * @module test/components/Message
  */
 
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { Message } from '../../webview/components/Chat/Message';
+import React from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { Message } from "../../webview/components/Chat/Message";
 
 // Mock the Message type as defined in the component
 interface MessageType {
   id: string;
-  role: 'user' | 'assistant' | 'tool' | 'error';
+  role: "user" | "assistant" | "tool" | "error";
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
@@ -26,15 +26,15 @@ interface MessageType {
 function createMockMessage(overrides: Partial<MessageType> = {}): MessageType {
   return {
     id: `msg-${Date.now()}`,
-    role: 'user',
-    content: 'Test message content',
-    timestamp: new Date('2024-06-15T14:30:00.000Z'),
+    role: "user",
+    content: "Test message content",
+    timestamp: new Date("2024-06-15T14:30:00.000Z"),
     isStreaming: false,
     ...overrides,
   };
 }
 
-describe('Message Component', () => {
+describe("Message Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -42,78 +42,82 @@ describe('Message Component', () => {
   // ==========================================================================
   // Rendering Different Message Types
   // ==========================================================================
-  describe('rendering different message types', () => {
-    describe('user messages', () => {
-      it('should render user message', () => {
+  describe("rendering different message types", () => {
+    describe("user messages", () => {
+      it("should render user message", () => {
         const message = createMockMessage({
-          role: 'user',
-          content: 'Hello, Claude!',
+          role: "user",
+          content: "Hello, Claude!",
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Hello, Claude!')).toBeInTheDocument();
-        expect(screen.getByText('You')).toBeInTheDocument();
+        expect(screen.getByText("Hello, Claude!")).toBeInTheDocument();
+        expect(screen.getByText("You")).toBeInTheDocument();
       });
 
-      it('should display user icon', () => {
-        const message = createMockMessage({ role: 'user' });
+      it("should display user icon", () => {
+        const message = createMockMessage({ role: "user" });
 
         const { container } = render(<Message message={message} />);
 
         // User icon is an SVG with a person path
-        const svg = container.querySelector('svg');
+        const svg = container.querySelector("svg");
         expect(svg).toBeInTheDocument();
       });
 
-      it('should have appropriate styling for user messages', () => {
-        const message = createMockMessage({ role: 'user' });
+      it("should have appropriate styling for user messages", () => {
+        const message = createMockMessage({ role: "user" });
 
         const { container } = render(<Message message={message} />);
 
         // Check for user-specific background styling
         const messageContainer = container.firstChild as HTMLElement;
-        expect(messageContainer.className).toContain('bg-');
+        expect(messageContainer.className).toContain("bg-");
       });
     });
 
-    describe('assistant messages', () => {
-      it('should render assistant message', () => {
+    describe("assistant messages", () => {
+      it("should render assistant message", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: 'Hello! How can I help you?',
+          role: "assistant",
+          content: "Hello! How can I help you?",
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Hello! How can I help you?')).toBeInTheDocument();
-        expect(screen.getByText('Claude')).toBeInTheDocument();
+        expect(
+          screen.getByText("Hello! How can I help you?"),
+        ).toBeInTheDocument();
+        expect(screen.getByText("Claude")).toBeInTheDocument();
       });
 
-      it('should display Claude label', () => {
-        const message = createMockMessage({ role: 'assistant' });
+      it("should display Claude label", () => {
+        const message = createMockMessage({ role: "assistant" });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Claude')).toBeInTheDocument();
+        expect(screen.getByText("Claude")).toBeInTheDocument();
       });
     });
 
-    describe('tool messages', () => {
-      it('should render tool message', () => {
+    describe("tool messages", () => {
+      it("should render tool message", () => {
         const message = createMockMessage({
-          role: 'tool',
+          role: "tool",
           content: '{"result": "success"}',
-          toolName: 'Read',
+          toolName: "Read",
         });
 
         render(<Message message={message} />);
 
         // Tool messages are collapsed by default, so we check the tool name is visible
-        expect(screen.getByText('Read')).toBeInTheDocument();
+        expect(screen.getByText("Read")).toBeInTheDocument();
 
         // Click to expand and see content
-        const header = screen.getByText('Read').closest('div[class*="cursor-pointer"]');
+        const header = screen
+          .getByText("Read")
+          .closest('div[class*="cursor-pointer"]');
         if (header) {
           fireEvent.click(header);
           // After expansion, content should be visible
@@ -121,32 +125,32 @@ describe('Message Component', () => {
         }
       });
 
-      it('should display tool name as label', () => {
+      it("should display tool name as label", () => {
         const message = createMockMessage({
-          role: 'tool',
-          toolName: 'Read',
+          role: "tool",
+          toolName: "Read",
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Read')).toBeInTheDocument();
+        expect(screen.getByText("Read")).toBeInTheDocument();
       });
 
       it('should display "Tool" when no tool name provided', () => {
         const message = createMockMessage({
-          role: 'tool',
+          role: "tool",
           toolName: undefined,
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Tool')).toBeInTheDocument();
+        expect(screen.getByText("Tool")).toBeInTheDocument();
       });
 
-      it('should render tool content in monospace font', () => {
+      it("should render tool content in monospace font", () => {
         const message = createMockMessage({
-          role: 'tool',
-          content: 'tool output',
+          role: "tool",
+          content: "tool output",
         });
 
         const { container } = render(<Message message={message} />);
@@ -159,35 +163,35 @@ describe('Message Component', () => {
 
         // After expansion, check for monospace content
         // The content is in a div with font-mono class
-        const codeBlock = container.querySelector('.font-mono');
+        const codeBlock = container.querySelector(".font-mono");
         expect(codeBlock).toBeInTheDocument();
       });
     });
 
-    describe('error messages', () => {
-      it('should render error message', () => {
+    describe("error messages", () => {
+      it("should render error message", () => {
         const message = createMockMessage({
-          role: 'error',
-          content: 'Something went wrong!',
+          role: "error",
+          content: "Something went wrong!",
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('Something went wrong!')).toBeInTheDocument();
-        expect(screen.getByText('Error')).toBeInTheDocument();
+        expect(screen.getByText("Something went wrong!")).toBeInTheDocument();
+        expect(screen.getByText("Error")).toBeInTheDocument();
       });
 
-      it('should have error styling', () => {
+      it("should have error styling", () => {
         const message = createMockMessage({
-          role: 'error',
-          content: 'Error message',
+          role: "error",
+          content: "Error message",
         });
 
         const { container } = render(<Message message={message} />);
 
         // Check for error-specific background styling
         const messageContainer = container.firstChild as HTMLElement;
-        expect(messageContainer.className).toContain('bg-');
+        expect(messageContainer.className).toContain("bg-");
       });
     });
   });
@@ -195,44 +199,44 @@ describe('Message Component', () => {
   // ==========================================================================
   // Role Labels and Icons
   // ==========================================================================
-  describe('role labels and icons', () => {
+  describe("role labels and icons", () => {
     it('should display "You" for user role', () => {
-      const message = createMockMessage({ role: 'user' });
+      const message = createMockMessage({ role: "user" });
       render(<Message message={message} />);
-      expect(screen.getByText('You')).toBeInTheDocument();
+      expect(screen.getByText("You")).toBeInTheDocument();
     });
 
     it('should display "Claude" for assistant role', () => {
-      const message = createMockMessage({ role: 'assistant' });
+      const message = createMockMessage({ role: "assistant" });
       render(<Message message={message} />);
-      expect(screen.getByText('Claude')).toBeInTheDocument();
+      expect(screen.getByText("Claude")).toBeInTheDocument();
     });
 
-    it('should display tool name for tool role', () => {
-      const message = createMockMessage({ role: 'tool', toolName: 'Bash' });
+    it("should display tool name for tool role", () => {
+      const message = createMockMessage({ role: "tool", toolName: "Bash" });
       render(<Message message={message} />);
-      expect(screen.getByText('Bash')).toBeInTheDocument();
+      expect(screen.getByText("Bash")).toBeInTheDocument();
     });
 
     it('should display "Error" for error role', () => {
-      const message = createMockMessage({ role: 'error' });
+      const message = createMockMessage({ role: "error" });
       render(<Message message={message} />);
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getByText("Error")).toBeInTheDocument();
     });
 
-    it('should render appropriate icon for each role', () => {
-      const roles: Array<'user' | 'assistant' | 'tool' | 'error'> = [
-        'user',
-        'assistant',
-        'tool',
-        'error',
+    it("should render appropriate icon for each role", () => {
+      const roles: Array<"user" | "assistant" | "tool" | "error"> = [
+        "user",
+        "assistant",
+        "tool",
+        "error",
       ];
 
       for (const role of roles) {
         const message = createMockMessage({ role });
         const { container } = render(<Message message={message} />);
 
-        const svg = container.querySelector('svg');
+        const svg = container.querySelector("svg");
         expect(svg).toBeInTheDocument();
       }
     });
@@ -241,10 +245,10 @@ describe('Message Component', () => {
   // ==========================================================================
   // Timestamp Display
   // ==========================================================================
-  describe('timestamp display', () => {
-    it('should display formatted timestamp', () => {
+  describe("timestamp display", () => {
+    it("should display formatted timestamp", () => {
       const message = createMockMessage({
-        timestamp: new Date('2024-06-15T14:30:00.000Z'),
+        timestamp: new Date("2024-06-15T14:30:00.000Z"),
       });
 
       render(<Message message={message} />);
@@ -254,9 +258,9 @@ describe('Message Component', () => {
       expect(timestampElement).toBeInTheDocument();
     });
 
-    it('should format timestamp with AM/PM', () => {
+    it("should format timestamp with AM/PM", () => {
       const message = createMockMessage({
-        timestamp: new Date('2024-06-15T14:30:00.000Z'),
+        timestamp: new Date("2024-06-15T14:30:00.000Z"),
       });
 
       render(<Message message={message} />);
@@ -270,128 +274,130 @@ describe('Message Component', () => {
   // ==========================================================================
   // Streaming State
   // ==========================================================================
-  describe('streaming state', () => {
-    it('should show streaming indicator when isStreaming is true', () => {
+  describe("streaming state", () => {
+    it("should show streaming indicator when isStreaming is true", () => {
       const message = createMockMessage({
-        role: 'assistant',
+        role: "assistant",
         isStreaming: true,
       });
 
       render(<Message message={message} />);
 
-      expect(screen.getByText('streaming...')).toBeInTheDocument();
+      expect(screen.getByText("streaming...")).toBeInTheDocument();
     });
 
-    it('should not show streaming indicator when isStreaming is false', () => {
+    it("should not show streaming indicator when isStreaming is false", () => {
       const message = createMockMessage({
-        role: 'assistant',
+        role: "assistant",
         isStreaming: false,
       });
 
       render(<Message message={message} />);
 
-      expect(screen.queryByText('streaming...')).not.toBeInTheDocument();
+      expect(screen.queryByText("streaming...")).not.toBeInTheDocument();
     });
 
-    it('should have pulsing animation on streaming indicator', () => {
+    it("should have pulsing animation on streaming indicator", () => {
       const message = createMockMessage({
-        role: 'assistant',
+        role: "assistant",
         isStreaming: true,
       });
 
       render(<Message message={message} />);
 
-      const streamingIndicator = screen.getByText('streaming...');
-      expect(streamingIndicator.className).toContain('animate-pulse');
+      const streamingIndicator = screen.getByText("streaming...");
+      expect(streamingIndicator.className).toContain("animate-pulse");
     });
   });
 
   // ==========================================================================
   // Content Rendering
   // ==========================================================================
-  describe('content rendering', () => {
-    it('should render plain text content', () => {
+  describe("content rendering", () => {
+    it("should render plain text content", () => {
       const message = createMockMessage({
-        content: 'This is plain text content',
+        content: "This is plain text content",
       });
 
       render(<Message message={message} />);
 
-      expect(screen.getByText('This is plain text content')).toBeInTheDocument();
+      expect(
+        screen.getByText("This is plain text content"),
+      ).toBeInTheDocument();
     });
 
-    it('should preserve whitespace in content', () => {
+    it("should preserve whitespace in content", () => {
       const message = createMockMessage({
-        content: 'Line 1\nLine 2\nLine 3',
+        content: "Line 1\nLine 2\nLine 3",
       });
 
       const { container } = render(<Message message={message} />);
 
       // Check for whitespace-pre-wrap class
-      const contentDiv = container.querySelector('.whitespace-pre-wrap');
+      const contentDiv = container.querySelector(".whitespace-pre-wrap");
       expect(contentDiv).toBeInTheDocument();
     });
 
-    describe('code block rendering', () => {
-      it('should render code blocks', () => {
+    describe("code block rendering", () => {
+      it("should render code blocks", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: '```javascript\nconst x = 1;\n```',
+          role: "assistant",
+          content: "```javascript\nconst x = 1;\n```",
         });
 
         const { container } = render(<Message message={message} />);
 
-        const codeBlock = container.querySelector('pre');
+        const codeBlock = container.querySelector("pre");
         expect(codeBlock).toBeInTheDocument();
       });
 
-      it('should display language label for code blocks', () => {
+      it("should display language label for code blocks", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: '```typescript\nconst x: number = 1;\n```',
+          role: "assistant",
+          content: "```typescript\nconst x: number = 1;\n```",
         });
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('typescript')).toBeInTheDocument();
+        expect(screen.getByText("typescript")).toBeInTheDocument();
       });
 
-      it('should handle code blocks without language', () => {
+      it("should handle code blocks without language", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: '```\nsome code\n```',
+          role: "assistant",
+          content: "```\nsome code\n```",
         });
 
         const { container } = render(<Message message={message} />);
 
-        const codeBlock = container.querySelector('pre');
+        const codeBlock = container.querySelector("pre");
         expect(codeBlock).toBeInTheDocument();
       });
     });
 
-    describe('inline code rendering', () => {
-      it('should render inline code', () => {
+    describe("inline code rendering", () => {
+      it("should render inline code", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: 'Use the `console.log` function',
+          role: "assistant",
+          content: "Use the `console.log` function",
         });
 
         const { container } = render(<Message message={message} />);
 
-        const inlineCode = container.querySelector('code');
+        const inlineCode = container.querySelector("code");
         expect(inlineCode).toBeInTheDocument();
-        expect(inlineCode?.textContent).toBe('console.log');
+        expect(inlineCode?.textContent).toBe("console.log");
       });
 
-      it('should handle multiple inline code segments', () => {
+      it("should handle multiple inline code segments", () => {
         const message = createMockMessage({
-          role: 'assistant',
-          content: 'Use `const` or `let` for variables',
+          role: "assistant",
+          content: "Use `const` or `let` for variables",
         });
 
         const { container } = render(<Message message={message} />);
 
-        const inlineCodes = container.querySelectorAll('code');
+        const inlineCodes = container.querySelectorAll("code");
         expect(inlineCodes.length).toBeGreaterThanOrEqual(2);
       });
     });
@@ -400,32 +406,37 @@ describe('Message Component', () => {
   // ==========================================================================
   // Container Styling
   // ==========================================================================
-  describe('container styling', () => {
-    it('should have rounded corners', () => {
+  describe("container styling", () => {
+    it("should have rounded corners", () => {
       const message = createMockMessage();
       const { container } = render(<Message message={message} />);
 
       const messageContainer = container.firstChild as HTMLElement;
-      expect(messageContainer.className).toContain('rounded');
+      expect(messageContainer.className).toContain("rounded");
     });
 
-    it('should have padding', () => {
+    it("should have padding", () => {
       const message = createMockMessage();
       const { container } = render(<Message message={message} />);
 
       const messageContainer = container.firstChild as HTMLElement;
-      expect(messageContainer.className).toContain('p-4');
+      expect(messageContainer.className).toContain("p-4");
     });
 
-    it('should have different styling for different roles', () => {
-      const userMessage = createMockMessage({ role: 'user' });
-      const assistantMessage = createMockMessage({ role: 'assistant' });
+    it("should have different styling for different roles", () => {
+      const userMessage = createMockMessage({ role: "user" });
+      const assistantMessage = createMockMessage({ role: "assistant" });
 
-      const { container: userContainer } = render(<Message message={userMessage} />);
-      const { container: assistantContainer } = render(<Message message={assistantMessage} />);
+      const { container: userContainer } = render(
+        <Message message={userMessage} />,
+      );
+      const { container: assistantContainer } = render(
+        <Message message={assistantMessage} />,
+      );
 
       const userStyles = (userContainer.firstChild as HTMLElement).className;
-      const assistantStyles = (assistantContainer.firstChild as HTMLElement).className;
+      const assistantStyles = (assistantContainer.firstChild as HTMLElement)
+        .className;
 
       // They should have different background styles
       expect(userStyles).not.toBe(assistantStyles);
@@ -435,30 +446,34 @@ describe('Message Component', () => {
   // ==========================================================================
   // Avatar Display
   // ==========================================================================
-  describe('avatar display', () => {
-    it('should display avatar icon', () => {
-      const message = createMockMessage({ role: 'user' });
+  describe("avatar display", () => {
+    it("should display avatar icon", () => {
+      const message = createMockMessage({ role: "user" });
       const { container } = render(<Message message={message} />);
 
-      const avatar = container.querySelector('.rounded-full');
+      const avatar = container.querySelector(".rounded-full");
       expect(avatar).toBeInTheDocument();
     });
 
-    it('should have appropriate avatar colors for user', () => {
-      const message = createMockMessage({ role: 'user' });
+    it("should have appropriate avatar colors for user", () => {
+      const message = createMockMessage({ role: "user" });
       const { container } = render(<Message message={message} />);
 
       // User should have button background color
-      const avatar = container.querySelector('.bg-\\[var\\(--vscode-button-background\\)\\]');
+      const avatar = container.querySelector(
+        ".bg-\\[var\\(--vscode-button-background\\)\\]",
+      );
       expect(avatar).toBeInTheDocument();
     });
 
-    it('should have error colors for error messages', () => {
-      const message = createMockMessage({ role: 'error' });
+    it("should have error colors for error messages", () => {
+      const message = createMockMessage({ role: "error" });
       const { container } = render(<Message message={message} />);
 
       // Error should have error foreground color
-      const avatar = container.querySelector('.bg-\\[var\\(--vscode-errorForeground\\)\\]');
+      const avatar = container.querySelector(
+        ".bg-\\[var\\(--vscode-errorForeground\\)\\]",
+      );
       expect(avatar).toBeInTheDocument();
     });
   });
@@ -466,16 +481,16 @@ describe('Message Component', () => {
   // ==========================================================================
   // Edge Cases
   // ==========================================================================
-  describe('edge cases', () => {
-    it('should handle empty content', () => {
-      const message = createMockMessage({ content: '' });
+  describe("edge cases", () => {
+    it("should handle empty content", () => {
+      const message = createMockMessage({ content: "" });
       const { container } = render(<Message message={message} />);
 
       expect(container.firstChild).toBeInTheDocument();
     });
 
-    it('should handle very long content', () => {
-      const longContent = 'a'.repeat(10000);
+    it("should handle very long content", () => {
+      const longContent = "a".repeat(10000);
       const message = createMockMessage({ content: longContent });
 
       const { container } = render(<Message message={message} />);
@@ -483,7 +498,7 @@ describe('Message Component', () => {
       expect(container.firstChild).toBeInTheDocument();
     });
 
-    it('should handle special characters in content', () => {
+    it("should handle special characters in content", () => {
       const message = createMockMessage({
         content: '<script>alert("xss")</script>',
       });
@@ -494,9 +509,9 @@ describe('Message Component', () => {
       expect(screen.getByText(/<script>/)).toBeInTheDocument();
     });
 
-    it('should handle unicode content', () => {
+    it("should handle unicode content", () => {
       const message = createMockMessage({
-        content: 'Hello! Emoji test',
+        content: "Hello! Emoji test",
       });
 
       render(<Message message={message} />);
@@ -504,8 +519,8 @@ describe('Message Component', () => {
       expect(screen.getByText(/Hello! Emoji test/)).toBeInTheDocument();
     });
 
-    it('should handle content with only whitespace', () => {
-      const message = createMockMessage({ content: '   \n\t   ' });
+    it("should handle content with only whitespace", () => {
+      const message = createMockMessage({ content: "   \n\t   " });
       const { container } = render(<Message message={message} />);
 
       expect(container.firstChild).toBeInTheDocument();
@@ -515,28 +530,28 @@ describe('Message Component', () => {
   // ==========================================================================
   // MessageContent Sub-component
   // ==========================================================================
-  describe('MessageContent rendering', () => {
-    it('should split content on code block boundaries', () => {
+  describe("MessageContent rendering", () => {
+    it("should split content on code block boundaries", () => {
       const message = createMockMessage({
-        role: 'assistant',
-        content: 'Before\n```js\ncode\n```\nAfter',
+        role: "assistant",
+        content: "Before\n```js\ncode\n```\nAfter",
       });
 
       render(<Message message={message} />);
 
-      expect(screen.getByText('Before')).toBeInTheDocument();
-      expect(screen.getByText('After')).toBeInTheDocument();
+      expect(screen.getByText("Before")).toBeInTheDocument();
+      expect(screen.getByText("After")).toBeInTheDocument();
     });
 
-    it('should handle multiple code blocks', () => {
+    it("should handle multiple code blocks", () => {
       const message = createMockMessage({
-        role: 'assistant',
-        content: '```js\ncode1\n```\nMiddle\n```python\ncode2\n```',
+        role: "assistant",
+        content: "```js\ncode1\n```\nMiddle\n```python\ncode2\n```",
       });
 
       const { container } = render(<Message message={message} />);
 
-      const codeBlocks = container.querySelectorAll('pre');
+      const codeBlocks = container.querySelectorAll("pre");
       expect(codeBlocks.length).toBe(2);
     });
   });

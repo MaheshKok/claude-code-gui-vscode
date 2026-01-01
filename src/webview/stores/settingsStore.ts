@@ -7,8 +7,8 @@
  * @module stores/settingsStore
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 // ============================================================================
 // Types
@@ -31,15 +31,19 @@ export interface WSLConfig {
 /**
  * Thinking mode intensity levels
  */
-export type ThinkingIntensity = 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
+export type ThinkingIntensity =
+  | "think"
+  | "think-hard"
+  | "think-harder"
+  | "ultrathink";
 
 /**
  * Available Claude models (4.5 series)
  */
 export type ClaudeModel =
-  | 'claude-sonnet-4-5-20250929'
-  | 'claude-opus-4-5-20251101'
-  | 'claude-haiku-4-5-20251001';
+  | "claude-sonnet-4-5-20250929"
+  | "claude-opus-4-5-20251101"
+  | "claude-haiku-4-5-20251001";
 
 /**
  * Settings store state
@@ -70,7 +74,13 @@ export interface SettingsState {
   /** Whether to show timestamps */
   showTimestamps: boolean;
   /** Code block theme */
-  codeBlockTheme: 'auto' | 'github-dark' | 'github-light' | 'monokai' | 'dracula' | 'one-dark-pro';
+  codeBlockTheme:
+    | "auto"
+    | "github-dark"
+    | "github-light"
+    | "monokai"
+    | "dracula"
+    | "one-dark-pro";
   /** UI font size */
   fontSize: number;
   /** Compact mode */
@@ -116,13 +126,27 @@ export interface SettingsActions {
   /** Set Claude executable path */
   setClaudeExecutable: (path: string) => void;
   /** Update UI settings */
-  updateUISettings: (settings: Partial<Pick<SettingsState,
-    'fontSize' | 'compactMode' | 'showAvatars' | 'showTimestamps' | 'codeBlockTheme'
-  >>) => void;
+  updateUISettings: (
+    settings: Partial<
+      Pick<
+        SettingsState,
+        | "fontSize"
+        | "compactMode"
+        | "showAvatars"
+        | "showTimestamps"
+        | "codeBlockTheme"
+      >
+    >,
+  ) => void;
   /** Update context settings */
-  updateContextSettings: (settings: Partial<Pick<SettingsState,
-    'includeFileContext' | 'includeWorkspaceInfo' | 'maxContextLines'
-  >>) => void;
+  updateContextSettings: (
+    settings: Partial<
+      Pick<
+        SettingsState,
+        "includeFileContext" | "includeWorkspaceInfo" | "maxContextLines"
+      >
+    >,
+  ) => void;
   /** Reset to defaults */
   resetToDefaults: () => void;
   /** Load settings from VSCode */
@@ -138,22 +162,22 @@ export type SettingsStore = SettingsState & SettingsActions;
 const initialState: SettingsState = {
   wsl: {
     enabled: false,
-    distro: 'Ubuntu',
-    nodePath: '/usr/bin/node',
-    claudePath: '/usr/local/bin/claude',
+    distro: "Ubuntu",
+    nodePath: "/usr/bin/node",
+    claudePath: "/usr/local/bin/claude",
   },
-  selectedModel: 'claude-sonnet-4-5-20250929',
+  selectedModel: "claude-sonnet-4-5-20250929",
   thinkingMode: true,
-  thinkingIntensity: 'think',
+  thinkingIntensity: "think",
   showThinkingProcess: true,
   planMode: false,
   yoloMode: false,
   autoApprovePatterns: [],
-  claudeExecutable: 'claude',
+  claudeExecutable: "claude",
   maxHistorySize: 100,
   streamResponses: true,
   showTimestamps: true,
-  codeBlockTheme: 'auto',
+  codeBlockTheme: "auto",
   fontSize: 14,
   compactMode: false,
   showAvatars: true,
@@ -179,14 +203,12 @@ export const useSettingsStore = create<SettingsStore>()(
           wsl: { ...state.wsl, ...config },
         })),
 
-      setSelectedModel: (model) =>
-        set({ selectedModel: model }),
+      setSelectedModel: (model) => set({ selectedModel: model }),
 
       toggleThinkingMode: () =>
         set((state) => ({ thinkingMode: !state.thinkingMode })),
 
-      setThinkingMode: (enabled) =>
-        set({ thinkingMode: enabled }),
+      setThinkingMode: (enabled) => set({ thinkingMode: enabled }),
 
       setThinkingIntensity: (intensity) =>
         set({ thinkingIntensity: intensity }),
@@ -194,17 +216,13 @@ export const useSettingsStore = create<SettingsStore>()(
       toggleShowThinkingProcess: () =>
         set((state) => ({ showThinkingProcess: !state.showThinkingProcess })),
 
-      togglePlanMode: () =>
-        set((state) => ({ planMode: !state.planMode })),
+      togglePlanMode: () => set((state) => ({ planMode: !state.planMode })),
 
-      setPlanMode: (enabled) =>
-        set({ planMode: enabled }),
+      setPlanMode: (enabled) => set({ planMode: enabled }),
 
-      toggleYoloMode: () =>
-        set((state) => ({ yoloMode: !state.yoloMode })),
+      toggleYoloMode: () => set((state) => ({ yoloMode: !state.yoloMode })),
 
-      setYoloMode: (enabled) =>
-        set({ yoloMode: enabled }),
+      setYoloMode: (enabled) => set({ yoloMode: enabled }),
 
       addAutoApprovePattern: (pattern) =>
         set((state) => ({
@@ -215,11 +233,12 @@ export const useSettingsStore = create<SettingsStore>()(
 
       removeAutoApprovePattern: (pattern) =>
         set((state) => ({
-          autoApprovePatterns: state.autoApprovePatterns.filter((p) => p !== pattern),
+          autoApprovePatterns: state.autoApprovePatterns.filter(
+            (p) => p !== pattern,
+          ),
         })),
 
-      setClaudeExecutable: (path) =>
-        set({ claudeExecutable: path }),
+      setClaudeExecutable: (path) => set({ claudeExecutable: path }),
 
       updateUISettings: (settings) =>
         set((state) => ({ ...state, ...settings })),
@@ -227,18 +246,16 @@ export const useSettingsStore = create<SettingsStore>()(
       updateContextSettings: (settings) =>
         set((state) => ({ ...state, ...settings })),
 
-      resetToDefaults: () =>
-        set(initialState),
+      resetToDefaults: () => set(initialState),
 
-      loadFromVSCode: (settings) =>
-        set((state) => ({ ...state, ...settings })),
+      loadFromVSCode: (settings) => set((state) => ({ ...state, ...settings })),
     }),
     {
-      name: 'claude-flow-settings-store',
+      name: "claude-flow-settings-store",
       storage: createJSONStorage(() => localStorage),
       // Persist all settings
-    }
-  )
+    },
+  ),
 );
 
 // ============================================================================
@@ -253,7 +270,8 @@ export const selectWSL = (state: SettingsStore) => state.wsl;
 /**
  * Select selected model
  */
-export const selectSelectedModel = (state: SettingsStore) => state.selectedModel;
+export const selectSelectedModel = (state: SettingsStore) =>
+  state.selectedModel;
 
 /**
  * Select thinking settings

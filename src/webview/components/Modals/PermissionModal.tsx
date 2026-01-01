@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Modal } from './Modal';
+import React, { useState, useCallback } from "react";
+import { Modal } from "./Modal";
 
 export interface PermissionRequest {
   id: string;
@@ -25,9 +25,9 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
   onDeny,
   onAlwaysAllow,
 }) => {
-  const [denyReason, setDenyReason] = useState('');
+  const [denyReason, setDenyReason] = useState("");
   const [showDenyReason, setShowDenyReason] = useState(false);
-  const [alwaysAllowPattern, setAlwaysAllowPattern] = useState('');
+  const [alwaysAllowPattern, setAlwaysAllowPattern] = useState("");
   const [showAlwaysAllow, setShowAlwaysAllow] = useState(false);
 
   const handleAllow = useCallback(() => {
@@ -40,7 +40,7 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
   const handleDeny = useCallback(() => {
     if (request) {
       onDeny(request.id, denyReason || undefined);
-      setDenyReason('');
+      setDenyReason("");
       setShowDenyReason(false);
       onClose();
     }
@@ -49,7 +49,7 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
   const handleAlwaysAllow = useCallback(() => {
     if (request && alwaysAllowPattern) {
       onAlwaysAllow(request.id, alwaysAllowPattern);
-      setAlwaysAllowPattern('');
+      setAlwaysAllowPattern("");
       setShowAlwaysAllow(false);
       onClose();
     }
@@ -64,12 +64,12 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
   };
 
   const getDefaultPattern = (): string => {
-    if (!request) return '';
+    if (!request) return "";
 
     // Generate a reasonable default pattern based on the tool
-    if (request.toolName === 'Bash' && request.input.command) {
+    if (request.toolName === "Bash" && request.input.command) {
       const command = String(request.input.command);
-      const firstWord = command.split(' ')[0];
+      const firstWord = command.split(" ")[0];
       return `${firstWord} *`;
     }
 
@@ -167,17 +167,15 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
               className="input"
             />
             <p className="text-xs text-[var(--vscode-descriptionForeground)]">
-              Use * as wildcard. This pattern will be allowed automatically in the future.
+              Use * as wildcard. This pattern will be allowed automatically in
+              the future.
             </p>
           </div>
         )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-2">
-          <button
-            onClick={handleAllow}
-            className="btn flex-1"
-          >
+          <button onClick={handleAllow} className="btn flex-1">
             Allow
           </button>
 
@@ -186,8 +184,8 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
               onClick={handleDeny}
               className="btn-secondary flex-1 px-3 py-1.5 text-sm rounded"
               style={{
-                backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                color: 'var(--vscode-button-secondaryForeground)',
+                backgroundColor: "var(--vscode-button-secondaryBackground)",
+                color: "var(--vscode-button-secondaryForeground)",
               }}
             >
               Confirm Deny
@@ -197,8 +195,8 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
               onClick={() => setShowDenyReason(true)}
               className="btn-secondary flex-1 px-3 py-1.5 text-sm rounded"
               style={{
-                backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                color: 'var(--vscode-button-secondaryForeground)',
+                backgroundColor: "var(--vscode-button-secondaryBackground)",
+                color: "var(--vscode-button-secondaryForeground)",
               }}
             >
               Deny
@@ -219,12 +217,12 @@ export const PermissionModal: React.FC<PermissionModalProps> = ({
               <button
                 onClick={() => {
                   setShowAlwaysAllow(false);
-                  setAlwaysAllowPattern('');
+                  setAlwaysAllowPattern("");
                 }}
                 className="btn-secondary px-3 py-1.5 text-xs rounded"
                 style={{
-                  backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                  color: 'var(--vscode-button-secondaryForeground)',
+                  backgroundColor: "var(--vscode-button-secondaryBackground)",
+                  color: "var(--vscode-button-secondaryForeground)",
                 }}
               >
                 Cancel

@@ -127,8 +127,8 @@ hydrateConversation(payload): void
 ```typescript
 // Only persists all-time costs
 partialize: (state) => ({
-  costs: { allTimeCostUsd: state.costs.allTimeCostUsd }
-})
+  costs: { allTimeCostUsd: state.costs.allTimeCostUsd },
+});
 ```
 
 **Storage Key:** `claude-code-gui-store`
@@ -151,7 +151,7 @@ interface SettingsState {
 
   // Thinking/Planning Modes
   thinkingMode: boolean;
-  thinkingIntensity: ThinkingIntensity;  // 'think' | 'think-hard' | 'think-harder' | 'ultrathink'
+  thinkingIntensity: ThinkingIntensity; // 'think' | 'think-hard' | 'think-harder' | 'ultrathink'
   showThinkingProcess: boolean;
   planMode: boolean;
   yoloMode: boolean;
@@ -169,7 +169,13 @@ interface SettingsState {
   compactMode: boolean;
   showAvatars: boolean;
   showTimestamps: boolean;
-  codeBlockTheme: 'auto' | 'github-dark' | 'github-light' | 'monokai' | 'dracula' | 'one-dark-pro';
+  codeBlockTheme:
+    | "auto"
+    | "github-dark"
+    | "github-light"
+    | "monokai"
+    | "dracula"
+    | "one-dark-pro";
 
   // Context Management
   includeFileContext: boolean;
@@ -185,9 +191,9 @@ interface SettingsState {
 }
 
 type ClaudeModel =
-  | 'claude-sonnet-4-5-20250929'
-  | 'claude-opus-4-5-20251101'
-  | 'claude-haiku-4-5-20251001';
+  | "claude-sonnet-4-5-20250929"
+  | "claude-opus-4-5-20251101"
+  | "claude-haiku-4-5-20251001";
 ```
 
 ### Actions
@@ -248,7 +254,7 @@ interface UIState {
 
   // Sidebar
   sidebarOpen: boolean;
-  sidebarWidth: number;  // 200-500px, default 280
+  sidebarWidth: number; // 200-500px, default 280
 
   // Connection State
   connectionStatus: ConnectionStatus;
@@ -264,17 +270,28 @@ interface UIState {
 
   // Display
   isFullscreen: boolean;
-  breakpoint: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 type ModalType =
-  | 'settings' | 'mcp' | 'model' | 'permission'
-  | 'install' | 'login' | 'confirm' | 'error'
-  | 'about' | 'export' | 'keyboard-shortcuts';
+  | "settings"
+  | "mcp"
+  | "model"
+  | "permission"
+  | "install"
+  | "login"
+  | "confirm"
+  | "error"
+  | "about"
+  | "export"
+  | "keyboard-shortcuts";
 
 type ConnectionStatus =
-  | 'disconnected' | 'connecting' | 'connected'
-  | 'error' | 'reconnecting';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "reconnecting";
 ```
 
 ### Actions
@@ -328,7 +345,7 @@ interface ConversationState {
   conversations: ConversationSummary[];
   currentConversation: Conversation | null;
   isLoading: boolean;
-  maxConversations: number;  // default 100
+  maxConversations: number; // default 100
 }
 
 interface ConversationSummary {
@@ -407,9 +424,9 @@ interface PermissionState {
 interface AllowedPermission {
   toolName: string;
   pattern?: string;
-  scope: 'once' | 'session' | 'always';
+  scope: "once" | "session" | "always";
   grantedAt: number;
-  expiresAt?: number;  // For session scope (24h)
+  expiresAt?: number; // For session scope (24h)
 }
 
 interface PermissionRequest {
@@ -422,7 +439,7 @@ interface PermissionRequest {
   decisionReason?: string;
   blockedPath?: string;
   timestamp: number;
-  status: 'pending' | 'approved' | 'denied' | 'expired';
+  status: "pending" | "approved" | "denied" | "expired";
 }
 ```
 
@@ -471,9 +488,11 @@ pendingCount: number
 ```typescript
 // Only persists 'always' scoped permissions
 partialize: (state) => ({
-  allowedPermissions: state.allowedPermissions.filter(p => p.scope === 'always'),
+  allowedPermissions: state.allowedPermissions.filter(
+    (p) => p.scope === "always",
+  ),
   deniedPatterns: state.deniedPatterns,
-})
+});
 ```
 
 **Storage Key:** `claude-flow-permission-store`
@@ -516,8 +535,11 @@ interface MCPServerState {
 }
 
 type MCPServerStatus =
-  | 'disconnected' | 'connecting' | 'connected'
-  | 'error' | 'disabled';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "disabled";
 ```
 
 ### Actions
@@ -553,13 +575,13 @@ exportServers(): MCPServerConfig[]
 ```typescript
 // Only persists config, resets status/tools on load
 partialize: (state) => ({
-  servers: state.servers.map(server => ({
+  servers: state.servers.map((server) => ({
     config: server.config,
-    status: 'disconnected',
+    status: "disconnected",
     tools: [],
     retryCount: 0,
   })),
-})
+});
 ```
 
 **Storage Key:** `claude-flow-mcp-store`
@@ -572,13 +594,13 @@ partialize: (state) => ({
 
 ```typescript
 // Simple selector
-const messages = useChatStore(state => state.messages);
+const messages = useChatStore((state) => state.messages);
 
 // Pre-defined selector
 const thinkingSettings = useSettingsStore(selectThinkingSettings);
 
 // Multiple selections
-const { messages, isProcessing } = useChatStore(state => ({
+const { messages, isProcessing } = useChatStore((state) => ({
   messages: state.messages,
   isProcessing: state.isProcessing,
 }));
@@ -591,7 +613,7 @@ const { messages, isProcessing } = useChatStore(state => ({
 useChatStore.getState().addMessage(newMessage);
 
 // In component
-const addMessage = useChatStore(state => state.addMessage);
+const addMessage = useChatStore((state) => state.addMessage);
 addMessage(newMessage);
 ```
 
@@ -600,14 +622,14 @@ addMessage(newMessage);
 ```typescript
 // Auto-updates on state change
 function Component() {
-  const messages = useChatStore(state => state.messages);
+  const messages = useChatStore((state) => state.messages);
   // Re-renders when messages change
 }
 
 // Manual subscription
 const unsubscribe = useChatStore.subscribe(
-  state => state.messages,
-  (messages) => console.log('Messages updated:', messages)
+  (state) => state.messages,
+  (messages) => console.log("Messages updated:", messages),
 );
 ```
 
@@ -615,11 +637,11 @@ const unsubscribe = useChatStore.subscribe(
 
 ## Persistence Summary
 
-| Store | Persisted Data | Storage Key |
-|-------|----------------|-------------|
-| Chat | `allTimeCostUsd` only | `claude-code-gui-store` |
-| Settings | All state | `claude-flow-settings-store` |
-| UI | None | - |
-| Conversation | Index + full conversations | `claude-flow-conversation-*` |
-| Permission | Always-scope + denied | `claude-flow-permission-store` |
-| MCP | Config only | `claude-flow-mcp-store` |
+| Store        | Persisted Data             | Storage Key                    |
+| ------------ | -------------------------- | ------------------------------ |
+| Chat         | `allTimeCostUsd` only      | `claude-code-gui-store`        |
+| Settings     | All state                  | `claude-flow-settings-store`   |
+| UI           | None                       | -                              |
+| Conversation | Index + full conversations | `claude-flow-conversation-*`   |
+| Permission   | Always-scope + denied      | `claude-flow-permission-store` |
+| MCP          | Config only                | `claude-flow-mcp-store`        |

@@ -7,9 +7,13 @@
  * @module stores/permissionStore
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { PermissionRequest, PermissionDecision, ToolInput } from '../types';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type {
+  PermissionRequest,
+  PermissionDecision,
+  ToolInput,
+} from "../types";
 
 // ============================================================================
 // Types
@@ -24,7 +28,7 @@ export interface AllowedPermission {
   /** Pattern for matching (e.g., file path glob) */
   pattern?: string;
   /** Permission scope */
-  scope: 'once' | 'session' | 'always';
+  scope: "once" | "session" | "always";
   /** When the permission was granted */
   grantedAt: number;
   /** Expiration timestamp (for session scope) */
@@ -56,7 +60,7 @@ export interface PermissionActions {
   /** Clear all pending permissions */
   clearPending: () => void;
   /** Add an allowed permission */
-  addAllowed: (permission: Omit<AllowedPermission, 'grantedAt'>) => void;
+  addAllowed: (permission: Omit<AllowedPermission, "grantedAt">) => void;
   /** Remove an allowed permission */
   removeAllowed: (toolName: string, pattern?: string) => void;
   /** Clear all allowed permissions */
@@ -74,7 +78,10 @@ export interface PermissionActions {
   /** Get pending request by ID */
   getPendingById: (requestId: string) => PermissionRequest | undefined;
   /** Update pending request status */
-  updatePendingStatus: (requestId: string, status: PermissionRequest['status']) => void;
+  updatePendingStatus: (
+    requestId: string,
+    status: PermissionRequest["status"],
+  ) => void;
 }
 
 export type PermissionStore = PermissionState & PermissionActions;
@@ -99,11 +106,11 @@ const initialState: PermissionState = {
 const matchesPattern = (path: string, pattern: string): boolean => {
   // Convert glob pattern to regex
   const regexPattern = pattern
-    .replace(/\./g, '\\.')
-    .replace(/\*\*/g, '{{DOUBLE_STAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/{{DOUBLE_STAR}}/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/\./g, "\\.")
+    .replace(/\*\*/g, "{{DOUBLE_STAR}}")
+    .replace(/\*/g, "[^/]*")
+    .replace(/{{DOUBLE_STAR}}/g, ".*")
+    .replace(/\?/g, ".");
 
   const regex = new RegExp(`^${regexPattern}$`);
   return regex.test(path);
@@ -113,7 +120,7 @@ const matchesPattern = (path: string, pattern: string): boolean => {
  * Extract file path from tool input
  */
 const getFilePath = (input: ToolInput): string | undefined => {
-  if (typeof input === 'object' && input !== null) {
+  if (typeof input === "object" && input !== null) {
     return (input as Record<string, unknown>).file_path as string | undefined;
   }
   return undefined;
@@ -140,24 +147,23 @@ export const usePermissionStore = create<PermissionStore>()(
         set((state) => ({
           pendingPermissions: state.pendingPermissions.map((p) =>
             p.requestId === requestId
-              ? {
+              ? ({
                   ...p,
-                  status: decision === 'deny' ? 'denied' : 'approved',
+                  status: decision === "deny" ? "denied" : "approved",
                   decision,
-                } as PermissionRequest
-              : p
+                } as PermissionRequest)
+              : p,
           ),
         })),
 
       removePending: (requestId) =>
         set((state) => ({
           pendingPermissions: state.pendingPermissions.filter(
-            (p) => p.requestId !== requestId
+            (p) => p.requestId !== requestId,
           ),
         })),
 
-      clearPending: () =>
-        set({ pendingPermissions: [] }),
+      clearPending: () => set({ pendingPermissions: [] }),
 
       addAllowed: (permission) => {
         const now = Date.now();
@@ -165,7 +171,7 @@ export const usePermissionStore = create<PermissionStore>()(
           ...permission,
           grantedAt: now,
           expiresAt:
-            permission.scope === 'session'
+            permission.scope === "session"
               ? now + 24 * 60 * 60 * 1000 // 24 hours
               : undefined,
         };
@@ -174,7 +180,10 @@ export const usePermissionStore = create<PermissionStore>()(
           allowedPermissions: [
             ...state.allowedPermissions.filter(
               (p) =>
-                !(p.toolName === permission.toolName && p.pattern === permission.pattern)
+                !(
+                  p.toolName === permission.toolName &&
+                  p.pattern === permission.pattern
+                ),
             ),
             newPermission,
           ],
@@ -184,20 +193,19 @@ export const usePermissionStore = create<PermissionStore>()(
       removeAllowed: (toolName, pattern) =>
         set((state) => ({
           allowedPermissions: state.allowedPermissions.filter(
-            (p) => !(p.toolName === toolName && p.pattern === pattern)
+            (p) => !(p.toolName === toolName && p.pattern === pattern),
           ),
         })),
 
-      clearAllowed: () =>
-        set({ allowedPermissions: [] }),
+      clearAllowed: () => set({ allowedPermissions: [] }),
 
       clearSessionPermissions: () => {
         const now = Date.now();
         set((state) => ({
           allowedPermissions: state.allowedPermissions.filter(
             (p) =>
-              p.scope === 'always' ||
-              (p.expiresAt !== undefined && p.expiresAt > now)
+              p.scope === "always" ||
+              (p.expiresAt !== undefined && p.expiresAt > now),
           ),
         }));
       },
@@ -226,7 +234,7 @@ export const usePermissionStore = create<PermissionStore>()(
           }
 
           // Check tool name match
-          if (p.toolName !== toolName && p.toolName !== '*') {
+          if (p.toolName !== toolName && p.toolName !== "*") {
             return false;
           }
 
@@ -257,22 +265,22 @@ export const usePermissionStore = create<PermissionStore>()(
       updatePendingStatus: (requestId, status) =>
         set((state) => ({
           pendingPermissions: state.pendingPermissions.map((p) =>
-            p.requestId === requestId ? { ...p, status } : p
+            p.requestId === requestId ? { ...p, status } : p,
           ),
         })),
     }),
     {
-      name: 'claude-flow-permission-store',
+      name: "claude-flow-permission-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist 'always' scoped permissions
         allowedPermissions: state.allowedPermissions.filter(
-          (p) => p.scope === 'always'
+          (p) => p.scope === "always",
         ),
         deniedPatterns: state.deniedPatterns,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // ============================================================================
@@ -301,16 +309,17 @@ export const selectDeniedPatterns = (state: PermissionStore) =>
  * Select pending count
  */
 export const selectPendingCount = (state: PermissionStore) =>
-  state.pendingPermissions.filter((p) => p.status === 'pending').length;
+  state.pendingPermissions.filter((p) => p.status === "pending").length;
 
 /**
  * Select first pending permission
  */
 export const selectFirstPending = (state: PermissionStore) =>
-  state.pendingPermissions.find((p) => p.status === 'pending');
+  state.pendingPermissions.find((p) => p.status === "pending");
 
 /**
  * Select permissions for a specific tool
  */
-export const selectPermissionsForTool = (toolName: string) => (state: PermissionStore) =>
-  state.allowedPermissions.filter((p) => p.toolName === toolName);
+export const selectPermissionsForTool =
+  (toolName: string) => (state: PermissionStore) =>
+    state.allowedPermissions.filter((p) => p.toolName === toolName);

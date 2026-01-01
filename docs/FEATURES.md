@@ -13,6 +13,7 @@ This document specifies all features to be implemented in the claude-code-gui VS
 **Description**: Render chat messages with proper formatting and visual hierarchy.
 
 **Requirements**:
+
 - [ ] Display user messages with "You" header and user icon
 - [ ] Display Claude responses with "Claude" header and AI icon
 - [ ] Support streaming text display (character-by-character or chunk-based)
@@ -33,6 +34,7 @@ This document specifies all features to be implemented in the claude-code-gui VS
 - [ ] Copy entire message button
 
 **Components**:
+
 ```
 MessageList.tsx
 +-- Message.tsx
@@ -47,6 +49,7 @@ MessageList.tsx
 **Description**: Rich text input area for composing messages.
 
 **Requirements**:
+
 - [ ] Auto-resizing textarea (min 1 row, max configurable)
 - [ ] Keyboard shortcuts:
   - Enter to send (configurable)
@@ -61,6 +64,7 @@ MessageList.tsx
 - [ ] Placeholder text with helpful hints
 
 **Components**:
+
 ```
 InputContainer.tsx
 +-- MessageInput.tsx (textarea)
@@ -74,6 +78,7 @@ InputContainer.tsx
 **Description**: Intelligent auto-scroll behavior during message streaming.
 
 **Requirements**:
+
 - [ ] Auto-scroll to bottom when new content arrives
 - [ ] Disable auto-scroll when user scrolls up (threshold detection)
 - [ ] Re-enable auto-scroll when user scrolls to bottom
@@ -88,6 +93,7 @@ InputContainer.tsx
 **Description**: Browse and restore previous chat sessions.
 
 **Requirements**:
+
 - [ ] List all saved conversations
 - [ ] Display metadata:
   - First/last user message preview
@@ -101,6 +107,7 @@ InputContainer.tsx
 - [ ] Session ID display
 
 **Components**:
+
 ```
 ConversationHistoryModal.tsx
 +-- ConversationList.tsx
@@ -113,6 +120,7 @@ ConversationHistoryModal.tsx
 **Description**: Start fresh conversations while preserving history.
 
 **Requirements**:
+
 - [ ] "New Chat" button in header
 - [ ] Confirmation if current session has unsent draft
 - [ ] Clear message display
@@ -129,6 +137,7 @@ ConversationHistoryModal.tsx
 **Description**: Visual representation of Claude executing tools.
 
 **Requirements**:
+
 - [ ] Collapsible tool execution card
 - [ ] Tool name with icon (wrench icon)
 - [ ] Tool-specific formatting:
@@ -143,6 +152,7 @@ ConversationHistoryModal.tsx
 - [ ] Duration timer while executing
 
 **Components**:
+
 ```
 ToolExecution.tsx
 +-- ToolHeader.tsx
@@ -159,6 +169,7 @@ ToolExecution.tsx
 **Description**: Show outcomes of tool executions.
 
 **Requirements**:
+
 - [ ] Success/error status indication
 - [ ] Truncation for long results with "Show more" button
 - [ ] Syntax highlighting for code results
@@ -167,6 +178,7 @@ ToolExecution.tsx
 - [ ] File content diffs for edit operations
 
 **Components**:
+
 ```
 ToolResult.tsx
 +-- ResultContent.tsx
@@ -178,6 +190,7 @@ ToolResult.tsx
 **Description**: Inline diff visualization for file modifications.
 
 **Requirements**:
+
 - [ ] Side-by-side or unified diff view
 - [ ] Syntax highlighting preserved
 - [ ] Line number gutter
@@ -189,6 +202,7 @@ ToolResult.tsx
 - [ ] Update after tool result (show actual changes)
 
 **Components**:
+
 ```
 DiffViewer.tsx
 +-- DiffHeader.tsx
@@ -201,6 +215,7 @@ DiffViewer.tsx
 **Description**: Handle MultiEdit tool with multiple changes in one file.
 
 **Requirements**:
+
 - [ ] Display each edit block separately
 - [ ] Combined diff view option
 - [ ] Individual edit status
@@ -215,6 +230,7 @@ DiffViewer.tsx
 **Description**: Interactive approval/denial interface for tool permissions.
 
 **Requirements**:
+
 - [ ] Modal or inline permission card
 - [ ] Tool name and description
 - [ ] Input parameters preview
@@ -227,6 +243,7 @@ DiffViewer.tsx
 - [ ] Suggestion chips from Claude
 
 **Components**:
+
 ```
 PermissionRequest.tsx
 +-- PermissionDetails.tsx
@@ -239,6 +256,7 @@ PermissionRequest.tsx
 **Description**: Configure always-allowed permissions.
 
 **Requirements**:
+
 - [ ] List all allowed permissions
 - [ ] Group by tool type
 - [ ] Command patterns for Bash
@@ -250,6 +268,7 @@ PermissionRequest.tsx
 - [ ] Scope indicators (global vs project)
 
 **Components**:
+
 ```
 PermissionList.tsx
 +-- PermissionItem.tsx
@@ -261,6 +280,7 @@ PermissionList.tsx
 **Description**: Auto-approve all permission requests.
 
 **Requirements**:
+
 - [ ] Toggle in settings
 - [ ] Persistent warning banner when active
 - [ ] Confirmation dialog to enable
@@ -268,6 +288,7 @@ PermissionList.tsx
 - [ ] Log all auto-approved actions
 
 **Components**:
+
 ```
 YoloModeToggle.tsx
 YoloModeWarning.tsx
@@ -282,6 +303,7 @@ YoloModeWarning.tsx
 **Description**: View and manage configured MCP servers.
 
 **Requirements**:
+
 - [ ] List all configured servers from .mcp.json
 - [ ] Server status indicators (connected, disconnected, error)
 - [ ] Server type badge (stdio, http, sse)
@@ -289,6 +311,7 @@ YoloModeWarning.tsx
 - [ ] Enable/disable individual servers
 
 **Components**:
+
 ```
 MCPServersModal.tsx
 +-- MCPServerList.tsx
@@ -300,6 +323,7 @@ MCPServersModal.tsx
 **Description**: Configure new MCP servers.
 
 **Requirements**:
+
 - [ ] Server name input
 - [ ] Server type selection (stdio, http, sse)
 - [ ] Type-specific configuration:
@@ -316,6 +340,7 @@ MCPServersModal.tsx
   - Filesystem
 
 **Components**:
+
 ```
 AddServerForm.tsx
 +-- ServerTypeSelector.tsx
@@ -329,6 +354,7 @@ AddServerForm.tsx
 **Description**: Modify or remove existing servers.
 
 **Requirements**:
+
 - [ ] Edit all server properties
 - [ ] Delete with confirmation
 - [ ] Restart server after changes
@@ -342,6 +368,7 @@ AddServerForm.tsx
 **Description**: Maintain and display session information.
 
 **Requirements**:
+
 - [ ] Session ID display
 - [ ] Session status badge
 - [ ] Resume previous session
@@ -349,6 +376,7 @@ AddServerForm.tsx
 - [ ] Multiple active sessions (future)
 
 **Components**:
+
 ```
 SessionBadge.tsx
 SessionStatus.tsx
@@ -359,6 +387,7 @@ SessionStatus.tsx
 **Description**: Monitor token usage and API costs.
 
 **Requirements**:
+
 - [ ] Current request tokens (input/output)
 - [ ] Session total tokens
 - [ ] Estimated cost display (API users)
@@ -368,6 +397,7 @@ SessionStatus.tsx
 - [ ] Cost/usage command shortcuts
 
 **Components**:
+
 ```
 TokenDisplay.tsx
 CostIndicator.tsx
@@ -379,6 +409,7 @@ UsageTooltip.tsx
 **Description**: Visual feedback during Claude processing.
 
 **Requirements**:
+
 - [ ] Animated spinner/dots
 - [ ] Elapsed time counter
 - [ ] Status text (processing, thinking, executing)
@@ -386,6 +417,7 @@ UsageTooltip.tsx
 - [ ] Progress estimation (if available)
 
 **Components**:
+
 ```
 ProcessingIndicator.tsx
 StopButton.tsx
@@ -401,6 +433,7 @@ ElapsedTimer.tsx
 **Description**: Choose Claude model for conversation.
 
 **Requirements**:
+
 - [ ] Current model display in input area
 - [ ] Dropdown/modal selector
 - [ ] Available models:
@@ -412,6 +445,7 @@ ElapsedTimer.tsx
 - [ ] Configure default (opens terminal)
 
 **Components**:
+
 ```
 ModelSelector.tsx
 ModelSelectorModal.tsx
@@ -427,12 +461,14 @@ ModelSelectorModal.tsx
 **Description**: Request Claude to plan before executing.
 
 **Requirements**:
+
 - [ ] Toggle switch in input area
 - [ ] Persisted preference
 - [ ] Visual indicator when active
 - [ ] CLI flag: `--plan`
 
 **Components**:
+
 ```
 ModeToggle.tsx (shared)
 ```
@@ -442,6 +478,7 @@ ModeToggle.tsx (shared)
 **Description**: Enable extended thinking output.
 
 **Requirements**:
+
 - [ ] Toggle switch in input area
 - [ ] Intensity selector modal:
   - Think (default)
@@ -454,6 +491,7 @@ ModeToggle.tsx (shared)
 - [ ] CLI flag based on intensity
 
 **Components**:
+
 ```
 ThinkingModeToggle.tsx
 ThinkingIntensityModal.tsx
@@ -469,6 +507,7 @@ ThinkingBlock.tsx
 **Description**: Claude CLI slash commands.
 
 **Requirements**:
+
 - [ ] Searchable command list modal
 - [ ] Command categories:
   - Session: /clear, /compact, /rewind
@@ -482,6 +521,7 @@ ThinkingBlock.tsx
 - [ ] Quick command input field
 
 **Components**:
+
 ```
 SlashCommandsModal.tsx
 +-- CommandSection.tsx
@@ -494,6 +534,7 @@ SlashCommandsModal.tsx
 **Description**: User-defined prompt snippets.
 
 **Requirements**:
+
 - [ ] Create custom slash commands
 - [ ] Command name (e.g., /my-command)
 - [ ] Prompt template
@@ -510,6 +551,7 @@ SlashCommandsModal.tsx
 - [ ] Insert into message input
 
 **Components**:
+
 ```
 CustomSnippetForm.tsx
 SnippetList.tsx
@@ -524,6 +566,7 @@ SnippetList.tsx
 **Description**: Reference project files in messages.
 
 **Requirements**:
+
 - [ ] @ button trigger
 - [ ] File picker modal
 - [ ] Workspace file search
@@ -534,6 +577,7 @@ SnippetList.tsx
 - [ ] Multiple file selection
 
 **Components**:
+
 ```
 FilePickerModal.tsx
 +-- FileSearch.tsx
@@ -547,6 +591,7 @@ AttachmentBadge.tsx
 **Description**: Attach images to messages.
 
 **Requirements**:
+
 - [ ] Image button trigger
 - [ ] File picker (image filter)
 - [ ] Drag & drop support
@@ -557,6 +602,7 @@ AttachmentBadge.tsx
 - [ ] Base64 encoding for transfer
 
 **Components**:
+
 ```
 ImagePicker.tsx
 ImagePreview.tsx
@@ -572,6 +618,7 @@ DropZone.tsx
 **Description**: Windows Subsystem for Linux integration.
 
 **Requirements**:
+
 - [ ] WSL enable toggle
 - [ ] Distribution selection
 - [ ] Node.js path in WSL
@@ -582,6 +629,7 @@ DropZone.tsx
 - [ ] WSL-specific process spawning
 
 **Components**:
+
 ```
 WSLSettings.tsx
 +-- DistroSelector.tsx
@@ -593,12 +641,14 @@ WSLSettings.tsx
 **Description**: Prompt Windows users about WSL option.
 
 **Requirements**:
+
 - [ ] One-time alert for Windows users
 - [ ] Quick enable button
 - [ ] Dismiss and remember
 - [ ] Settings link
 
 **Components**:
+
 ```
 WSLAlert.tsx
 ```
@@ -612,6 +662,7 @@ WSLAlert.tsx
 **Description**: Help users install Claude CLI.
 
 **Requirements**:
+
 - [ ] Detect missing CLI
 - [ ] Installation modal
 - [ ] One-click install command
@@ -620,6 +671,7 @@ WSLAlert.tsx
 - [ ] Documentation link
 
 **Components**:
+
 ```
 InstallModal.tsx
 +-- InstallProgress.tsx
@@ -631,6 +683,7 @@ InstallModal.tsx
 **Description**: Centralized extension settings.
 
 **Requirements**:
+
 - [ ] WSL configuration section
 - [ ] Permissions section
 - [ ] Display preferences
@@ -638,6 +691,7 @@ InstallModal.tsx
 - [ ] Reset to defaults
 
 **Components**:
+
 ```
 SettingsModal.tsx
 +-- SettingsSection.tsx
@@ -649,6 +703,7 @@ SettingsModal.tsx
 **Description**: Keyboard navigation and shortcuts.
 
 **Requirements**:
+
 - [ ] Cmd/Ctrl+Shift+C: Open chat
 - [ ] Cmd/Ctrl+Enter: Send message
 - [ ] Escape: Close modals
@@ -663,6 +718,7 @@ SettingsModal.tsx
 **Description**: Match VSCode theme.
 
 **Requirements**:
+
 - [ ] Read VSCode CSS variables
 - [ ] Light/dark mode support
 - [ ] High contrast support
@@ -670,6 +726,7 @@ SettingsModal.tsx
 - [ ] Semantic color tokens
 
 **Implementation**:
+
 ```css
 :root {
   --background: var(--vscode-editor-background);
@@ -684,6 +741,7 @@ SettingsModal.tsx
 **Description**: Extension status in VSCode status bar.
 
 **Requirements**:
+
 - [ ] "Claude" status bar item
 - [ ] Click to open chat
 - [ ] Processing indicator
@@ -695,6 +753,7 @@ SettingsModal.tsx
 ## Implementation Priority
 
 ### Phase 1: Core Chat (MVP)
+
 1. Message display (text, code blocks)
 2. Message input with send
 3. Claude CLI integration (spawn, stream parse)
@@ -702,18 +761,21 @@ SettingsModal.tsx
 5. Status indicator
 
 ### Phase 2: Tool Visualization
+
 1. Tool use display
 2. Tool result display
 3. Basic diff viewer
 4. Permission requests
 
 ### Phase 3: Settings & Config
+
 1. Settings modal
 2. MCP server management
 3. Model selection
 4. Mode toggles (plan, thinking)
 
 ### Phase 4: Enhanced Features
+
 1. Conversation history
 2. File attachments
 3. Image attachments
@@ -721,6 +783,7 @@ SettingsModal.tsx
 5. Custom snippets
 
 ### Phase 5: Platform & Polish
+
 1. WSL support
 2. Keyboard shortcuts
 3. Theme polish
@@ -732,21 +795,25 @@ SettingsModal.tsx
 ## Testing Strategy
 
 ### Unit Tests
+
 - Store actions and reducers
 - Utility functions
 - Component logic (hooks)
 
 ### Integration Tests
+
 - Message flow (send -> display)
 - CLI process lifecycle
 - Permission flow
 
 ### E2E Tests
+
 - Full conversation flow
 - Settings persistence
 - File operations
 
 ### Manual Testing
+
 - Cross-platform (Windows, Mac, Linux)
 - Theme compatibility
 - Extension lifecycle (install, update, uninstall)

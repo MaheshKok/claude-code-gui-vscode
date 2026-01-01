@@ -7,11 +7,11 @@
  * @module hooks/useVSCode
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
 import type {
   VSCodeApi,
   WebviewToExtensionMessage,
-} from '../types/webview-api';
+} from "../types/webview-api";
 
 // ============================================================================
 // VSCode API Singleton
@@ -33,25 +33,28 @@ function getVSCodeApi(): VSCodeApi | null {
   }
 
   // First check if vscode was already acquired and attached to window (by main.tsx)
-  if (typeof window !== 'undefined' && window.vscode) {
-    console.log('[useVSCode] Using existing window.vscode');
+  if (typeof window !== "undefined" && window.vscode) {
+    console.log("[useVSCode] Using existing window.vscode");
     vscodeApi = window.vscode as VSCodeApi;
     return vscodeApi;
   }
 
   // Try to acquire if not already done
-  if (typeof window !== 'undefined' && typeof window.acquireVsCodeApi === 'function') {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.acquireVsCodeApi === "function"
+  ) {
     try {
       vscodeApi = window.acquireVsCodeApi();
-      console.log('[useVSCode] Acquired VSCode API');
+      console.log("[useVSCode] Acquired VSCode API");
       return vscodeApi;
     } catch {
       // API already acquired but not attached to window - this shouldn't happen
-      console.warn('[useVSCode] Failed to acquire VSCode API');
+      console.warn("[useVSCode] Failed to acquire VSCode API");
     }
   }
 
-  console.warn('[useVSCode] No VSCode API available');
+  console.warn("[useVSCode] No VSCode API available");
   return null;
 }
 
@@ -114,40 +117,45 @@ export function useVSCode(): UseVSCodeReturn {
    */
   const postMessage = useCallback(
     (message: WebviewToExtensionMessage): void => {
-      console.log('[useVSCode] postMessage called:', message.type, 'api available:', !!api);
+      console.log(
+        "[useVSCode] postMessage called:",
+        message.type,
+        "api available:",
+        !!api,
+      );
       if (api) {
-        console.log('[useVSCode] Sending message to extension:', message.type);
+        console.log("[useVSCode] Sending message to extension:", message.type);
         api.postMessage(message);
-        console.log('[useVSCode] Message sent successfully');
+        console.log("[useVSCode] Message sent successfully");
       } else {
-        console.warn('[useVSCode] postMessage called outside VSCode context:', message);
+        console.warn(
+          "[useVSCode] postMessage called outside VSCode context:",
+          message,
+        );
       }
     },
-    [api]
+    [api],
   );
 
   /**
    * Get persisted state
    * Returns undefined if not in VSCode or no state exists
    */
-  const getState = useCallback(
-    <T = unknown>(): T | undefined => {
-      if (api) {
-        return api.getState() as T | undefined;
+  const getState = useCallback(<T = unknown>(): T | undefined => {
+    if (api) {
+      return api.getState() as T | undefined;
+    }
+    // Fallback to localStorage in development
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        const stored = window.localStorage.getItem("vscode-webview-state");
+        return stored ? JSON.parse(stored) : undefined;
+      } catch {
+        return undefined;
       }
-      // Fallback to localStorage in development
-      if (typeof window !== 'undefined' && window.localStorage) {
-        try {
-          const stored = window.localStorage.getItem('vscode-webview-state');
-          return stored ? JSON.parse(stored) : undefined;
-        } catch {
-          return undefined;
-        }
-      }
-      return undefined;
-    },
-    [api]
-  );
+    }
+    return undefined;
+  }, [api]);
 
   /**
    * Set persisted state
@@ -157,16 +165,19 @@ export function useVSCode(): UseVSCodeReturn {
     <T = unknown>(state: T): void => {
       if (api) {
         api.setState(state);
-      } else if (typeof window !== 'undefined' && window.localStorage) {
+      } else if (typeof window !== "undefined" && window.localStorage) {
         // Fallback to localStorage in development
         try {
-          window.localStorage.setItem('vscode-webview-state', JSON.stringify(state));
+          window.localStorage.setItem(
+            "vscode-webview-state",
+            JSON.stringify(state),
+          );
         } catch {
-          console.warn('Failed to persist state to localStorage');
+          console.warn("Failed to persist state to localStorage");
         }
       }
     },
-    [api]
+    [api],
   );
 
   /**
@@ -178,7 +189,7 @@ export function useVSCode(): UseVSCodeReturn {
       const currentState = getState<T>() ?? ({} as T);
       setState({ ...currentState, ...updates });
     },
-    [getState, setState]
+    [getState, setState],
   );
 
   return {
@@ -215,11 +226,16 @@ export function getVSCode(): VSCodeApi | null {
  * Post a message to the extension (non-hook version)
  * Useful for utilities or stores
  */
-export function postMessageToExtension(message: WebviewToExtensionMessage): void {
+export function postMessageToExtension(
+  message: WebviewToExtensionMessage,
+): void {
   const api = getVSCodeApi();
   if (api) {
     api.postMessage(message);
   } else {
-    console.warn('postMessageToExtension called outside VSCode context:', message);
+    console.warn(
+      "postMessageToExtension called outside VSCode context:",
+      message,
+    );
   }
 }

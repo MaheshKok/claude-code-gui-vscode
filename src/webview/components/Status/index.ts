@@ -1,2 +1,2 @@
-export { StatusBar } from './StatusBar';
-export { default } from './StatusBar';
+export { StatusBar } from "./StatusBar";
+export { default } from "./StatusBar";

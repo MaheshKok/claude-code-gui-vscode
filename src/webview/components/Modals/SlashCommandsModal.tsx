@@ -1,50 +1,247 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { Modal } from './Modal';
+import React, { useState, useCallback, useMemo } from "react";
+import { Modal } from "./Modal";
 
 export interface SlashCommand {
   id: string;
   name: string;
   icon: string;
   description: string;
-  type: 'builtin' | 'custom' | 'snippet';
+  type: "builtin" | "custom" | "snippet";
   prompt?: string;
 }
 
 const BUILTIN_COMMANDS: SlashCommand[] = [
-  { id: 'add-dir', name: '/add-dir', icon: '\uD83D\uDCC1', description: 'Add additional working directories', type: 'builtin' },
-  { id: 'agents', name: '/agents', icon: '\uD83E\uDD16', description: 'Manage custom AI subagents for specialized tasks', type: 'builtin' },
-  { id: 'bug', name: '/bug', icon: '\uD83D\uDC1B', description: 'Report bugs (sends conversation to Anthropic)', type: 'builtin' },
-  { id: 'clear', name: '/clear', icon: '\uD83D\uDDD1\uFE0F', description: 'Clear conversation history', type: 'builtin' },
-  { id: 'compact', name: '/compact', icon: '\uD83D\uDCE6', description: 'Compact conversation with optional focus instructions', type: 'builtin' },
-  { id: 'config', name: '/config', icon: '\u2699\uFE0F', description: 'Open the Settings interface (Config tab)', type: 'builtin' },
-  { id: 'cost', name: '/cost', icon: '\uD83D\uDCB0', description: 'Show token usage statistics', type: 'builtin' },
-  { id: 'doctor', name: '/doctor', icon: '\uD83E\uDE7A', description: 'Checks the health of your Claude Code installation', type: 'builtin' },
-  { id: 'help', name: '/help', icon: '\u2753', description: 'Get usage help', type: 'builtin' },
-  { id: 'init', name: '/init', icon: '\uD83D\uDE80', description: 'Initialize project with CLAUDE.md guide', type: 'builtin' },
-  { id: 'login', name: '/login', icon: '\uD83D\uDD11', description: 'Switch Anthropic accounts', type: 'builtin' },
-  { id: 'logout', name: '/logout', icon: '\uD83D\uDEAA', description: 'Sign out from your Anthropic account', type: 'builtin' },
-  { id: 'mcp', name: '/mcp', icon: '\uD83D\uDD0C', description: 'Manage MCP server connections and OAuth authentication', type: 'builtin' },
-  { id: 'memory', name: '/memory', icon: '\uD83E\uDDE0', description: 'Edit CLAUDE.md memory files', type: 'builtin' },
-  { id: 'model', name: '/model', icon: '\uD83E\uDD16', description: 'Select or change the AI model', type: 'builtin' },
-  { id: 'permissions', name: '/permissions', icon: '\uD83D\uDD12', description: 'View or update permissions', type: 'builtin' },
-  { id: 'pr_comments', name: '/pr_comments', icon: '\uD83D\uDCAC', description: 'View pull request comments', type: 'builtin' },
-  { id: 'review', name: '/review', icon: '\uD83D\uDC40', description: 'Request code review', type: 'builtin' },
-  { id: 'rewind', name: '/rewind', icon: '\u23EA', description: 'Rewind the conversation and/or code', type: 'builtin' },
-  { id: 'status', name: '/status', icon: '\uD83D\uDCCA', description: 'Open the Settings interface (Status tab)', type: 'builtin' },
-  { id: 'terminal-setup', name: '/terminal-setup', icon: '\u2328\uFE0F', description: 'Install Shift+Enter key binding for newlines', type: 'builtin' },
-  { id: 'usage', name: '/usage', icon: '\uD83D\uDCC8', description: 'Show plan usage limits and rate limit status', type: 'builtin' },
-  { id: 'vim', name: '/vim', icon: '\uD83D\uDCDD', description: 'Enter vim mode for alternating insert and command modes', type: 'builtin' },
+  {
+    id: "add-dir",
+    name: "/add-dir",
+    icon: "\uD83D\uDCC1",
+    description: "Add additional working directories",
+    type: "builtin",
+  },
+  {
+    id: "agents",
+    name: "/agents",
+    icon: "\uD83E\uDD16",
+    description: "Manage custom AI subagents for specialized tasks",
+    type: "builtin",
+  },
+  {
+    id: "bug",
+    name: "/bug",
+    icon: "\uD83D\uDC1B",
+    description: "Report bugs (sends conversation to Anthropic)",
+    type: "builtin",
+  },
+  {
+    id: "clear",
+    name: "/clear",
+    icon: "\uD83D\uDDD1\uFE0F",
+    description: "Clear conversation history",
+    type: "builtin",
+  },
+  {
+    id: "compact",
+    name: "/compact",
+    icon: "\uD83D\uDCE6",
+    description: "Compact conversation with optional focus instructions",
+    type: "builtin",
+  },
+  {
+    id: "config",
+    name: "/config",
+    icon: "\u2699\uFE0F",
+    description: "Open the Settings interface (Config tab)",
+    type: "builtin",
+  },
+  {
+    id: "cost",
+    name: "/cost",
+    icon: "\uD83D\uDCB0",
+    description: "Show token usage statistics",
+    type: "builtin",
+  },
+  {
+    id: "doctor",
+    name: "/doctor",
+    icon: "\uD83E\uDE7A",
+    description: "Checks the health of your Claude Code installation",
+    type: "builtin",
+  },
+  {
+    id: "help",
+    name: "/help",
+    icon: "\u2753",
+    description: "Get usage help",
+    type: "builtin",
+  },
+  {
+    id: "init",
+    name: "/init",
+    icon: "\uD83D\uDE80",
+    description: "Initialize project with CLAUDE.md guide",
+    type: "builtin",
+  },
+  {
+    id: "login",
+    name: "/login",
+    icon: "\uD83D\uDD11",
+    description: "Switch Anthropic accounts",
+    type: "builtin",
+  },
+  {
+    id: "logout",
+    name: "/logout",
+    icon: "\uD83D\uDEAA",
+    description: "Sign out from your Anthropic account",
+    type: "builtin",
+  },
+  {
+    id: "mcp",
+    name: "/mcp",
+    icon: "\uD83D\uDD0C",
+    description: "Manage MCP server connections and OAuth authentication",
+    type: "builtin",
+  },
+  {
+    id: "memory",
+    name: "/memory",
+    icon: "\uD83E\uDDE0",
+    description: "Edit CLAUDE.md memory files",
+    type: "builtin",
+  },
+  {
+    id: "model",
+    name: "/model",
+    icon: "\uD83E\uDD16",
+    description: "Select or change the AI model",
+    type: "builtin",
+  },
+  {
+    id: "permissions",
+    name: "/permissions",
+    icon: "\uD83D\uDD12",
+    description: "View or update permissions",
+    type: "builtin",
+  },
+  {
+    id: "pr_comments",
+    name: "/pr_comments",
+    icon: "\uD83D\uDCAC",
+    description: "View pull request comments",
+    type: "builtin",
+  },
+  {
+    id: "review",
+    name: "/review",
+    icon: "\uD83D\uDC40",
+    description: "Request code review",
+    type: "builtin",
+  },
+  {
+    id: "rewind",
+    name: "/rewind",
+    icon: "\u23EA",
+    description: "Rewind the conversation and/or code",
+    type: "builtin",
+  },
+  {
+    id: "status",
+    name: "/status",
+    icon: "\uD83D\uDCCA",
+    description: "Open the Settings interface (Status tab)",
+    type: "builtin",
+  },
+  {
+    id: "terminal-setup",
+    name: "/terminal-setup",
+    icon: "\u2328\uFE0F",
+    description: "Install Shift+Enter key binding for newlines",
+    type: "builtin",
+  },
+  {
+    id: "usage",
+    name: "/usage",
+    icon: "\uD83D\uDCC8",
+    description: "Show plan usage limits and rate limit status",
+    type: "builtin",
+  },
+  {
+    id: "vim",
+    name: "/vim",
+    icon: "\uD83D\uDCDD",
+    description: "Enter vim mode for alternating insert and command modes",
+    type: "builtin",
+  },
 ];
 
 const BUILTIN_SNIPPETS: SlashCommand[] = [
-  { id: 'performance-analysis', name: '/performance-analysis', icon: '\u26A1', description: 'Analyze this code for performance issues and suggest optimizations', type: 'snippet', prompt: 'Analyze this code for performance issues and suggest optimizations' },
-  { id: 'security-review', name: '/security-review', icon: '\uD83D\uDD12', description: 'Review this code for security vulnerabilities', type: 'snippet', prompt: 'Review this code for security vulnerabilities' },
-  { id: 'implementation-review', name: '/implementation-review', icon: '\uD83D\uDD0D', description: 'Review the implementation in this code', type: 'snippet', prompt: 'Review the implementation in this code' },
-  { id: 'code-explanation', name: '/code-explanation', icon: '\uD83D\uDCD6', description: 'Explain how this code works in detail', type: 'snippet', prompt: 'Explain how this code works in detail' },
-  { id: 'bug-fix', name: '/bug-fix', icon: '\uD83D\uDC1B', description: 'Help me fix this bug in my code', type: 'snippet', prompt: 'Help me fix this bug in my code' },
-  { id: 'refactor', name: '/refactor', icon: '\uD83D\uDD04', description: 'Refactor this code to improve readability and maintainability', type: 'snippet', prompt: 'Refactor this code to improve readability and maintainability' },
-  { id: 'test-generation', name: '/test-generation', icon: '\uD83E\uDDEA', description: 'Generate comprehensive tests for this code', type: 'snippet', prompt: 'Generate comprehensive tests for this code' },
-  { id: 'documentation', name: '/documentation', icon: '\uD83D\uDCDD', description: 'Generate documentation for this code', type: 'snippet', prompt: 'Generate documentation for this code' },
+  {
+    id: "performance-analysis",
+    name: "/performance-analysis",
+    icon: "\u26A1",
+    description:
+      "Analyze this code for performance issues and suggest optimizations",
+    type: "snippet",
+    prompt:
+      "Analyze this code for performance issues and suggest optimizations",
+  },
+  {
+    id: "security-review",
+    name: "/security-review",
+    icon: "\uD83D\uDD12",
+    description: "Review this code for security vulnerabilities",
+    type: "snippet",
+    prompt: "Review this code for security vulnerabilities",
+  },
+  {
+    id: "implementation-review",
+    name: "/implementation-review",
+    icon: "\uD83D\uDD0D",
+    description: "Review the implementation in this code",
+    type: "snippet",
+    prompt: "Review the implementation in this code",
+  },
+  {
+    id: "code-explanation",
+    name: "/code-explanation",
+    icon: "\uD83D\uDCD6",
+    description: "Explain how this code works in detail",
+    type: "snippet",
+    prompt: "Explain how this code works in detail",
+  },
+  {
+    id: "bug-fix",
+    name: "/bug-fix",
+    icon: "\uD83D\uDC1B",
+    description: "Help me fix this bug in my code",
+    type: "snippet",
+    prompt: "Help me fix this bug in my code",
+  },
+  {
+    id: "refactor",
+    name: "/refactor",
+    icon: "\uD83D\uDD04",
+    description:
+      "Refactor this code to improve readability and maintainability",
+    type: "snippet",
+    prompt: "Refactor this code to improve readability and maintainability",
+  },
+  {
+    id: "test-generation",
+    name: "/test-generation",
+    icon: "\uD83E\uDDEA",
+    description: "Generate comprehensive tests for this code",
+    type: "snippet",
+    prompt: "Generate comprehensive tests for this code",
+  },
+  {
+    id: "documentation",
+    name: "/documentation",
+    icon: "\uD83D\uDCDD",
+    description: "Generate documentation for this code",
+    type: "snippet",
+    prompt: "Generate documentation for this code",
+  },
 ];
 
 export interface SlashCommandsModalProps {
@@ -66,11 +263,11 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
   onDeleteCustomCommand,
   onQuickCommand,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newCommandName, setNewCommandName] = useState('');
-  const [newCommandPrompt, setNewCommandPrompt] = useState('');
-  const [quickCommand, setQuickCommand] = useState('');
+  const [newCommandName, setNewCommandName] = useState("");
+  const [newCommandPrompt, setNewCommandPrompt] = useState("");
+  const [quickCommand, setQuickCommand] = useState("");
 
   const allCommands = useMemo(() => {
     return [...customCommands, ...BUILTIN_SNIPPETS, ...BUILTIN_COMMANDS];
@@ -82,28 +279,28 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
     return allCommands.filter(
       (cmd) =>
         cmd.name.toLowerCase().includes(query) ||
-        cmd.description.toLowerCase().includes(query)
+        cmd.description.toLowerCase().includes(query),
     );
   }, [allCommands, searchQuery]);
 
   const handleAddCommand = useCallback(() => {
     if (newCommandName && newCommandPrompt) {
       onAddCustomCommand(newCommandName, newCommandPrompt);
-      setNewCommandName('');
-      setNewCommandPrompt('');
+      setNewCommandName("");
+      setNewCommandPrompt("");
       setShowAddForm(false);
     }
   }, [newCommandName, newCommandPrompt, onAddCustomCommand]);
 
   const handleQuickCommand = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter' && quickCommand) {
+      if (e.key === "Enter" && quickCommand) {
         onQuickCommand(quickCommand);
-        setQuickCommand('');
+        setQuickCommand("");
         onClose();
       }
     },
-    [quickCommand, onQuickCommand, onClose]
+    [quickCommand, onQuickCommand, onClose],
   );
 
   const handleCommandClick = useCallback(
@@ -111,12 +308,14 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
       onExecuteCommand(command);
       onClose();
     },
-    [onExecuteCommand, onClose]
+    [onExecuteCommand, onClose],
   );
 
-  const customCommandsList = filteredCommands.filter((c) => c.type === 'custom');
-  const snippetsList = filteredCommands.filter((c) => c.type === 'snippet');
-  const builtinList = filteredCommands.filter((c) => c.type === 'builtin');
+  const customCommandsList = filteredCommands.filter(
+    (c) => c.type === "custom",
+  );
+  const snippetsList = filteredCommands.filter((c) => c.type === "snippet");
+  const builtinList = filteredCommands.filter((c) => c.type === "builtin");
 
   return (
     <Modal
@@ -147,7 +346,8 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
             Custom Commands
           </h3>
           <p className="text-xs text-[var(--vscode-descriptionForeground)] mb-3">
-            Custom slash commands for quick prompt access. Click to use directly in chat.
+            Custom slash commands for quick prompt access. Click to use directly
+            in chat.
           </p>
 
           <div className="space-y-1">
@@ -219,13 +419,14 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
                   <button
                     onClick={() => {
                       setShowAddForm(false);
-                      setNewCommandName('');
-                      setNewCommandPrompt('');
+                      setNewCommandName("");
+                      setNewCommandPrompt("");
                     }}
                     className="btn-secondary px-3 py-1.5 text-xs rounded"
                     style={{
-                      backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                      color: 'var(--vscode-button-secondaryForeground)',
+                      backgroundColor:
+                        "var(--vscode-button-secondaryBackground)",
+                      color: "var(--vscode-button-secondaryForeground)",
                     }}
                   >
                     Cancel
@@ -300,7 +501,8 @@ export const SlashCommandsModal: React.FC<SlashCommandsModalProps> = ({
             Built-in Commands
           </h3>
           <p className="text-xs text-[var(--vscode-descriptionForeground)] mb-3">
-            These commands require the Claude CLI and will open in VS Code terminal.
+            These commands require the Claude CLI and will open in VS Code
+            terminal.
           </p>
 
           <div className="space-y-1 max-h-60 overflow-y-auto">

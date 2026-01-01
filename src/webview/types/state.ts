@@ -13,13 +13,13 @@ import type {
   MCPServerInfo,
   AccountInfo,
   TokenUsage,
-} from './claude-events';
+} from "./claude-events";
 import type {
   ChatMessage,
   PermissionRequest,
   ConversationThread,
   MessageRenderOptions,
-} from './messages';
+} from "./messages";
 
 // ============================================================================
 // Session State
@@ -49,11 +49,11 @@ export interface SessionState {
  * Session status
  */
 export type SessionStatus =
-  | 'initializing'  // Session is being initialized
-  | 'active'        // Session is active and ready
-  | 'compacting'    // Context is being compacted
-  | 'error'         // Session encountered an error
-  | 'closed';       // Session has been closed
+  | "initializing" // Session is being initialized
+  | "active" // Session is active and ready
+  | "compacting" // Context is being compacted
+  | "error" // Session encountered an error
+  | "closed"; // Session has been closed
 
 /**
  * Session initialization options
@@ -218,7 +218,7 @@ export interface SettingsState {
  */
 export interface ThemeSettings {
   /** Current theme mode */
-  mode: 'light' | 'dark' | 'auto';
+  mode: "light" | "dark" | "auto";
   /** Custom accent color */
   accentColor?: string;
   /** Font family */
@@ -368,7 +368,7 @@ export interface SidebarState {
 /**
  * Sidebar tabs
  */
-export type SidebarTab = 'history' | 'files' | 'tools' | 'settings';
+export type SidebarTab = "history" | "files" | "tools" | "settings";
 
 /**
  * Input area state
@@ -399,9 +399,9 @@ export interface AttachmentState {
   /** File path */
   path: string;
   /** File type */
-  type: 'file' | 'image' | 'directory';
+  type: "file" | "image" | "directory";
   /** Upload status */
-  status: 'pending' | 'uploading' | 'ready' | 'error';
+  status: "pending" | "uploading" | "ready" | "error";
   /** Error message if upload failed */
   error?: string;
 }
@@ -411,7 +411,7 @@ export interface AttachmentState {
  */
 export interface MentionSuggestion {
   /** Suggestion type */
-  type: 'file' | 'tool' | 'command';
+  type: "file" | "tool" | "command";
   /** Display label */
   label: string;
   /** Value to insert */
@@ -436,13 +436,13 @@ export interface ModalState {
  * Modal types
  */
 export type ModalType =
-  | 'permission'
-  | 'install'
-  | 'login'
-  | 'settings'
-  | 'confirm'
-  | 'error'
-  | 'about';
+  | "permission"
+  | "install"
+  | "login"
+  | "settings"
+  | "confirm"
+  | "error"
+  | "about";
 
 /**
  * Notification state
@@ -461,7 +461,7 @@ export interface Notification {
   /** Notification ID */
   id: string;
   /** Notification type */
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   /** Notification title */
   title: string;
   /** Notification message */
@@ -506,7 +506,7 @@ export interface LayoutState {
 /**
  * Layout breakpoints
  */
-export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
 // ============================================================================
 // Root Application State
@@ -537,7 +537,7 @@ export interface AppState {
  */
 export const initialSessionState: SessionState = {
   sessionId: null,
-  status: 'initializing',
+  status: "initializing",
   tools: [],
   mcpServers: [],
   account: null,
@@ -554,7 +554,7 @@ export const initialConversationState: ConversationState = {
   pendingPermissions: [],
   isLoading: false,
   isProcessing: false,
-  inputValue: '',
+  inputValue: "",
   draftMessage: null,
 };
 

@@ -7,11 +7,17 @@
  * @module hooks/usePermissions
  */
 
-import { useState, useCallback, useMemo } from 'react';
-import { useVSCode } from './useVSCode';
-import { useMessages } from './useMessages';
-import type { PermissionRequest, PermissionRequestStatus } from '../types/messages';
-import type { PermissionDecision, PermissionSuggestion } from '../types/claude-events';
+import { useState, useCallback, useMemo } from "react";
+import { useVSCode } from "./useVSCode";
+import { useMessages } from "./useMessages";
+import type {
+  PermissionRequest,
+  PermissionRequestStatus,
+} from "../types/messages";
+import type {
+  PermissionDecision,
+  PermissionSuggestion,
+} from "../types/claude-events";
 
 // ============================================================================
 // Types
@@ -44,7 +50,10 @@ export interface UsePermissionsOptions {
   /** Callback when permission is requested */
   onPermissionRequest?: (request: PermissionRequest) => void;
   /** Callback when permission is resolved */
-  onPermissionResolved?: (request: PermissionRequest, decision: PermissionDecision) => void;
+  onPermissionResolved?: (
+    request: PermissionRequest,
+    decision: PermissionDecision,
+  ) => void;
   /** Callback when permission expires */
   onPermissionExpired?: (request: PermissionRequest) => void;
 }
@@ -58,7 +67,10 @@ export interface UsePermissionsReturn {
   /** All pending permission requests */
   pendingRequests: PermissionRequest[];
   /** Respond to a permission request */
-  respondToPermission: (requestId: string, decision: PermissionDecision) => void;
+  respondToPermission: (
+    requestId: string,
+    decision: PermissionDecision,
+  ) => void;
   /** Approve current request */
   approveCurrentRequest: () => void;
   /** Deny current request */
@@ -132,7 +144,7 @@ export interface UsePermissionsReturn {
  * ```
  */
 export function usePermissions(
-  options: UsePermissionsOptions = {}
+  options: UsePermissionsOptions = {},
 ): UsePermissionsReturn {
   const {
     enabled = true,
@@ -145,8 +157,12 @@ export function usePermissions(
 
   const { postMessage } = useVSCode();
 
-  const [pendingRequests, setPendingRequests] = useState<PermissionRequest[]>([]);
-  const [permissionHistory, setPermissionHistory] = useState<PermissionRequest[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PermissionRequest[]>(
+    [],
+  );
+  const [permissionHistory, setPermissionHistory] = useState<
+    PermissionRequest[]
+  >([]);
 
   /**
    * Tool configuration lookup
@@ -176,17 +192,17 @@ export function usePermissions(
           decisionReason: message.decisionReason,
           blockedPath: message.blockedPath,
           timestamp: Date.now(),
-          status: 'pending' as PermissionRequestStatus,
+          status: "pending" as PermissionRequestStatus,
         };
 
         // Check for auto-approve/deny
         const config = toolConfigMap.get(request.toolName);
         if (config?.alwaysDeny) {
-          respondToPermission(request.requestId, 'deny');
+          respondToPermission(request.requestId, "deny");
           return;
         }
         if (config?.autoApprove) {
-          respondToPermission(request.requestId, 'allow');
+          respondToPermission(request.requestId, "allow");
           return;
         }
 
@@ -197,9 +213,14 @@ export function usePermissions(
         if (defaultTimeout > 0) {
           setTimeout(() => {
             setPendingRequests((prev) => {
-              const request = prev.find((r) => r.requestId === message.requestId);
-              if (request && request.status === 'pending') {
-                const expiredRequest = { ...request, status: 'expired' as PermissionRequestStatus };
+              const request = prev.find(
+                (r) => r.requestId === message.requestId,
+              );
+              if (request && request.status === "pending") {
+                const expiredRequest = {
+                  ...request,
+                  status: "expired" as PermissionRequestStatus,
+                };
                 onPermissionExpired?.(expiredRequest);
                 return prev.filter((r) => r.requestId !== message.requestId);
               }
@@ -231,13 +252,13 @@ export function usePermissions(
 
       const updatedRequest: PermissionRequest = {
         ...request,
-        status: decision === 'deny' ? 'denied' : 'approved',
+        status: decision === "deny" ? "denied" : "approved",
         decision,
       };
 
       // Send response to extension
       postMessage({
-        type: 'permissionResponse',
+        type: "permissionResponse",
         requestId,
         decision,
         toolName: request.toolName,
@@ -245,12 +266,14 @@ export function usePermissions(
       });
 
       // Remove from pending and add to history
-      setPendingRequests((prev) => prev.filter((r) => r.requestId !== requestId));
+      setPendingRequests((prev) =>
+        prev.filter((r) => r.requestId !== requestId),
+      );
       setPermissionHistory((prev) => [...prev, updatedRequest]);
 
       onPermissionResolved?.(updatedRequest, decision);
     },
-    [pendingRequests, postMessage, onPermissionResolved]
+    [pendingRequests, postMessage, onPermissionResolved],
   );
 
   /**
@@ -258,7 +281,7 @@ export function usePermissions(
    */
   const approveCurrentRequest = useCallback((): void => {
     if (currentRequest) {
-      respondToPermission(currentRequest.requestId, 'allow');
+      respondToPermission(currentRequest.requestId, "allow");
     }
   }, [currentRequest, respondToPermission]);
 
@@ -267,7 +290,7 @@ export function usePermissions(
    */
   const denyCurrentRequest = useCallback((): void => {
     if (currentRequest) {
-      respondToPermission(currentRequest.requestId, 'deny');
+      respondToPermission(currentRequest.requestId, "deny");
     }
   }, [currentRequest, respondToPermission]);
 
@@ -279,18 +302,18 @@ export function usePermissions(
       if (currentRequest) {
         // Map suggestion type to permission decision
         const decisionMap: Record<string, PermissionDecision> = {
-          allow: 'allow',
-          allow_always: 'allow_always',
-          allow_all: 'allow',
-          deny: 'deny',
-          explain: 'deny',
+          allow: "allow",
+          allow_always: "allow_always",
+          allow_all: "allow",
+          deny: "deny",
+          explain: "deny",
         };
 
-        const decision = decisionMap[suggestion.type] || 'allow';
+        const decision = decisionMap[suggestion.type] || "allow";
         respondToPermission(currentRequest.requestId, decision);
       }
     },
-    [currentRequest, respondToPermission]
+    [currentRequest, respondToPermission],
   );
 
   /**
@@ -301,7 +324,7 @@ export function usePermissions(
       const config = toolConfigMap.get(toolName);
       return !config?.alwaysDeny;
     },
-    [toolConfigMap]
+    [toolConfigMap],
   );
 
   /**
@@ -312,7 +335,7 @@ export function usePermissions(
       const config = toolConfigMap.get(toolName);
       return config?.autoApprove ?? false;
     },
-    [toolConfigMap]
+    [toolConfigMap],
   );
 
   /**
@@ -323,7 +346,7 @@ export function usePermissions(
       const config = toolConfigMap.get(toolName);
       return config?.alwaysDeny ?? false;
     },
-    [toolConfigMap]
+    [toolConfigMap],
   );
 
   /**
@@ -366,10 +389,10 @@ export function usePermissions(
  */
 export function getDecisionDisplayName(decision: PermissionDecision): string {
   const displayNames: Record<string, string> = {
-    allow: 'Allow once',
-    allow_always: 'Always allow',
-    allow_session: 'Allow this session',
-    deny: 'Deny',
+    allow: "Allow once",
+    allow_always: "Always allow",
+    allow_session: "Allow this session",
+    deny: "Deny",
   };
   return displayNames[decision] || decision;
 }
@@ -379,13 +402,13 @@ export function getDecisionDisplayName(decision: PermissionDecision): string {
  */
 export function getDecisionStyleClass(decision: PermissionDecision): string {
   switch (decision) {
-    case 'allow':
-    case 'allow_always':
-      return 'permission-approved';
-    case 'deny':
-      return 'permission-denied';
+    case "allow":
+    case "allow_always":
+      return "permission-approved";
+    case "deny":
+      return "permission-denied";
     default:
-      return 'permission-pending';
+      return "permission-pending";
   }
 }
 
@@ -394,7 +417,7 @@ export function getDecisionStyleClass(decision: PermissionDecision): string {
  */
 export function formatPermissionRequest(request: PermissionRequest): string {
   const toolName = request.toolName;
-  const description = request.description || 'No description provided';
+  const description = request.description || "No description provided";
   return `${toolName}: ${description}`;
 }
 
@@ -405,12 +428,12 @@ export function matchesPattern(path: string, patterns: string[]): boolean {
   for (const pattern of patterns) {
     // Simple glob matching (supports * and **)
     const regex = new RegExp(
-      '^' +
+      "^" +
         pattern
-          .replace(/\*\*/g, '.*')
-          .replace(/\*/g, '[^/]*')
-          .replace(/\?/g, '.') +
-        '$'
+          .replace(/\*\*/g, ".*")
+          .replace(/\*/g, "[^/]*")
+          .replace(/\?/g, ".") +
+        "$",
     );
     if (regex.test(path)) {
       return true;

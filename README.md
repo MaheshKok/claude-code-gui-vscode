@@ -5,29 +5,34 @@ A modern, feature-rich VS Code extension that provides a beautiful React-based c
 ## Features
 
 ### Core Chat Experience
+
 - **Real-time Streaming**: Watch responses as they are generated with live streaming support
 - **Markdown Rendering**: Full GitHub-flavored Markdown with syntax highlighting
 - **Code Block Support**: Syntax-highlighted code blocks with one-click copy functionality
 - **Message History**: Browse and search through conversation history with session persistence
 
 ### Tool Visualization
+
 - **Tool Use Cards**: Visual representation of tool calls with expandable details
 - **Diff Viewer**: Side-by-side and unified diff views for file changes
 - **Todo Display**: Interactive todo list tracking for multi-step tasks
 - **Tool Result Cards**: Clear visualization of tool execution results
 
 ### Permission Management
+
 - **Permission Modal**: Approve or deny tool operations with context
 - **Yolo Mode**: Skip permission checks for trusted operations (use with caution)
 - **Auto-approve Patterns**: Configure command patterns for automatic approval
 - **Session-based Permissions**: Grant permissions for the current session
 
 ### Model Context Protocol (MCP)
+
 - **MCP Server Support**: Connect to and manage MCP servers
 - **Server Status Monitoring**: Real-time status of connected MCP servers
 - **Tool Discovery**: Automatic discovery of available MCP tools
 
 ### User Interface
+
 - **VS Code Native Theming**: Seamlessly integrates with your VS Code theme
 - **Activity Bar Integration**: Quick access from the VS Code activity bar
 - **Status Bar**: Real-time connection and processing status
@@ -35,6 +40,7 @@ A modern, feature-rich VS Code extension that provides a beautiful React-based c
 - **Thinking Mode**: Extended thinking with configurable intensity levels
 
 ### Advanced Features
+
 - **WSL Support**: Full Windows Subsystem for Linux integration
 - **Multiple Models**: Support for Claude Sonnet 4, Opus 4.5, and more
 - **Plan Mode**: Review changes before execution
@@ -105,6 +111,7 @@ npm run package
 ### Context Menu Actions
 
 Right-click on selected code in the editor to access:
+
 - **Send Selection to Claude**: Send the selected code for analysis
 - **Explain Code with Claude**: Get an explanation of the selected code
 - **Refactor Code with Claude**: Request code refactoring suggestions
@@ -114,6 +121,7 @@ Right-click on selected code in the editor to access:
 ### Slash Commands
 
 Type `/` in the input to see available commands:
+
 - `/help` - Show available commands
 - `/clear` - Clear the current conversation
 - `/settings` - Open extension settings
@@ -125,59 +133,59 @@ Access settings via the gear icon in the chat header or through VS Code settings
 
 ### Claude Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.claude.executable` | `claude` | Path to the Claude CLI executable |
-| `claudeCodeGui.claude.model` | `claude-sonnet-4-20250514` | Default Claude model |
+| Setting                           | Default                    | Description                       |
+| --------------------------------- | -------------------------- | --------------------------------- |
+| `claudeCodeGui.claude.executable` | `claude`                   | Path to the Claude CLI executable |
+| `claudeCodeGui.claude.model`      | `claude-sonnet-4-20250514` | Default Claude model              |
 
 ### Thinking Mode
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.thinking.enabled` | `true` | Enable extended thinking mode |
-| `claudeCodeGui.thinking.intensity` | `think` | Thinking intensity (think, think-hard, think-harder, ultrathink) |
-| `claudeCodeGui.thinking.showProcess` | `true` | Show the thinking process in chat |
+| Setting                              | Default | Description                                                      |
+| ------------------------------------ | ------- | ---------------------------------------------------------------- |
+| `claudeCodeGui.thinking.enabled`     | `true`  | Enable extended thinking mode                                    |
+| `claudeCodeGui.thinking.intensity`   | `think` | Thinking intensity (think, think-hard, think-harder, ultrathink) |
+| `claudeCodeGui.thinking.showProcess` | `true`  | Show the thinking process in chat                                |
 
 ### Permissions
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.permissions.yoloMode` | `false` | Skip permission checks |
-| `claudeCodeGui.permissions.autoApprove` | `[]` | Command patterns to auto-approve |
+| Setting                                 | Default | Description                      |
+| --------------------------------------- | ------- | -------------------------------- |
+| `claudeCodeGui.permissions.yoloMode`    | `false` | Skip permission checks           |
+| `claudeCodeGui.permissions.autoApprove` | `[]`    | Command patterns to auto-approve |
 
 ### Chat Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.chat.maxHistorySize` | `100` | Maximum conversations to keep |
-| `claudeCodeGui.chat.streamResponses` | `true` | Enable response streaming |
-| `claudeCodeGui.chat.showTimestamps` | `true` | Show message timestamps |
-| `claudeCodeGui.chat.codeBlockTheme` | `auto` | Code block syntax theme |
+| Setting                              | Default | Description                   |
+| ------------------------------------ | ------- | ----------------------------- |
+| `claudeCodeGui.chat.maxHistorySize`  | `100`   | Maximum conversations to keep |
+| `claudeCodeGui.chat.streamResponses` | `true`  | Enable response streaming     |
+| `claudeCodeGui.chat.showTimestamps`  | `true`  | Show message timestamps       |
+| `claudeCodeGui.chat.codeBlockTheme`  | `auto`  | Code block syntax theme       |
 
 ### WSL Settings (Windows)
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.wsl.enabled` | `false` | Enable WSL integration |
-| `claudeCodeGui.wsl.distro` | `Ubuntu` | WSL distribution name |
-| `claudeCodeGui.wsl.nodePath` | `/usr/bin/node` | Node.js path in WSL |
-| `claudeCodeGui.wsl.claudePath` | `/usr/local/bin/claude` | Claude path in WSL |
+| Setting                        | Default                 | Description            |
+| ------------------------------ | ----------------------- | ---------------------- |
+| `claudeCodeGui.wsl.enabled`    | `false`                 | Enable WSL integration |
+| `claudeCodeGui.wsl.distro`     | `Ubuntu`                | WSL distribution name  |
+| `claudeCodeGui.wsl.nodePath`   | `/usr/bin/node`         | Node.js path in WSL    |
+| `claudeCodeGui.wsl.claudePath` | `/usr/local/bin/claude` | Claude path in WSL     |
 
 ### UI Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.ui.fontSize` | `14` | Chat message font size |
+| Setting                        | Default | Description                |
+| ------------------------------ | ------- | -------------------------- |
+| `claudeCodeGui.ui.fontSize`    | `14`    | Chat message font size     |
 | `claudeCodeGui.ui.compactMode` | `false` | Use compact message layout |
-| `claudeCodeGui.ui.showAvatars` | `true` | Show message avatars |
+| `claudeCodeGui.ui.showAvatars` | `true`  | Show message avatars       |
 
 ### Context Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `claudeCodeGui.context.includeFileContext` | `true` | Include current file context |
-| `claudeCodeGui.context.includeWorkspaceInfo` | `true` | Include workspace information |
-| `claudeCodeGui.context.maxContextLines` | `500` | Maximum context lines |
+| Setting                                      | Default | Description                   |
+| -------------------------------------------- | ------- | ----------------------------- |
+| `claudeCodeGui.context.includeFileContext`   | `true`  | Include current file context  |
+| `claudeCodeGui.context.includeWorkspaceInfo` | `true`  | Include workspace information |
+| `claudeCodeGui.context.maxContextLines`      | `500`   | Maximum context lines         |
 
 ## Development Setup
 
@@ -209,19 +217,19 @@ npm run dev
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run build` | Build extension and webview |
-| `npm run watch` | Watch mode for development |
-| `npm run dev` | Alias for watch |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Fix linting issues |
-| `npm run typecheck` | TypeScript type checking |
-| `npm run test` | Run tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run package` | Create VSIX package |
-| `npm run clean` | Clean build artifacts |
+| Command                 | Description                 |
+| ----------------------- | --------------------------- |
+| `npm run build`         | Build extension and webview |
+| `npm run watch`         | Watch mode for development  |
+| `npm run dev`           | Alias for watch             |
+| `npm run lint`          | Run ESLint                  |
+| `npm run lint:fix`      | Fix linting issues          |
+| `npm run typecheck`     | TypeScript type checking    |
+| `npm run test`          | Run tests                   |
+| `npm run test:watch`    | Run tests in watch mode     |
+| `npm run test:coverage` | Run tests with coverage     |
+| `npm run package`       | Create VSIX package         |
+| `npm run clean`         | Clean build artifacts       |
 
 ## Building and Packaging
 

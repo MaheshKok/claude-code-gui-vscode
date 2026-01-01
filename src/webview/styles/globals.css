@@ -178,7 +178,8 @@ a:hover {
   .code-block-header {
     @apply flex items-center justify-between px-3 py-1.5 text-xs;
     background-color: var(--vscode-editorGroupHeader-tabsBackground);
-    border-bottom: 1px solid var(--vscode-editorGroupHeader-tabsBorder, transparent);
+    border-bottom: 1px solid
+      var(--vscode-editorGroupHeader-tabsBorder, transparent);
   }
 
   .code-block-content {
@@ -249,9 +250,15 @@ a:hover {
   line-height: 1.25;
 }
 
-.markdown-content h1 { font-size: 1.5em; }
-.markdown-content h2 { font-size: 1.25em; }
-.markdown-content h3 { font-size: 1.1em; }
+.markdown-content h1 {
+  font-size: 1.5em;
+}
+.markdown-content h2 {
+  font-size: 1.25em;
+}
+.markdown-content h3 {
+  font-size: 1.1em;
+}
 
 .markdown-content p {
   margin: 0.5em 0;
@@ -337,16 +344,25 @@ a:hover {
 }
 
 @keyframes typing-indicator {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .typing-dot {
   animation: typing-indicator 1s ease-in-out infinite;
 }
 
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 /* Modal animations */
 @keyframes fade-in {
@@ -420,7 +436,7 @@ a:hover {
   }
 
   .toggle-switch::after {
-    content: '';
+    content: "";
     @apply absolute left-0.5 h-4 w-4 rounded-full bg-white transition-transform;
   }
 

@@ -7,15 +7,9 @@
  * @module hooks/useFilePicker
  */
 
-import {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  useMemo,
-} from 'react';
-import { useVSCode } from './useVSCode';
-import { useMessages } from './useMessages';
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useVSCode } from "./useVSCode";
+import { useMessages } from "./useMessages";
 
 // ============================================================================
 // Types
@@ -32,7 +26,7 @@ export interface FilePickerItem {
   /** Full file path */
   path: string;
   /** File type */
-  type: 'file' | 'directory' | 'symlink';
+  type: "file" | "directory" | "symlink";
   /** File extension (without dot) */
   extension?: string;
   /** Icon identifier */
@@ -193,14 +187,14 @@ export interface UseFilePickerReturn {
  * ```
  */
 export function useFilePicker(
-  options: UseFilePickerOptions = {}
+  options: UseFilePickerOptions = {},
 ): UseFilePickerReturn {
   const {
     enabled = true,
     maxSelection = Infinity,
     allowedExtensions = [],
     excludedExtensions = [],
-    excludePatterns = ['node_modules', '.git', 'dist', 'build'],
+    excludePatterns = ["node_modules", ".git", "dist", "build"],
     includeDirectories = false,
     showHidden = false,
     searchDebounce = 150,
@@ -215,7 +209,7 @@ export function useFilePicker(
   const [files, setFiles] = useState<FilePickerItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<FilePickerItem[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [searchQuery, setSearchQueryState] = useState('');
+  const [searchQuery, setSearchQueryState] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -236,11 +230,13 @@ export function useFilePicker(
               id: f.path || `file-${index}`,
               name: f.name,
               path: f.path,
-              type: f.type || 'file',
-              extension: f.name.includes('.') ? f.name.split('.').pop() : undefined,
+              type: f.type || "file",
+              extension: f.name.includes(".")
+                ? f.name.split(".").pop()
+                : undefined,
               modifiedAt: f.modifiedAt,
               size: f.size,
-            })
+            }),
           );
           setFiles(fileItems);
           setIsLoading(false);
@@ -255,12 +251,12 @@ export function useFilePicker(
   const filterFile = useCallback(
     (file: FilePickerItem): boolean => {
       // Filter by type
-      if (!includeDirectories && file.type === 'directory') {
+      if (!includeDirectories && file.type === "directory") {
         return false;
       }
 
       // Filter hidden files
-      if (!showHidden && file.name.startsWith('.')) {
+      if (!showHidden && file.name.startsWith(".")) {
         return false;
       }
 
@@ -286,7 +282,13 @@ export function useFilePicker(
 
       return true;
     },
-    [allowedExtensions, excludedExtensions, excludePatterns, includeDirectories, showHidden]
+    [
+      allowedExtensions,
+      excludedExtensions,
+      excludePatterns,
+      includeDirectories,
+      showHidden,
+    ],
   );
 
   /**
@@ -336,7 +338,7 @@ export function useFilePicker(
 
     for (const file of filteredFiles) {
       // Group by directory
-      const dir = file.path.substring(0, file.path.lastIndexOf('/')) || 'Root';
+      const dir = file.path.substring(0, file.path.lastIndexOf("/")) || "Root";
       const existing = categoryMap.get(dir) || [];
       existing.push(file);
       categoryMap.set(dir, existing);
@@ -354,7 +356,7 @@ export function useFilePicker(
    */
   const requestFiles = useCallback(() => {
     setIsLoading(true);
-    postMessage({ type: 'requestState' });
+    postMessage({ type: "requestState" });
   }, [postMessage]);
 
   /**
@@ -364,7 +366,7 @@ export function useFilePicker(
     if (!enabled) return;
     setIsOpen(true);
     setHighlightedIndex(0);
-    setSearchQueryState('');
+    setSearchQueryState("");
     requestFiles();
   }, [enabled, requestFiles]);
 
@@ -373,7 +375,7 @@ export function useFilePicker(
    */
   const close = useCallback(() => {
     setIsOpen(false);
-    setSearchQueryState('');
+    setSearchQueryState("");
     setHighlightedIndex(0);
     onDismiss?.();
   }, [onDismiss]);
@@ -405,7 +407,7 @@ export function useFilePicker(
         onSearch?.(query);
       }, searchDebounce);
     },
-    [searchDebounce, onSearch]
+    [searchDebounce, onSearch],
   );
 
   /**
@@ -423,7 +425,7 @@ export function useFilePicker(
         return [...prev, file];
       });
     },
-    [maxSelection]
+    [maxSelection],
   );
 
   /**
@@ -445,7 +447,7 @@ export function useFilePicker(
         selectFile(file);
       }
     },
-    [selectedFiles, selectFile, deselectFile]
+    [selectedFiles, selectFile, deselectFile],
   );
 
   /**
@@ -542,75 +544,75 @@ export function useFilePicker(
  * Get icon for file type
  */
 export function getFileIcon(file: FilePickerItem): string {
-  if (file.type === 'directory') {
-    return 'folder';
+  if (file.type === "directory") {
+    return "folder";
   }
 
   const iconMap: Record<string, string> = {
     // Code files
-    ts: 'typescript',
-    tsx: 'react',
-    js: 'javascript',
-    jsx: 'react',
-    py: 'python',
-    rs: 'rust',
-    go: 'go',
-    java: 'java',
-    rb: 'ruby',
-    php: 'php',
-    cs: 'csharp',
-    cpp: 'cpp',
-    c: 'c',
-    h: 'c',
-    hpp: 'cpp',
-    swift: 'swift',
-    kt: 'kotlin',
-    scala: 'scala',
+    ts: "typescript",
+    tsx: "react",
+    js: "javascript",
+    jsx: "react",
+    py: "python",
+    rs: "rust",
+    go: "go",
+    java: "java",
+    rb: "ruby",
+    php: "php",
+    cs: "csharp",
+    cpp: "cpp",
+    c: "c",
+    h: "c",
+    hpp: "cpp",
+    swift: "swift",
+    kt: "kotlin",
+    scala: "scala",
     // Config files
-    json: 'json',
-    yaml: 'yaml',
-    yml: 'yaml',
-    toml: 'toml',
-    xml: 'xml',
+    json: "json",
+    yaml: "yaml",
+    yml: "yaml",
+    toml: "toml",
+    xml: "xml",
     // Web files
-    html: 'html',
-    css: 'css',
-    scss: 'sass',
-    less: 'less',
-    svg: 'svg',
+    html: "html",
+    css: "css",
+    scss: "sass",
+    less: "less",
+    svg: "svg",
     // Documentation
-    md: 'markdown',
-    txt: 'text',
-    pdf: 'pdf',
-    doc: 'word',
-    docx: 'word',
+    md: "markdown",
+    txt: "text",
+    pdf: "pdf",
+    doc: "word",
+    docx: "word",
     // Images
-    png: 'image',
-    jpg: 'image',
-    jpeg: 'image',
-    gif: 'image',
-    webp: 'image',
-    ico: 'image',
+    png: "image",
+    jpg: "image",
+    jpeg: "image",
+    gif: "image",
+    webp: "image",
+    ico: "image",
     // Data
-    csv: 'csv',
-    sql: 'database',
+    csv: "csv",
+    sql: "database",
     // Shell
-    sh: 'shell',
-    bash: 'shell',
-    zsh: 'shell',
-    fish: 'shell',
+    sh: "shell",
+    bash: "shell",
+    zsh: "shell",
+    fish: "shell",
   };
 
-  return file.extension ? iconMap[file.extension] || 'file' : 'file';
+  return file.extension ? iconMap[file.extension] || "file" : "file";
 }
 
 /**
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   const size = bytes / Math.pow(1024, i);
 

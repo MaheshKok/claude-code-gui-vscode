@@ -1,82 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
     default-src 'none';
     style-src ${cspSource} 'unsafe-inline';
     script-src ${cspSource} 'unsafe-inline';
     img-src ${cspSource} https: data:;
     font-src ${cspSource} data:;
     connect-src ${cspSource} https: ws: wss:;
-  ">
-  <title>Claude Code GUI</title>
-  <style>
-    /* Critical CSS - prevents flash of unstyled content */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: var(--vscode-editor-background, #1e1e1e);
-      color: var(--vscode-editor-foreground, #d4d4d4);
-      font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
-      font-size: var(--vscode-font-size, 13px);
-    }
-    #root {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Loading state */
-    .loading-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .loading-spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--vscode-input-background, #3c3c3c);
-      border-top-color: var(--vscode-progressBar-background, #0078d4);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .loading-text {
-      color: var(--vscode-descriptionForeground, #8b8b8b);
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <div id="root">
-    <!-- Loading state while React initializes -->
-    <div class="loading-container" id="initial-loader">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Loading Claude Code GUI...</div>
-    </div>
-  </div>
-  <script type="module" src="./main.tsx"></script>
-  <script>
-    // Remove loading state once React mounts
-    window.addEventListener('DOMContentLoaded', function() {
-      // Give React a moment to mount
-      setTimeout(function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader && document.getElementById('root').children.length > 1) {
-          loader.style.display = 'none';
+  "
+    />
+    <title>Claude Code GUI</title>
+    <style>
+      /* Critical CSS - prevents flash of unstyled content */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: var(--vscode-editor-background, #1e1e1e);
+        color: var(--vscode-editor-foreground, #d4d4d4);
+        font-family: var(
+          --vscode-font-family,
+          system-ui,
+          -apple-system,
+          sans-serif
+        );
+        font-size: var(--vscode-font-size, 13px);
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      /* Loading state */
+      .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--vscode-input-background, #3c3c3c);
+        border-top-color: var(--vscode-progressBar-background, #0078d4);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-      }, 100);
-    });
-  </script>
-</body>
+      }
+      .loading-text {
+        color: var(--vscode-descriptionForeground, #8b8b8b);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading state while React initializes -->
+      <div class="loading-container" id="initial-loader">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Claude Code GUI...</div>
+      </div>
+    </div>
+    <script type="module" src="./main.tsx"></script>
+    <script>
+      // Remove loading state once React mounts
+      window.addEventListener("DOMContentLoaded", function () {
+        // Give React a moment to mount
+        setTimeout(function () {
+          var loader = document.getElementById("initial-loader");
+          if (loader && document.getElementById("root").children.length > 1) {
+            loader.style.display = "none";
+          }
+        }, 100);
+      });
+    </script>
+  </body>
 </html>

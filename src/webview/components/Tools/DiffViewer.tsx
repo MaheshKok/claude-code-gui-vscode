@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from "react";
 
 export interface DiffLine {
-  type: 'context' | 'added' | 'removed';
+  type: "context" | "added" | "removed";
   content: string;
   oldLine?: number;
   newLine?: number;
@@ -13,7 +13,11 @@ export interface DiffViewerProps {
   filePath: string;
   startLine?: number;
   maxVisibleLines?: number;
-  onOpenDiff?: (filePath: string, oldContent: string, newContent: string) => void;
+  onOpenDiff?: (
+    filePath: string,
+    oldContent: string,
+    newContent: string,
+  ) => void;
   onFilePathClick?: (filePath: string) => void;
 }
 
@@ -21,7 +25,10 @@ export interface DiffViewerProps {
  * Compute line-by-line diff using LCS algorithm
  * Based on the original script.ts computeLineDiff function
  */
-const computeLineDiff = (oldLines: string[], newLines: string[]): DiffLine[] => {
+const computeLineDiff = (
+  oldLines: string[],
+  newLines: string[],
+): DiffLine[] => {
   const m = oldLines.length;
   const n = newLines.length;
 
@@ -59,25 +66,29 @@ const computeLineDiff = (oldLines: string[], newLines: string[]): DiffLine[] => 
 
     if (i > 0 && j > 0 && oldLine === newLine) {
       diff.unshift({
-        type: 'context',
+        type: "context",
         oldLine: i - 1,
         newLine: j - 1,
-        content: oldLine ?? '',
+        content: oldLine ?? "",
       });
       i--;
       j--;
-    } else if (j > 0 && (i === 0 || (lcsRow && lcsPrevRow && (lcsRow[j - 1] ?? 0) >= (lcsPrevRow[j] ?? 0)))) {
+    } else if (
+      j > 0 &&
+      (i === 0 ||
+        (lcsRow && lcsPrevRow && (lcsRow[j - 1] ?? 0) >= (lcsPrevRow[j] ?? 0)))
+    ) {
       diff.unshift({
-        type: 'added',
+        type: "added",
         newLine: j - 1,
-        content: newLine ?? '',
+        content: newLine ?? "",
       });
       j--;
     } else if (i > 0) {
       diff.unshift({
-        type: 'removed',
+        type: "removed",
         oldLine: i - 1,
-        content: oldLine ?? '',
+        content: oldLine ?? "",
       });
       i--;
     }
@@ -87,8 +98,8 @@ const computeLineDiff = (oldLines: string[], newLines: string[]): DiffLine[] => 
 };
 
 const formatFilePath = (filePath: string): string => {
-  if (!filePath) return '';
-  const parts = filePath.split('/');
+  if (!filePath) return "";
+  const parts = filePath.split("/");
   return parts[parts.length - 1] ?? filePath;
 };
 
@@ -104,8 +115,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const diff = useMemo(() => {
-    const oldLines = oldContent.split('\n');
-    const newLines = newContent.split('\n');
+    const oldLines = oldContent.split("\n");
+    const newLines = newContent.split("\n");
     return computeLineDiff(oldLines, newLines);
   }, [oldContent, newContent]);
 
@@ -113,8 +124,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
     let added = 0;
     let removed = 0;
     diff.forEach((line) => {
-      if (line.type === 'added') added++;
-      if (line.type === 'removed') removed++;
+      if (line.type === "added") added++;
+      if (line.type === "removed") removed++;
     });
     return { added, removed };
   }, [diff]);
@@ -140,43 +151,45 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   }, [onFilePathClick, filePath]);
 
   const getLineNumber = (line: DiffLine): string => {
-    if (line.type === 'removed') {
-      return ((line.oldLine ?? 0) + startLine).toString().padStart(4, ' ');
+    if (line.type === "removed") {
+      return ((line.oldLine ?? 0) + startLine).toString().padStart(4, " ");
     }
-    return ((line.newLine ?? 0) + startLine).toString().padStart(4, ' ');
+    return ((line.newLine ?? 0) + startLine).toString().padStart(4, " ");
   };
 
-  const getPrefix = (type: 'context' | 'added' | 'removed'): string => {
+  const getPrefix = (type: "context" | "added" | "removed"): string => {
     switch (type) {
-      case 'added':
-        return '+';
-      case 'removed':
-        return '-';
+      case "added":
+        return "+";
+      case "removed":
+        return "-";
       default:
-        return ' ';
+        return " ";
     }
   };
 
-  const getLineClasses = (type: 'context' | 'added' | 'removed'): string => {
+  const getLineClasses = (type: "context" | "added" | "removed"): string => {
     switch (type) {
-      case 'added':
-        return 'bg-[var(--vscode-diffEditor-insertedLineBackground)] text-[var(--vscode-gitDecoration-addedResourceForeground)]';
-      case 'removed':
-        return 'bg-[var(--vscode-diffEditor-removedLineBackground)] text-[var(--vscode-gitDecoration-deletedResourceForeground)]';
+      case "added":
+        return "bg-[var(--vscode-diffEditor-insertedLineBackground)] text-[var(--vscode-gitDecoration-addedResourceForeground)]";
+      case "removed":
+        return "bg-[var(--vscode-diffEditor-removedLineBackground)] text-[var(--vscode-gitDecoration-deletedResourceForeground)]";
       default:
-        return 'text-[var(--vscode-foreground)]';
+        return "text-[var(--vscode-foreground)]";
     }
   };
 
   const getSummary = (): string => {
     const parts: string[] = [];
     if (stats.added > 0) {
-      parts.push(`+${stats.added} line${stats.added > 1 ? 's' : ''} added`);
+      parts.push(`+${stats.added} line${stats.added > 1 ? "s" : ""} added`);
     }
     if (stats.removed > 0) {
-      parts.push(`-${stats.removed} line${stats.removed > 1 ? 's' : ''} removed`);
+      parts.push(
+        `-${stats.removed} line${stats.removed > 1 ? "s" : ""} removed`,
+      );
     }
-    return parts.length > 0 ? parts.join(', ') : 'No changes';
+    return parts.length > 0 ? parts.join(", ") : "No changes";
   };
 
   return (
@@ -209,7 +222,13 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
 
       {/* Line Range Header */}
       <div className="px-3 py-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-b border-[var(--vscode-panel-border)]">
-        Lines {startLine}-{startLine + Math.max(oldContent.split('\n').length, newContent.split('\n').length) - 1}
+        Lines {startLine}-
+        {startLine +
+          Math.max(
+            oldContent.split("\n").length,
+            newContent.split("\n").length,
+          ) -
+          1}
       </div>
 
       {/* Diff Content */}
@@ -226,7 +245,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
               <span className="w-12 shrink-0 text-right pr-2 select-none text-[var(--vscode-editorLineNumber-foreground)]">
                 {getLineNumber(line)}
               </span>
-              <span className="px-2 flex-1">{line.content || ' '}</span>
+              <span className="px-2 flex-1">{line.content || " "}</span>
             </div>
           ))}
         </div>

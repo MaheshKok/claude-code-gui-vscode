@@ -1,21 +1,21 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef } from "react";
 
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  width?: 'sm' | 'md' | 'lg' | 'xl';
+  width?: "sm" | "md" | "lg" | "xl";
   showCloseButton?: boolean;
   closeOnBackdrop?: boolean;
   className?: string;
 }
 
 const widthClasses = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
 };
 
 export const Modal: React.FC<ModalProps> = ({
@@ -23,21 +23,21 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  width = 'md',
+  width = "md",
   showCloseButton = true,
   closeOnBackdrop = true,
-  className = '',
+  className = "",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleBackdropClick = useCallback(
@@ -46,20 +46,20 @@ export const Modal: React.FC<ModalProps> = ({
         onClose();
       }
     },
-    [closeOnBackdrop, onClose]
+    [closeOnBackdrop, onClose],
   );
 
   useEffect(() => {
     if (isOpen) {
       previousActiveElement.current = document.activeElement as HTMLElement;
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
       modalRef.current?.focus();
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
       previousActiveElement.current?.focus();
     };
   }, [isOpen, handleKeyDown]);

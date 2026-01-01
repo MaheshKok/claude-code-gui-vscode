@@ -1,5 +1,5 @@
-import { vi, beforeAll, afterEach } from 'vitest';
-import '@testing-library/jest-dom';
+import { vi, beforeAll, afterEach } from "vitest";
+import "@testing-library/jest-dom";
 
 // Mock VSCode API for extension tests
 const mockVscode = {
@@ -35,7 +35,10 @@ const mockVscode = {
   Uri: {
     file: vi.fn((path: string) => ({ fsPath: path, path })),
     parse: vi.fn((uri: string) => ({ fsPath: uri, path: uri })),
-    joinPath: vi.fn((...args: unknown[]) => ({ fsPath: args.join('/'), path: args.join('/') })),
+    joinPath: vi.fn((...args: unknown[]) => ({
+      fsPath: args.join("/"),
+      path: args.join("/"),
+    })),
   },
   ExtensionContext: vi.fn(),
   ViewColumn: {
@@ -58,7 +61,7 @@ const mockVscode = {
 };
 
 // Make vscode available globally for extension tests
-vi.mock('vscode', () => mockVscode);
+vi.mock("vscode", () => mockVscode);
 
 // Mock acquireVsCodeApi for webview tests
 const mockVscodeApi = {
@@ -68,14 +71,16 @@ const mockVscodeApi = {
 };
 
 // Adding to global for webview tests
-(globalThis as Record<string, unknown>).acquireVsCodeApi = vi.fn(() => mockVscodeApi);
+(globalThis as Record<string, unknown>).acquireVsCodeApi = vi.fn(
+  () => mockVscodeApi,
+);
 
 // Setup DOM for React tests
 beforeAll(() => {
   // Ensure we have a proper DOM environment
-  if (typeof document !== 'undefined') {
-    const root = document.createElement('div');
-    root.id = 'root';
+  if (typeof document !== "undefined") {
+    const root = document.createElement("div");
+    root.id = "root";
     document.body.appendChild(root);
   }
 });

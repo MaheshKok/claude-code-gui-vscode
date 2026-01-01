@@ -9,7 +9,7 @@
  */
 
 // Re-export the main App component
-export { App, default } from '../App';
+export { App, default } from "../App";
 
 // ============================================================================
 // Legacy Type Exports (for backward compatibility)
@@ -21,8 +21,8 @@ export { App, default } from '../App';
  */
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'tool' | 'error';
-  messageType?: 'tool_use' | 'tool_result';
+  role: "user" | "assistant" | "tool" | "error";
+  messageType?: "tool_use" | "tool_result";
   content: string;
   timestamp: Date;
   toolName?: string;

@@ -35,29 +35,29 @@ interface BaseClaudeEvent {
 }
 
 type ClaudeEventType =
-  | 'system'
-  | 'assistant'
-  | 'user'
-  | 'result'
-  | 'control_request'
-  | 'control_response';
+  | "system"
+  | "assistant"
+  | "user"
+  | "result"
+  | "control_request"
+  | "control_response";
 ```
 
 ### System Events
 
 ```typescript
 interface SystemInitEvent {
-  type: 'system';
-  subtype: 'init';
+  type: "system";
+  subtype: "init";
   session_id: string;
   tools: ToolDefinition[];
   mcp_servers: MCPServerInfo[];
 }
 
 interface SystemStatusEvent {
-  type: 'system';
-  subtype: 'status';
-  status: 'compacting' | null;
+  type: "system";
+  subtype: "status";
+  status: "compacting" | null;
 }
 
 interface ToolDefinition {
@@ -71,17 +71,17 @@ interface ToolDefinition {
 
 ```typescript
 interface AssistantEvent {
-  type: 'assistant';
+  type: "assistant";
   message: AssistantMessage;
 }
 
 interface AssistantMessage {
   id?: string;
-  role: 'assistant';
+  role: "assistant";
   content: AssistantContentBlock[];
   usage?: TokenUsage;
   model?: string;
-  stop_reason?: 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence';
+  stop_reason?: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
 }
 
 type AssistantContentBlock =
@@ -90,17 +90,17 @@ type AssistantContentBlock =
   | ToolUseContentBlock;
 
 interface TextContentBlock {
-  type: 'text';
+  type: "text";
   text: string;
 }
 
 interface ThinkingContentBlock {
-  type: 'thinking';
+  type: "thinking";
   thinking: string;
 }
 
 interface ToolUseContentBlock {
-  type: 'tool_use';
+  type: "tool_use";
   id: string;
   name: string;
   input: ToolInput;
@@ -156,8 +156,8 @@ interface TodoWriteToolInput {
 interface TodoItem {
   id?: string;
   content: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority?: 'low' | 'medium' | 'high';
+  status: "pending" | "in_progress" | "completed";
+  priority?: "low" | "medium" | "high";
 }
 ```
 
@@ -165,8 +165,8 @@ interface TodoItem {
 
 ```typescript
 interface CanUseToolRequest {
-  type: 'control_request';
-  subtype: 'can_use_tool';
+  type: "control_request";
+  subtype: "can_use_tool";
   request_id: string;
   tool_name: string;
   input: ToolInput;
@@ -177,23 +177,19 @@ interface CanUseToolRequest {
 }
 
 interface PermissionSuggestion {
-  type: 'allow_once' | 'allow_session' | 'allow_always' | 'deny';
+  type: "allow_once" | "allow_session" | "allow_always" | "deny";
   description?: string;
 }
 
-type PermissionDecision =
-  | 'allow'
-  | 'deny'
-  | 'allow_session'
-  | 'allow_always';
+type PermissionDecision = "allow" | "deny" | "allow_session" | "allow_always";
 ```
 
 ### Result Event
 
 ```typescript
 interface ResultEvent {
-  type: 'result';
-  subtype: 'success' | 'error';
+  type: "result";
+  subtype: "success" | "error";
   session_id: string;
   total_cost_usd: number;
   duration_ms: number;
@@ -213,13 +209,13 @@ interface ResultEvent {
 
 ```typescript
 type MessageType =
-  | 'user'
-  | 'assistant'
-  | 'tool_use'
-  | 'tool_result'
-  | 'thinking'
-  | 'error'
-  | 'system';
+  | "user"
+  | "assistant"
+  | "tool_use"
+  | "tool_result"
+  | "thinking"
+  | "error"
+  | "system";
 
 interface BaseMessage {
   id: string;
@@ -242,18 +238,18 @@ type ChatMessage =
 
 ```typescript
 interface UserMessage extends BaseMessage {
-  type: 'user';
+  type: "user";
   content: string;
   attachments?: MessageAttachment[];
 }
 
 interface MessageAttachment {
-  type: 'file' | 'image';
+  type: "file" | "image";
   name: string;
   path?: string;
   mimeType?: string;
   size?: number;
-  content?: string;  // base64
+  content?: string; // base64
 }
 ```
 
@@ -261,7 +257,7 @@ interface MessageAttachment {
 
 ```typescript
 interface AssistantMessage extends BaseMessage {
-  type: 'assistant';
+  type: "assistant";
   content: string;
   usage?: TokenUsage;
   model?: string;
@@ -273,7 +269,7 @@ interface AssistantMessage extends BaseMessage {
 
 ```typescript
 interface ToolUseMessage extends BaseMessage {
-  type: 'tool_use';
+  type: "tool_use";
   toolUseId: string;
   toolName: string;
   rawInput: ToolInput;
@@ -281,20 +277,20 @@ interface ToolUseMessage extends BaseMessage {
   status: ToolExecutionStatus;
   fileContentBefore?: string;
   startLine?: number;
-  startLines?: number[];  // MultiEdit
+  startLines?: number[]; // MultiEdit
   duration?: number;
 }
 
 type ToolExecutionStatus =
-  | 'pending'
-  | 'approved'
-  | 'executing'
-  | 'completed'
-  | 'failed'
-  | 'denied';
+  | "pending"
+  | "approved"
+  | "executing"
+  | "completed"
+  | "failed"
+  | "denied";
 
 interface ToolResultMessage extends BaseMessage {
-  type: 'tool_result';
+  type: "tool_result";
   toolUseId: string;
   toolName?: string;
   content: string;
@@ -310,7 +306,7 @@ interface ToolResultMessage extends BaseMessage {
 
 ```typescript
 interface ThinkingMessage extends BaseMessage {
-  type: 'thinking';
+  type: "thinking";
   content: string;
   isExpanded?: boolean;
   isStreaming?: boolean;
@@ -321,17 +317,22 @@ interface ThinkingMessage extends BaseMessage {
 
 ```typescript
 interface ErrorMessage extends BaseMessage {
-  type: 'error';
+  type: "error";
   content: string;
   code?: string;
   recoverable?: boolean;
-  suggestedAction?: 'retry' | 'login' | 'install' | 'configure' | 'contact_support';
+  suggestedAction?:
+    | "retry"
+    | "login"
+    | "install"
+    | "configure"
+    | "contact_support";
 }
 
 interface SystemMessage extends BaseMessage {
-  type: 'system';
+  type: "system";
   content: string;
-  severity: 'info' | 'warning' | 'success';
+  severity: "info" | "warning" | "success";
 }
 ```
 
@@ -348,7 +349,7 @@ interface PermissionRequest {
   decisionReason?: string;
   blockedPath?: string;
   timestamp: number;
-  status: 'pending' | 'approved' | 'denied' | 'expired';
+  status: "pending" | "approved" | "denied" | "expired";
   decision?: PermissionDecision;
 }
 ```
@@ -364,7 +365,7 @@ interface PermissionRequest {
 ```typescript
 interface SessionState {
   sessionId: string | null;
-  status: 'initializing' | 'active' | 'compacting' | 'error' | 'closed';
+  status: "initializing" | "active" | "compacting" | "error" | "closed";
   tools: ToolDefinition[];
   mcpServers: MCPServerInfo[];
   account: AccountInfo | null;
@@ -454,13 +455,13 @@ interface UIState {
 }
 
 type ModalType =
-  | 'permission'
-  | 'install'
-  | 'login'
-  | 'settings'
-  | 'confirm'
-  | 'error'
-  | 'about';
+  | "permission"
+  | "install"
+  | "login"
+  | "settings"
+  | "confirm"
+  | "error"
+  | "about";
 ```
 
 ---
@@ -484,16 +485,16 @@ interface ConversationListItem {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique conversation identifier |
-| `title` | `string` | Display title for the conversation |
-| `preview` | `string` | Preview text (first message or summary) |
-| `updatedAt` | `number` | Unix timestamp of last update |
-| `messageCount` | `number` | Total messages in conversation |
-| `sessionId` | `string?` | Associated Claude session ID |
-| `totalCost` | `number?` | Total API cost in USD |
-| `tags` | `string[]?` | User-defined tags for organization |
+| Field          | Type        | Description                             |
+| -------------- | ----------- | --------------------------------------- |
+| `id`           | `string`    | Unique conversation identifier          |
+| `title`        | `string`    | Display title for the conversation      |
+| `preview`      | `string`    | Preview text (first message or summary) |
+| `updatedAt`    | `number`    | Unix timestamp of last update           |
+| `messageCount` | `number`    | Total messages in conversation          |
+| `sessionId`    | `string?`   | Associated Claude session ID            |
+| `totalCost`    | `number?`   | Total API cost in USD                   |
+| `tags`         | `string[]?` | User-defined tags for organization      |
 
 ---
 
@@ -505,39 +506,42 @@ interface ConversationListItem {
 
 ```typescript
 type ExtensionToWebviewMessageType =
-  | 'sessionInfo'
-  | 'accountInfo'
-  | 'output'
-  | 'thinking'
-  | 'toolUse'
-  | 'toolResult'
-  | 'updateTokens'
-  | 'updateTotals'
-  | 'compacting'
-  | 'compactBoundary'
-  | 'permissionRequest'
-  | 'setProcessing'
-  | 'loading'
-  | 'clearLoading'
-  | 'error'
-  | 'showInstallModal'
-  | 'showLoginModal'
-  | 'settingsUpdate'
-  | 'themeUpdate'
-  | 'restoreState'
-  | 'conversationList'      // NEW
-  | 'conversationDeleted';  // NEW
+  | "sessionInfo"
+  | "accountInfo"
+  | "output"
+  | "thinking"
+  | "toolUse"
+  | "toolResult"
+  | "updateTokens"
+  | "updateTotals"
+  | "compacting"
+  | "compactBoundary"
+  | "permissionRequest"
+  | "setProcessing"
+  | "loading"
+  | "clearLoading"
+  | "error"
+  | "showInstallModal"
+  | "showLoginModal"
+  | "settingsUpdate"
+  | "themeUpdate"
+  | "restoreState"
+  | "conversationList"
+  | "conversationDeleted"
+  | "clipboardText"
+  | "permissionsData"
+  | "mcpServers";
 
 // Example messages
 interface SessionInfoMessage {
-  type: 'sessionInfo';
+  type: "sessionInfo";
   sessionId: string;
   tools: ToolDefinition[];
   mcpServers: MCPServerInfo[];
 }
 
 interface PermissionRequestMessage {
-  type: 'permissionRequest';
+  type: "permissionRequest";
   requestId: string;
   toolUseId: string;
   toolName: string;
@@ -562,14 +566,14 @@ interface ConversationListItem {
 
 // List of saved conversations
 interface ConversationListMessage {
-  type: 'conversationList';
+  type: "conversationList";
   conversations: ConversationListItem[];
-  data?: ConversationListItem[];  // Alias for conversations
+  data?: ConversationListItem[]; // Alias for conversations
 }
 
 // Confirmation of conversation deletion
 interface ConversationDeletedMessage {
-  type: 'conversationDeleted';
+  type: "conversationDeleted";
   filename: string;
 }
 ```
@@ -578,42 +582,44 @@ interface ConversationDeletedMessage {
 
 ```typescript
 type WebviewToExtensionMessageType =
-  | 'sendMessage'
-  | 'stopGeneration'
-  | 'permissionResponse'
-  | 'openFile'
-  | 'openFolder'
-  | 'copyToClipboard'
-  | 'saveSettings'
-  | 'getSettings'
-  | 'startSession'
-  | 'endSession'
-  | 'clearConversation'
-  | 'exportConversation'
-  | 'login'
-  | 'logout'
-  | 'installClaude'
-  | 'saveState'
-  | 'requestState'
-  | 'openExternal'          // NEW
-  | 'showInfo'              // NEW
-  | 'showError'             // NEW
-  | 'telemetry'             // NEW
-  | 'getConversationList'   // NEW
-  | 'loadConversation'      // NEW
-  | 'deleteConversation';   // NEW
+  | "sendMessage"
+  | "stopGeneration"
+  | "permissionResponse"
+  | "openFile"
+  | "openFolder"
+  | "copyToClipboard"
+  | "saveSettings"
+  | "getSettings"
+  | "startSession"
+  | "endSession"
+  | "clearConversation"
+  | "exportConversation"
+  | "login"
+  | "logout"
+  | "installClaude"
+  | "saveState"
+  | "requestState"
+  | "openExternal"
+  | "showInfo"
+  | "showError"
+  | "saveInputText"
+  | "enableYoloMode"
+  | "getClipboardText"
+  | "getConversationList"
+  | "loadConversation"
+  | "deleteConversation";
 
 // Example messages
 interface SendMessageRequest {
-  type: 'sendMessage';
+  type: "sendMessage";
   message: string;
   planMode?: boolean;
   thinkingMode?: boolean;
-  attachments?: Array<{ type: 'file' | 'image'; path: string; name: string }>;
+  attachments?: Array<{ type: "file" | "image"; path: string; name: string }>;
 }
 
 interface PermissionResponseRequest {
-  type: 'permissionResponse';
+  type: "permissionResponse";
   requestId: string;
   decision: PermissionDecision;
   toolName?: string;
@@ -626,44 +632,54 @@ interface PermissionResponseRequest {
 ```typescript
 // Request list of saved conversations
 interface GetConversationListRequest {
-  type: 'getConversationList';
+  type: "getConversationList";
 }
 
 // Load a specific conversation
 interface LoadConversationRequest {
-  type: 'loadConversation';
+  type: "loadConversation";
   filename: string;
 }
 
 // Delete a saved conversation
 interface DeleteConversationRequest {
-  type: 'deleteConversation';
+  type: "deleteConversation";
   filename: string;
 }
 
 // Open URL in external browser
 interface OpenExternalRequest {
-  type: 'openExternal';
+  type: "openExternal";
   url: string;
 }
 
 // Show info notification
 interface ShowInfoRequest {
-  type: 'showInfo';
+  type: "showInfo";
   message: string;
 }
 
 // Show error notification
 interface ShowErrorRequest {
-  type: 'showError';
+  type: "showError";
   message: string;
 }
 
-// Send telemetry event
-interface TelemetryRequest {
-  type: 'telemetry';
-  event: string;
-  properties?: Record<string, unknown>;
+// Save draft message text
+interface SaveInputTextRequest {
+  type: "saveInputText";
+  text: string;
+}
+
+// Enable YOLO mode (auto-approve all)
+interface EnableYoloModeRequest {
+  type: "enableYoloMode";
+  enabled: boolean;
+}
+
+// Get clipboard contents
+interface GetClipboardTextRequest {
+  type: "getClipboardText";
 }
 ```
 
@@ -674,42 +690,60 @@ interface TelemetryRequest {
 ### Claude Event Guards
 
 ```typescript
-function isSystemEvent(event: ClaudeEvent): event is SystemEvent
-function isSystemInitEvent(event: ClaudeEvent): event is SystemInitEvent
-function isAssistantEvent(event: ClaudeEvent): event is AssistantEvent
-function isUserEvent(event: ClaudeEvent): event is UserEvent
-function isResultEvent(event: ClaudeEvent): event is ResultEvent
-function isControlRequest(event: ClaudeEvent): event is ControlRequest
-function isCanUseToolRequest(event: ClaudeEvent): event is CanUseToolRequest
+function isSystemEvent(event: ClaudeEvent): event is SystemEvent;
+function isSystemInitEvent(event: ClaudeEvent): event is SystemInitEvent;
+function isAssistantEvent(event: ClaudeEvent): event is AssistantEvent;
+function isUserEvent(event: ClaudeEvent): event is UserEvent;
+function isResultEvent(event: ClaudeEvent): event is ResultEvent;
+function isControlRequest(event: ClaudeEvent): event is ControlRequest;
+function isCanUseToolRequest(event: ClaudeEvent): event is CanUseToolRequest;
 ```
 
 ### Content Block Guards
 
 ```typescript
-function isTextContentBlock(block: AssistantContentBlock): block is TextContentBlock
-function isThinkingContentBlock(block: AssistantContentBlock): block is ThinkingContentBlock
-function isToolUseContentBlock(block: AssistantContentBlock): block is ToolUseContentBlock
+function isTextContentBlock(
+  block: AssistantContentBlock,
+): block is TextContentBlock;
+function isThinkingContentBlock(
+  block: AssistantContentBlock,
+): block is ThinkingContentBlock;
+function isToolUseContentBlock(
+  block: AssistantContentBlock,
+): block is ToolUseContentBlock;
 ```
 
 ### Chat Message Guards
 
 ```typescript
-function isUserMessage(message: ChatMessage): message is UserMessage
-function isAssistantMessage(message: ChatMessage): message is AssistantMessage
-function isToolUseMessage(message: ChatMessage): message is ToolUseMessage
-function isToolResultMessage(message: ChatMessage): message is ToolResultMessage
-function isThinkingMessage(message: ChatMessage): message is ThinkingMessage
-function isErrorMessage(message: ChatMessage): message is ErrorMessage
-function isSystemMessage(message: ChatMessage): message is SystemMessage
+function isUserMessage(message: ChatMessage): message is UserMessage;
+function isAssistantMessage(message: ChatMessage): message is AssistantMessage;
+function isToolUseMessage(message: ChatMessage): message is ToolUseMessage;
+function isToolResultMessage(
+  message: ChatMessage,
+): message is ToolResultMessage;
+function isThinkingMessage(message: ChatMessage): message is ThinkingMessage;
+function isErrorMessage(message: ChatMessage): message is ErrorMessage;
+function isSystemMessage(message: ChatMessage): message is SystemMessage;
 ```
 
 ### Message Type Guards
 
 ```typescript
-function isExtensionMessage(message: unknown): message is ExtensionToWebviewMessage
-function isWebviewMessage(message: unknown): message is WebviewToExtensionMessage
-function isExtensionMessageOfType<T>(message: ExtensionToWebviewMessage, type: T): boolean
-function isWebviewMessageOfType<T>(message: WebviewToExtensionMessage, type: T): boolean
+function isExtensionMessage(
+  message: unknown,
+): message is ExtensionToWebviewMessage;
+function isWebviewMessage(
+  message: unknown,
+): message is WebviewToExtensionMessage;
+function isExtensionMessageOfType<T>(
+  message: ExtensionToWebviewMessage,
+  type: T,
+): boolean;
+function isWebviewMessageOfType<T>(
+  message: WebviewToExtensionMessage,
+  type: T,
+): boolean;
 ```
 
 ---

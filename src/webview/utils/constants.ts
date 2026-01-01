@@ -17,39 +17,39 @@
  */
 export const TOOL_ICONS: Record<string, string> = {
   // File Operations
-  Read: 'file',
-  Write: 'file-add',
-  Edit: 'edit',
-  MultiEdit: 'files',
+  Read: "file",
+  Write: "file-add",
+  Edit: "edit",
+  MultiEdit: "files",
 
   // Search and Navigation
-  Glob: 'search',
-  Grep: 'search',
+  Glob: "search",
+  Grep: "search",
 
   // Terminal
-  Bash: 'terminal',
+  Bash: "terminal",
 
   // Task Management
-  Task: 'checklist',
-  TodoRead: 'checklist',
-  TodoWrite: 'tasklist',
+  Task: "checklist",
+  TodoRead: "checklist",
+  TodoWrite: "tasklist",
 
   // Web Operations
-  WebFetch: 'globe',
-  WebSearch: 'globe',
+  WebFetch: "globe",
+  WebSearch: "globe",
 
   // Notebook
-  NotebookRead: 'notebook',
-  NotebookEdit: 'notebook',
+  NotebookRead: "notebook",
+  NotebookEdit: "notebook",
 
   // LSP
-  LSP: 'symbol-method',
+  LSP: "symbol-method",
 
   // MCP Tools (prefix matching)
-  mcp__: 'extensions',
+  mcp__: "extensions",
 
   // Default
-  default: 'tools',
+  default: "tools",
 };
 
 /**
@@ -62,8 +62,8 @@ export function getToolIcon(toolName: string): string {
   }
 
   // MCP tool prefix match
-  if (toolName.startsWith('mcp__')) {
-    return TOOL_ICONS['mcp__'];
+  if (toolName.startsWith("mcp__")) {
+    return TOOL_ICONS["mcp__"];
   }
 
   return TOOL_ICONS.default;
@@ -77,13 +77,13 @@ export function getToolIcon(toolName: string): string {
  * Icons for different message types
  */
 export const MESSAGE_TYPE_ICONS: Record<string, string> = {
-  user: 'account',
-  assistant: 'sparkle',
-  tool_use: 'tools',
-  tool_result: 'check',
-  thinking: 'lightbulb',
-  error: 'error',
-  system: 'info',
+  user: "account",
+  assistant: "sparkle",
+  tool_use: "tools",
+  tool_result: "check",
+  thinking: "lightbulb",
+  error: "error",
+  system: "info",
 };
 
 // ============================================================================
@@ -94,9 +94,9 @@ export const MESSAGE_TYPE_ICONS: Record<string, string> = {
  * Default theme settings
  */
 export const DEFAULT_THEME_SETTINGS = {
-  mode: 'auto' as const,
+  mode: "auto" as const,
   fontSize: 14,
-  fontFamily: 'var(--vscode-font-family)',
+  fontFamily: "var(--vscode-font-family)",
 };
 
 /**
@@ -116,7 +116,7 @@ export const DEFAULT_EDITOR_SETTINGS = {
  */
 export const DEFAULT_CLAUDE_SETTINGS = {
   cliPath: null,
-  defaultModel: 'claude-sonnet-4-5-20250929',
+  defaultModel: "claude-sonnet-4-5-20250929",
   useWsl: false,
   defaultWorkingDirectory: null,
   maxTokensPerRequest: null,
@@ -129,7 +129,7 @@ export const DEFAULT_CLAUDE_SETTINGS = {
 export const DEFAULT_PERMISSION_SETTINGS = {
   autoApprove: {
     enabled: false,
-    tools: ['Read', 'Glob', 'Grep', 'LSP', 'TodoRead'],
+    tools: ["Read", "Glob", "Grep", "LSP", "TodoRead"],
     patterns: [],
     readOperations: true,
     projectDirectory: true,
@@ -149,7 +149,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
     showThinking: true,
     enableSyntaxHighlighting: true,
     maxContentLength: 50000,
-    codeTheme: 'auto' as const,
+    codeTheme: "auto" as const,
   },
   showTokenCounts: true,
   showCostEstimates: true,
@@ -163,12 +163,12 @@ export const DEFAULT_DISPLAY_SETTINGS = {
  * Default keyboard shortcuts
  */
 export const DEFAULT_SHORTCUTS = {
-  submit: 'Enter',
-  newLine: 'Shift+Enter',
-  stop: 'Escape',
-  clear: 'Ctrl+L',
-  toggleSidebar: 'Ctrl+B',
-  focusInput: 'Ctrl+/',
+  submit: "Enter",
+  newLine: "Shift+Enter",
+  stop: "Escape",
+  clear: "Ctrl+L",
+  toggleSidebar: "Ctrl+B",
+  focusInput: "Ctrl+/",
 };
 
 // ============================================================================
@@ -180,28 +180,28 @@ export const DEFAULT_SHORTCUTS = {
  * Updated for current Anthropic pricing
  */
 export const TOKEN_PRICING = {
-  'claude-sonnet-4-5-20250929': {
+  "claude-sonnet-4-5-20250929": {
     input: 3.0,
     output: 15.0,
-    cacheRead: 0.30,
+    cacheRead: 0.3,
     cacheWrite: 3.75,
   },
-  'claude-opus-4-5-20251101': {
+  "claude-opus-4-5-20251101": {
     input: 15.0,
     output: 75.0,
-    cacheRead: 1.50,
+    cacheRead: 1.5,
     cacheWrite: 18.75,
   },
-  'claude-haiku-4-5-20251001': {
+  "claude-haiku-4-5-20251001": {
     input: 1.0,
     output: 5.0,
-    cacheRead: 0.10,
+    cacheRead: 0.1,
     cacheWrite: 1.25,
   },
   default: {
     input: 3.0,
     output: 15.0,
-    cacheRead: 0.30,
+    cacheRead: 0.3,
     cacheWrite: 3.75,
   },
 };
@@ -210,9 +210,9 @@ export const TOKEN_PRICING = {
  * Context window sizes by model
  */
 export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
-  'claude-sonnet-4-5-20250929': 200000,
-  'claude-opus-4-5-20251101': 200000,
-  'claude-haiku-4-5-20251001': 200000,
+  "claude-sonnet-4-5-20250929": 200000,
+  "claude-opus-4-5-20251101": 200000,
+  "claude-haiku-4-5-20251001": 200000,
   default: 200000,
 };
 
@@ -229,95 +229,103 @@ export interface MCPServerConfig {
   description: string;
   command: string;
   args?: string[];
-  category: 'filesystem' | 'git' | 'database' | 'web' | 'tools' | 'other';
+  category: "filesystem" | "git" | "database" | "web" | "tools" | "other";
   recommended?: boolean;
   docsUrl?: string;
 }
 
 export const POPULAR_MCP_SERVERS: MCPServerConfig[] = [
   {
-    name: 'filesystem',
-    displayName: 'Filesystem',
-    description: 'Access to local filesystem with configurable allowed paths',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '/path/to/allowed'],
-    category: 'filesystem',
+    name: "filesystem",
+    displayName: "Filesystem",
+    description: "Access to local filesystem with configurable allowed paths",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed"],
+    category: "filesystem",
     recommended: true,
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem',
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
   },
   {
-    name: 'github',
-    displayName: 'GitHub',
-    description: 'GitHub API integration for repositories, issues, and PRs',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-github'],
-    category: 'git',
+    name: "github",
+    displayName: "GitHub",
+    description: "GitHub API integration for repositories, issues, and PRs",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-github"],
+    category: "git",
     recommended: true,
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/github',
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/github",
   },
   {
-    name: 'postgres',
-    displayName: 'PostgreSQL',
-    description: 'Connect to PostgreSQL databases with read/write access',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-postgres', 'postgresql://...'],
-    category: 'database',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/postgres',
+    name: "postgres",
+    displayName: "PostgreSQL",
+    description: "Connect to PostgreSQL databases with read/write access",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://..."],
+    category: "database",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres",
   },
   {
-    name: 'sqlite',
-    displayName: 'SQLite',
-    description: 'SQLite database access for local data storage',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-sqlite', '/path/to/database.db'],
-    category: 'database',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite',
+    name: "sqlite",
+    displayName: "SQLite",
+    description: "SQLite database access for local data storage",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-sqlite", "/path/to/database.db"],
+    category: "database",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
   },
   {
-    name: 'puppeteer',
-    displayName: 'Puppeteer',
-    description: 'Browser automation for web scraping and testing',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-puppeteer'],
-    category: 'web',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer',
+    name: "puppeteer",
+    displayName: "Puppeteer",
+    description: "Browser automation for web scraping and testing",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-puppeteer"],
+    category: "web",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer",
   },
   {
-    name: 'fetch',
-    displayName: 'Fetch',
-    description: 'HTTP fetch capabilities for web requests',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-fetch'],
-    category: 'web',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/fetch',
+    name: "fetch",
+    displayName: "Fetch",
+    description: "HTTP fetch capabilities for web requests",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-fetch"],
+    category: "web",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
   },
   {
-    name: 'memory',
-    displayName: 'Memory',
-    description: 'Persistent memory storage across sessions',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-memory'],
-    category: 'tools',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/memory',
+    name: "memory",
+    displayName: "Memory",
+    description: "Persistent memory storage across sessions",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-memory"],
+    category: "tools",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
   },
   {
-    name: 'slack',
-    displayName: 'Slack',
-    description: 'Slack workspace integration for messaging',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-slack'],
-    category: 'tools',
-    docsUrl: 'https://github.com/modelcontextprotocol/servers/tree/main/src/slack',
+    name: "slack",
+    displayName: "Slack",
+    description: "Slack workspace integration for messaging",
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-slack"],
+    category: "tools",
+    docsUrl:
+      "https://github.com/modelcontextprotocol/servers/tree/main/src/slack",
   },
   {
-    name: 'claude-flow',
-    displayName: 'Claude Flow',
-    description: 'Multi-agent swarm orchestration and coordination',
-    command: 'npx',
-    args: ['claude-flow@alpha', 'mcp', 'start'],
-    category: 'tools',
+    name: "claude-flow",
+    displayName: "Claude Flow",
+    description: "Multi-agent swarm orchestration and coordination",
+    command: "npx",
+    args: ["claude-flow@alpha", "mcp", "start"],
+    category: "tools",
     recommended: true,
-    docsUrl: 'https://github.com/ruvnet/claude-flow',
+    docsUrl: "https://github.com/ruvnet/claude-flow",
   },
 ];
 
@@ -382,12 +390,12 @@ export const DEBOUNCE_DELAYS = {
  * Status indicator colors (using CSS variable names)
  */
 export const STATUS_COLORS = {
-  success: 'var(--vscode-testing-iconPassed)',
-  error: 'var(--vscode-testing-iconFailed)',
-  warning: 'var(--vscode-editorWarning-foreground)',
-  info: 'var(--vscode-editorInfo-foreground)',
-  pending: 'var(--vscode-editorLightBulb-foreground)',
-  active: 'var(--vscode-progressBar-background)',
+  success: "var(--vscode-testing-iconPassed)",
+  error: "var(--vscode-testing-iconFailed)",
+  warning: "var(--vscode-editorWarning-foreground)",
+  info: "var(--vscode-editorInfo-foreground)",
+  pending: "var(--vscode-editorLightBulb-foreground)",
+  active: "var(--vscode-progressBar-background)",
 };
 
 /**
@@ -443,58 +451,58 @@ export const PATTERNS = {
  * File extension to language ID mapping for syntax highlighting
  */
 export const EXTENSION_TO_LANGUAGE: Record<string, string> = {
-  ts: 'typescript',
-  tsx: 'typescriptreact',
-  js: 'javascript',
-  jsx: 'javascriptreact',
-  py: 'python',
-  rb: 'ruby',
-  rs: 'rust',
-  go: 'go',
-  java: 'java',
-  kt: 'kotlin',
-  swift: 'swift',
-  cs: 'csharp',
-  cpp: 'cpp',
-  c: 'c',
-  h: 'c',
-  hpp: 'cpp',
-  php: 'php',
-  sh: 'shellscript',
-  bash: 'shellscript',
-  zsh: 'shellscript',
-  ps1: 'powershell',
-  sql: 'sql',
-  json: 'json',
-  jsonc: 'jsonc',
-  yaml: 'yaml',
-  yml: 'yaml',
-  toml: 'toml',
-  xml: 'xml',
-  html: 'html',
-  css: 'css',
-  scss: 'scss',
-  less: 'less',
-  md: 'markdown',
-  mdx: 'mdx',
-  vue: 'vue',
-  svelte: 'svelte',
-  dockerfile: 'dockerfile',
-  makefile: 'makefile',
-  cmake: 'cmake',
-  r: 'r',
-  scala: 'scala',
-  clj: 'clojure',
-  ex: 'elixir',
-  exs: 'elixir',
-  erl: 'erlang',
-  hs: 'haskell',
-  lua: 'lua',
-  perl: 'perl',
-  graphql: 'graphql',
-  proto: 'protobuf',
-  tf: 'terraform',
-  hcl: 'hcl',
+  ts: "typescript",
+  tsx: "typescriptreact",
+  js: "javascript",
+  jsx: "javascriptreact",
+  py: "python",
+  rb: "ruby",
+  rs: "rust",
+  go: "go",
+  java: "java",
+  kt: "kotlin",
+  swift: "swift",
+  cs: "csharp",
+  cpp: "cpp",
+  c: "c",
+  h: "c",
+  hpp: "cpp",
+  php: "php",
+  sh: "shellscript",
+  bash: "shellscript",
+  zsh: "shellscript",
+  ps1: "powershell",
+  sql: "sql",
+  json: "json",
+  jsonc: "jsonc",
+  yaml: "yaml",
+  yml: "yaml",
+  toml: "toml",
+  xml: "xml",
+  html: "html",
+  css: "css",
+  scss: "scss",
+  less: "less",
+  md: "markdown",
+  mdx: "mdx",
+  vue: "vue",
+  svelte: "svelte",
+  dockerfile: "dockerfile",
+  makefile: "makefile",
+  cmake: "cmake",
+  r: "r",
+  scala: "scala",
+  clj: "clojure",
+  ex: "elixir",
+  exs: "elixir",
+  erl: "erlang",
+  hs: "haskell",
+  lua: "lua",
+  perl: "perl",
+  graphql: "graphql",
+  proto: "protobuf",
+  tf: "terraform",
+  hcl: "hcl",
 };
 
 /**
@@ -508,11 +516,11 @@ export function getLanguageFromPath(filePath: string): string {
   }
 
   // Check for special filenames
-  const filename = filePath.split(/[\\/]/).pop()?.toLowerCase() || '';
-  if (filename === 'dockerfile') return 'dockerfile';
-  if (filename === 'makefile') return 'makefile';
-  if (filename === '.gitignore') return 'ignore';
-  if (filename === '.env') return 'dotenv';
+  const filename = filePath.split(/[\\/]/).pop()?.toLowerCase() || "";
+  if (filename === "dockerfile") return "dockerfile";
+  if (filename === "makefile") return "makefile";
+  if (filename === ".gitignore") return "ignore";
+  if (filename === ".env") return "dotenv";
 
-  return 'plaintext';
+  return "plaintext";
 }

@@ -7,7 +7,7 @@
  * @module utils/markdown
  */
 
-import { PATTERNS, getLanguageFromPath } from './constants';
+import { PATTERNS, getLanguageFromPath } from "./constants";
 
 // ============================================================================
 // Types
@@ -46,7 +46,7 @@ export interface MarkdownRenderOptions {
   /** Custom code block renderer */
   codeBlockRenderer?: (block: CodeBlock) => string;
   /** Link target for rendered links */
-  linkTarget?: '_blank' | '_self';
+  linkTarget?: "_blank" | "_self";
 }
 
 const defaultOptions: MarkdownRenderOptions = {
@@ -55,7 +55,7 @@ const defaultOptions: MarkdownRenderOptions = {
   renderInlineCode: true,
   renderLinks: true,
   renderFormatting: true,
-  linkTarget: '_blank',
+  linkTarget: "_blank",
 };
 
 // ============================================================================
@@ -66,21 +66,21 @@ const defaultOptions: MarkdownRenderOptions = {
  * Map of HTML entities for escaping
  */
 const HTML_ENTITIES: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-  '=': '&#x3D;',
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+  "/": "&#x2F;",
+  "`": "&#x60;",
+  "=": "&#x3D;",
 };
 
 /**
  * Escape HTML special characters to prevent XSS
  */
 export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"'`=/]/g, char => HTML_ENTITIES[char] || char);
+  return text.replace(/[&<>"'`=/]/g, (char) => HTML_ENTITIES[char] || char);
 }
 
 /**
@@ -88,18 +88,20 @@ export function escapeHtml(text: string): string {
  */
 export function unescapeHtml(text: string): string {
   const entities: Record<string, string> = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&#x2F;': '/',
-    '&#x60;': '`',
-    '&#x3D;': '=',
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&#39;": "'",
+    "&#x2F;": "/",
+    "&#x60;": "`",
+    "&#x3D;": "=",
   };
 
-  return text.replace(/&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g,
-    entity => entities[entity] || entity);
+  return text.replace(
+    /&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g,
+    (entity) => entities[entity] || entity,
+  );
 }
 
 // ============================================================================
@@ -117,7 +119,7 @@ export function extractCodeBlocks(markdown: string): CodeBlock[] {
   while ((match = regex.exec(markdown)) !== null) {
     blocks.push({
       fullMatch: match[0],
-      language: match[1] || 'plaintext',
+      language: match[1] || "plaintext",
       code: match[2].trim(),
       startIndex: match.index,
       endIndex: match.index + match[0].length,
@@ -131,45 +133,49 @@ export function extractCodeBlocks(markdown: string): CodeBlock[] {
  * Detect language from code content heuristics
  */
 export function detectLanguage(code: string): string {
-  const lines = code.trim().split('\n');
+  const lines = code.trim().split("\n");
   const firstLine = lines[0].trim();
 
   // Shebang detection
-  if (firstLine.startsWith('#!')) {
-    if (firstLine.includes('python')) return 'python';
-    if (firstLine.includes('node')) return 'javascript';
-    if (firstLine.includes('bash') || firstLine.includes('sh')) return 'shellscript';
-    if (firstLine.includes('ruby')) return 'ruby';
-    if (firstLine.includes('perl')) return 'perl';
+  if (firstLine.startsWith("#!")) {
+    if (firstLine.includes("python")) return "python";
+    if (firstLine.includes("node")) return "javascript";
+    if (firstLine.includes("bash") || firstLine.includes("sh"))
+      return "shellscript";
+    if (firstLine.includes("ruby")) return "ruby";
+    if (firstLine.includes("perl")) return "perl";
   }
 
   // Pattern-based detection
   if (/^(import|from)\s+\w+/.test(firstLine)) {
-    if (code.includes('def ') || code.includes('class ') && code.includes(':')) {
-      return 'python';
+    if (
+      code.includes("def ") ||
+      (code.includes("class ") && code.includes(":"))
+    ) {
+      return "python";
     }
-    return 'typescript';
+    return "typescript";
   }
 
   if (/^const\s+\w+\s*=|^let\s+\w+\s*=|^function\s+\w+/.test(firstLine)) {
-    return 'javascript';
+    return "javascript";
   }
 
   if (/^package\s+\w+/.test(firstLine)) {
-    if (code.includes('func ')) return 'go';
-    return 'java';
+    if (code.includes("func ")) return "go";
+    return "java";
   }
 
   if (/^use\s+\w+::/.test(firstLine) || /^fn\s+\w+/.test(firstLine)) {
-    return 'rust';
+    return "rust";
   }
 
-  if (/^<\?php/.test(firstLine)) return 'php';
-  if (/^<!DOCTYPE|^<html/i.test(firstLine)) return 'html';
-  if (/^{/.test(firstLine) && code.includes('"')) return 'json';
-  if (/^\s*\$\s*\w+/.test(firstLine)) return 'shellscript';
+  if (/^<\?php/.test(firstLine)) return "php";
+  if (/^<!DOCTYPE|^<html/i.test(firstLine)) return "html";
+  if (/^{/.test(firstLine) && code.includes('"')) return "json";
+  if (/^\s*\$\s*\w+/.test(firstLine)) return "shellscript";
 
-  return 'plaintext';
+  return "plaintext";
 }
 
 // ============================================================================
@@ -179,7 +185,9 @@ export function detectLanguage(code: string): string {
 /**
  * Extract inline code segments
  */
-export function extractInlineCode(markdown: string): Array<{ match: string; code: string; index: number }> {
+export function extractInlineCode(
+  markdown: string,
+): Array<{ match: string; code: string; index: number }> {
   const segments: Array<{ match: string; code: string; index: number }> = [];
   const regex = /`([^`\n]+)`/g;
   let match: RegExpExecArray | null;
@@ -187,7 +195,7 @@ export function extractInlineCode(markdown: string): Array<{ match: string; code
   while ((match = regex.exec(markdown)) !== null) {
     // Skip if this is part of a code block (preceded by ```)
     const before = markdown.slice(Math.max(0, match.index - 3), match.index);
-    if (before.endsWith('``')) continue;
+    if (before.endsWith("``")) continue;
 
     segments.push({
       match: match[0],
@@ -213,8 +221,15 @@ export function renderInlineCode(code: string): string {
 /**
  * Parse markdown links
  */
-export function parseLinks(markdown: string): Array<{ match: string; text: string; url: string; index: number }> {
-  const links: Array<{ match: string; text: string; url: string; index: number }> = [];
+export function parseLinks(
+  markdown: string,
+): Array<{ match: string; text: string; url: string; index: number }> {
+  const links: Array<{
+    match: string;
+    text: string;
+    url: string;
+    index: number;
+  }> = [];
   const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
   let match: RegExpExecArray | null;
 
@@ -233,10 +248,14 @@ export function parseLinks(markdown: string): Array<{ match: string; text: strin
 /**
  * Render a markdown link as HTML
  */
-export function renderLink(text: string, url: string, target: '_blank' | '_self' = '_blank'): string {
+export function renderLink(
+  text: string,
+  url: string,
+  target: "_blank" | "_self" = "_blank",
+): string {
   const safeUrl = escapeHtml(url);
   const safeText = escapeHtml(text);
-  const rel = target === '_blank' ? ' rel="noopener noreferrer"' : '';
+  const rel = target === "_blank" ? ' rel="noopener noreferrer"' : "";
 
   return `<a href="${safeUrl}" target="${target}"${rel} class="markdown-link">${safeText}</a>`;
 }
@@ -244,13 +263,16 @@ export function renderLink(text: string, url: string, target: '_blank' | '_self'
 /**
  * Detect and auto-link URLs in text
  */
-export function autoLinkUrls(text: string, target: '_blank' | '_self' = '_blank'): string {
+export function autoLinkUrls(
+  text: string,
+  target: "_blank" | "_self" = "_blank",
+): string {
   const urlRegex = /https?:\/\/[^\s<>\[\]()]+/g;
 
   return text.replace(urlRegex, (url) => {
     // Don't link if already in a markdown link
-    const beforeIndex = text.lastIndexOf('[', text.indexOf(url));
-    const parenIndex = text.indexOf('](', text.indexOf(url));
+    const beforeIndex = text.lastIndexOf("[", text.indexOf(url));
+    const parenIndex = text.indexOf("](", text.indexOf(url));
     if (beforeIndex !== -1 && parenIndex > beforeIndex) {
       return url;
     }
@@ -267,7 +289,7 @@ export function autoLinkUrls(text: string, target: '_blank' | '_self' = '_blank'
  * Render bold text
  */
 function renderBold(text: string): string {
-  return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  return text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
 }
 
 /**
@@ -275,15 +297,16 @@ function renderBold(text: string): string {
  */
 function renderItalic(text: string): string {
   // Single asterisks or underscores for italic, avoiding bold markers
-  return text.replace(/(?<!\*)\*(?!\*)([^*]+)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
-             .replace(/(?<!_)_(?!_)([^_]+)(?<!_)_(?!_)/g, '<em>$1</em>');
+  return text
+    .replace(/(?<!\*)\*(?!\*)([^*]+)(?<!\*)\*(?!\*)/g, "<em>$1</em>")
+    .replace(/(?<!_)_(?!_)([^_]+)(?<!_)_(?!_)/g, "<em>$1</em>");
 }
 
 /**
  * Render strikethrough text
  */
 function renderStrikethrough(text: string): string {
-  return text.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+  return text.replace(/~~([^~]+)~~/g, "<del>$1</del>");
 }
 
 /**
@@ -308,13 +331,13 @@ function renderHorizontalRules(text: string): string {
  */
 function renderBlockquotes(text: string): string {
   // Handle multi-line blockquotes
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const result: string[] = [];
   let inBlockquote = false;
   let blockquoteContent: string[] = [];
 
   for (const line of lines) {
-    if (line.startsWith('> ') || line === '>') {
+    if (line.startsWith("> ") || line === ">") {
       if (!inBlockquote) {
         inBlockquote = true;
         blockquoteContent = [];
@@ -322,7 +345,9 @@ function renderBlockquotes(text: string): string {
       blockquoteContent.push(line.slice(2));
     } else {
       if (inBlockquote) {
-        result.push(`<blockquote class="markdown-blockquote">${blockquoteContent.join('\n')}</blockquote>`);
+        result.push(
+          `<blockquote class="markdown-blockquote">${blockquoteContent.join("\n")}</blockquote>`,
+        );
         inBlockquote = false;
         blockquoteContent = [];
       }
@@ -331,17 +356,19 @@ function renderBlockquotes(text: string): string {
   }
 
   if (inBlockquote) {
-    result.push(`<blockquote class="markdown-blockquote">${blockquoteContent.join('\n')}</blockquote>`);
+    result.push(
+      `<blockquote class="markdown-blockquote">${blockquoteContent.join("\n")}</blockquote>`,
+    );
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }
 
 /**
  * Render unordered lists
  */
 function renderUnorderedLists(text: string): string {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const result: string[] = [];
   let inList = false;
   let listItems: string[] = [];
@@ -356,7 +383,7 @@ function renderUnorderedLists(text: string): string {
       listItems.push(`<li>${match[2]}</li>`);
     } else {
       if (inList) {
-        result.push(`<ul class="markdown-list">${listItems.join('')}</ul>`);
+        result.push(`<ul class="markdown-list">${listItems.join("")}</ul>`);
         inList = false;
         listItems = [];
       }
@@ -365,17 +392,17 @@ function renderUnorderedLists(text: string): string {
   }
 
   if (inList) {
-    result.push(`<ul class="markdown-list">${listItems.join('')}</ul>`);
+    result.push(`<ul class="markdown-list">${listItems.join("")}</ul>`);
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }
 
 /**
  * Render ordered lists
  */
 function renderOrderedLists(text: string): string {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const result: string[] = [];
   let inList = false;
   let listItems: string[] = [];
@@ -390,7 +417,7 @@ function renderOrderedLists(text: string): string {
       listItems.push(`<li>${match[2]}</li>`);
     } else {
       if (inList) {
-        result.push(`<ol class="markdown-list">${listItems.join('')}</ol>`);
+        result.push(`<ol class="markdown-list">${listItems.join("")}</ol>`);
         inList = false;
         listItems = [];
       }
@@ -399,10 +426,10 @@ function renderOrderedLists(text: string): string {
   }
 
   if (inList) {
-    result.push(`<ol class="markdown-list">${listItems.join('')}</ol>`);
+    result.push(`<ol class="markdown-list">${listItems.join("")}</ol>`);
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }
 
 // ============================================================================
@@ -420,7 +447,10 @@ function defaultCodeBlockRenderer(block: CodeBlock): string {
 /**
  * Parse and render markdown to HTML
  */
-export function parseMarkdown(markdown: string, options: MarkdownRenderOptions = {}): string {
+export function parseMarkdown(
+  markdown: string,
+  options: MarkdownRenderOptions = {},
+): string {
   const opts = { ...defaultOptions, ...options };
   let result = markdown;
 
@@ -437,7 +467,10 @@ export function parseMarkdown(markdown: string, options: MarkdownRenderOptions =
       const placeholder = `__CODE_BLOCK_${i}__`;
       const rendered = renderer(block);
       codeBlockPlaceholders.set(placeholder, rendered);
-      result = result.slice(0, block.startIndex) + placeholder + result.slice(block.endIndex);
+      result =
+        result.slice(0, block.startIndex) +
+        placeholder +
+        result.slice(block.endIndex);
     }
   }
 
@@ -445,23 +478,28 @@ export function parseMarkdown(markdown: string, options: MarkdownRenderOptions =
   if (opts.escapeHtml) {
     // Don't escape placeholders
     const parts = result.split(/(__CODE_BLOCK_\d+__)/);
-    result = parts.map(part => {
-      if (part.match(/^__CODE_BLOCK_\d+__$/)) {
-        return part;
-      }
-      return escapeHtml(part);
-    }).join('');
+    result = parts
+      .map((part) => {
+        if (part.match(/^__CODE_BLOCK_\d+__$/)) {
+          return part;
+        }
+        return escapeHtml(part);
+      })
+      .join("");
   }
 
   // Render inline code
   if (opts.renderInlineCode) {
-    result = result.replace(/`([^`\n]+)`/g, (_, code) => renderInlineCode(code));
+    result = result.replace(/`([^`\n]+)`/g, (_, code) =>
+      renderInlineCode(code),
+    );
   }
 
   // Render links
   if (opts.renderLinks) {
     result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) =>
-      renderLink(text, url, opts.linkTarget));
+      renderLink(text, url, opts.linkTarget),
+    );
   }
 
   // Render formatting
@@ -477,13 +515,18 @@ export function parseMarkdown(markdown: string, options: MarkdownRenderOptions =
   }
 
   // Convert line breaks to <br> tags (preserving code blocks)
-  result = result.split('\n').map(line => {
-    if (line.match(/^__CODE_BLOCK_\d+__$/) ||
-        line.match(/^<[/]?(ul|ol|li|blockquote|h[1-6]|hr|pre)/)) {
-      return line;
-    }
-    return line + (line.trim() ? '' : '<br>');
-  }).join('\n');
+  result = result
+    .split("\n")
+    .map((line) => {
+      if (
+        line.match(/^__CODE_BLOCK_\d+__$/) ||
+        line.match(/^<[/]?(ul|ol|li|blockquote|h[1-6]|hr|pre)/)
+      ) {
+        return line;
+      }
+      return line + (line.trim() ? "" : "<br>");
+    })
+    .join("\n");
 
   // Restore code blocks
   for (const [placeholder, rendered] of codeBlockPlaceholders) {
@@ -500,23 +543,23 @@ export function stripMarkdown(markdown: string): string {
   let result = markdown;
 
   // Remove code blocks
-  result = result.replace(/```[\s\S]*?```/g, '');
+  result = result.replace(/```[\s\S]*?```/g, "");
 
   // Remove inline code
-  result = result.replace(/`[^`]+`/g, '');
+  result = result.replace(/`[^`]+`/g, "");
 
   // Remove links but keep text
-  result = result.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  result = result.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
   // Remove formatting
-  result = result.replace(/\*\*([^*]+)\*\*/g, '$1');
-  result = result.replace(/\*([^*]+)\*/g, '$1');
-  result = result.replace(/_([^_]+)_/g, '$1');
-  result = result.replace(/~~([^~]+)~~/g, '$1');
-  result = result.replace(/^#+\s*/gm, '');
-  result = result.replace(/^>\s*/gm, '');
-  result = result.replace(/^[-*+]\s+/gm, '');
-  result = result.replace(/^\d+\.\s+/gm, '');
+  result = result.replace(/\*\*([^*]+)\*\*/g, "$1");
+  result = result.replace(/\*([^*]+)\*/g, "$1");
+  result = result.replace(/_([^_]+)_/g, "$1");
+  result = result.replace(/~~([^~]+)~~/g, "$1");
+  result = result.replace(/^#+\s*/gm, "");
+  result = result.replace(/^>\s*/gm, "");
+  result = result.replace(/^[-*+]\s+/gm, "");
+  result = result.replace(/^\d+\.\s+/gm, "");
 
   return result.trim();
 }

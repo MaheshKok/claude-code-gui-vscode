@@ -8,7 +8,7 @@
  * @module utils/format
  */
 
-import { TOKEN_PRICING, CONTEXT_WINDOW_SIZES } from './constants';
+import { TOKEN_PRICING, CONTEXT_WINDOW_SIZES } from "./constants";
 
 // ============================================================================
 // Timestamp Formatting
@@ -35,7 +35,7 @@ const defaultTimestampOptions: TimestampOptions = {
   includeSeconds: false,
   use24Hour: false,
   relative: false,
-  locale: 'en-US',
+  locale: "en-US",
 };
 
 /**
@@ -43,32 +43,32 @@ const defaultTimestampOptions: TimestampOptions = {
  */
 export function formatTimestamp(
   timestamp: number | Date,
-  options: TimestampOptions = {}
+  options: TimestampOptions = {},
 ): string {
   const opts = { ...defaultTimestampOptions, ...options };
-  const date = typeof timestamp === 'number' ? new Date(timestamp) : timestamp;
+  const date = typeof timestamp === "number" ? new Date(timestamp) : timestamp;
 
   if (opts.relative) {
     return formatRelativeTime(date);
   }
 
   const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: 'numeric',
-    minute: '2-digit',
+    hour: "numeric",
+    minute: "2-digit",
     hour12: !opts.use24Hour,
   };
 
   if (opts.includeSeconds) {
-    timeOptions.second = '2-digit';
+    timeOptions.second = "2-digit";
   }
 
   if (opts.includeDate) {
-    timeOptions.month = 'short';
-    timeOptions.day = 'numeric';
+    timeOptions.month = "short";
+    timeOptions.day = "numeric";
 
     // Include year if not current year
     if (date.getFullYear() !== new Date().getFullYear()) {
-      timeOptions.year = 'numeric';
+      timeOptions.year = "numeric";
     }
   }
 
@@ -80,7 +80,7 @@ export function formatTimestamp(
  */
 export function formatRelativeTime(date: Date | number): string {
   const now = Date.now();
-  const timestamp = typeof date === 'number' ? date : date.getTime();
+  const timestamp = typeof date === "number" ? date : date.getTime();
   const diff = now - timestamp;
 
   const seconds = Math.floor(diff / 1000);
@@ -91,19 +91,19 @@ export function formatRelativeTime(date: Date | number): string {
   const months = Math.floor(days / 30);
   const years = Math.floor(days / 365);
 
-  if (seconds < 5) return 'just now';
+  if (seconds < 5) return "just now";
   if (seconds < 60) return `${seconds} seconds ago`;
-  if (minutes === 1) return '1 minute ago';
+  if (minutes === 1) return "1 minute ago";
   if (minutes < 60) return `${minutes} minutes ago`;
-  if (hours === 1) return '1 hour ago';
+  if (hours === 1) return "1 hour ago";
   if (hours < 24) return `${hours} hours ago`;
-  if (days === 1) return 'yesterday';
+  if (days === 1) return "yesterday";
   if (days < 7) return `${days} days ago`;
-  if (weeks === 1) return '1 week ago';
+  if (weeks === 1) return "1 week ago";
   if (weeks < 4) return `${weeks} weeks ago`;
-  if (months === 1) return '1 month ago';
+  if (months === 1) return "1 month ago";
   if (months < 12) return `${months} months ago`;
-  if (years === 1) return '1 year ago';
+  if (years === 1) return "1 year ago";
   return `${years} years ago`;
 }
 
@@ -111,7 +111,7 @@ export function formatRelativeTime(date: Date | number): string {
  * Format a date for file names or IDs (no special characters)
  */
 export function formatDateForId(date: Date = new Date()): string {
-  return date.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  return date.toISOString().replace(/[:.]/g, "-").slice(0, 19);
 }
 
 // ============================================================================
@@ -123,7 +123,7 @@ export function formatDateForId(date: Date = new Date()): string {
  */
 export interface DurationOptions {
   /** Precision for the output */
-  precision?: 'seconds' | 'milliseconds' | 'auto';
+  precision?: "seconds" | "milliseconds" | "auto";
   /** Whether to use abbreviated units (s, ms, m, h) */
   abbreviated?: boolean;
   /** Whether to show leading zeros */
@@ -135,16 +135,16 @@ export interface DurationOptions {
  */
 export function formatDuration(
   durationMs: number,
-  options: DurationOptions = {}
+  options: DurationOptions = {},
 ): string {
   const {
-    precision = 'auto',
+    precision = "auto",
     abbreviated = true,
     leadingZeros = false,
   } = options;
 
   if (durationMs < 0) {
-    return abbreviated ? '0ms' : '0 milliseconds';
+    return abbreviated ? "0ms" : "0 milliseconds";
   }
 
   const milliseconds = durationMs % 1000;
@@ -157,33 +157,41 @@ export function formatDuration(
   const parts: string[] = [];
 
   // Determine whether to show milliseconds
-  const showMs = precision === 'milliseconds' ||
-    (precision === 'auto' && durationMs < 1000);
+  const showMs =
+    precision === "milliseconds" || (precision === "auto" && durationMs < 1000);
 
   if (hours > 0) {
     const h = leadingZeros && hours < 10 ? `0${hours}` : `${hours}`;
-    parts.push(abbreviated ? `${h}h` : `${hours} hour${hours !== 1 ? 's' : ''}`);
+    parts.push(
+      abbreviated ? `${h}h` : `${hours} hour${hours !== 1 ? "s" : ""}`,
+    );
   }
 
   if (minutes > 0 || hours > 0) {
     const m = leadingZeros && minutes < 10 ? `0${minutes}` : `${minutes}`;
-    parts.push(abbreviated ? `${m}m` : `${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    parts.push(
+      abbreviated ? `${m}m` : `${minutes} minute${minutes !== 1 ? "s" : ""}`,
+    );
   }
 
   if (seconds > 0 || (!showMs && parts.length === 0)) {
     const s = leadingZeros && seconds < 10 ? `0${seconds}` : `${seconds}`;
-    parts.push(abbreviated ? `${s}s` : `${seconds} second${seconds !== 1 ? 's' : ''}`);
+    parts.push(
+      abbreviated ? `${s}s` : `${seconds} second${seconds !== 1 ? "s" : ""}`,
+    );
   }
 
   if (showMs && milliseconds > 0) {
-    parts.push(abbreviated ? `${milliseconds}ms` : `${milliseconds} milliseconds`);
+    parts.push(
+      abbreviated ? `${milliseconds}ms` : `${milliseconds} milliseconds`,
+    );
   }
 
   if (parts.length === 0) {
-    return abbreviated ? '0ms' : '0 milliseconds';
+    return abbreviated ? "0ms" : "0 milliseconds";
   }
 
-  return parts.join(' ');
+  return parts.join(" ");
 }
 
 /**
@@ -196,7 +204,7 @@ export function formatTimer(durationMs: number): string {
   const minutes = totalMinutes % 60;
   const hours = Math.floor(totalMinutes / 60);
 
-  const pad = (n: number): string => n.toString().padStart(2, '0');
+  const pad = (n: number): string => n.toString().padStart(2, "0");
 
   if (hours > 0) {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
@@ -226,13 +234,9 @@ export interface TokenOptions {
  */
 export function formatTokenCount(
   count: number,
-  options: TokenOptions = {}
+  options: TokenOptions = {},
 ): string {
-  const {
-    includeSuffix = true,
-    abbreviated = true,
-    decimals = 1,
-  } = options;
+  const { includeSuffix = true, abbreviated = true, decimals = 1 } = options;
 
   let formatted: string;
 
@@ -249,7 +253,7 @@ export function formatTokenCount(
   }
 
   if (includeSuffix) {
-    formatted += count === 1 ? ' token' : ' tokens';
+    formatted += count === 1 ? " token" : " tokens";
   }
 
   return formatted;
@@ -268,14 +272,20 @@ export interface TokenUsageInfo {
 export function formatTokenUsage(usage: TokenUsageInfo): string {
   const parts: string[] = [];
 
-  parts.push(`In: ${formatTokenCount(usage.input_tokens, { includeSuffix: false })}`);
-  parts.push(`Out: ${formatTokenCount(usage.output_tokens, { includeSuffix: false })}`);
+  parts.push(
+    `In: ${formatTokenCount(usage.input_tokens, { includeSuffix: false })}`,
+  );
+  parts.push(
+    `Out: ${formatTokenCount(usage.output_tokens, { includeSuffix: false })}`,
+  );
 
   if (usage.cache_read_input_tokens && usage.cache_read_input_tokens > 0) {
-    parts.push(`Cache: ${formatTokenCount(usage.cache_read_input_tokens, { includeSuffix: false })}`);
+    parts.push(
+      `Cache: ${formatTokenCount(usage.cache_read_input_tokens, { includeSuffix: false })}`,
+    );
   }
 
-  return parts.join(' | ');
+  return parts.join(" | ");
 }
 
 /**
@@ -283,7 +293,7 @@ export function formatTokenUsage(usage: TokenUsageInfo): string {
  */
 export function formatContextUsage(
   usedTokens: number,
-  model: string = 'default'
+  model: string = "default",
 ): string {
   const maxTokens = CONTEXT_WINDOW_SIZES[model] || CONTEXT_WINDOW_SIZES.default;
   const percentage = (usedTokens / maxTokens) * 100;
@@ -312,29 +322,29 @@ export interface CostOptions {
 /**
  * Format a cost in USD for display
  */
-export function formatCost(
-  costUsd: number,
-  options: CostOptions = {}
-): string {
+export function formatCost(costUsd: number, options: CostOptions = {}): string {
   const {
-    currency = 'USD',
+    currency = "USD",
     minDecimals = 2,
     maxDecimals = 6,
     showFreeForZero = true,
   } = options;
 
   if (costUsd === 0 && showFreeForZero) {
-    return 'Free';
+    return "Free";
   }
 
   // Determine appropriate decimal places based on value
   let decimals = minDecimals;
   if (costUsd > 0 && costUsd < 0.01) {
-    decimals = Math.max(minDecimals, Math.min(maxDecimals, -Math.floor(Math.log10(costUsd)) + 1));
+    decimals = Math.max(
+      minDecimals,
+      Math.min(maxDecimals, -Math.floor(Math.log10(costUsd)) + 1),
+    );
   }
 
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -346,14 +356,17 @@ export function formatCost(
  */
 export function calculateCost(
   usage: TokenUsageInfo,
-  model: string = 'default'
+  model: string = "default",
 ): number {
-  const pricing = TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING.default;
+  const pricing =
+    TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING.default;
 
   const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
   const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
-  const cacheReadCost = ((usage.cache_read_input_tokens || 0) / 1_000_000) * pricing.cacheRead;
-  const cacheWriteCost = ((usage.cache_creation_input_tokens || 0) / 1_000_000) * pricing.cacheWrite;
+  const cacheReadCost =
+    ((usage.cache_read_input_tokens || 0) / 1_000_000) * pricing.cacheRead;
+  const cacheWriteCost =
+    ((usage.cache_creation_input_tokens || 0) / 1_000_000) * pricing.cacheWrite;
 
   return inputCost + outputCost + cacheReadCost + cacheWriteCost;
 }
@@ -363,9 +376,10 @@ export function calculateCost(
  */
 export function formatCostBreakdown(
   usage: TokenUsageInfo,
-  model: string = 'default'
+  model: string = "default",
 ): string {
-  const pricing = TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING.default;
+  const pricing =
+    TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING.default;
 
   const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
   const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
@@ -376,14 +390,15 @@ export function formatCostBreakdown(
   ];
 
   if (usage.cache_read_input_tokens && usage.cache_read_input_tokens > 0) {
-    const cacheReadCost = (usage.cache_read_input_tokens / 1_000_000) * pricing.cacheRead;
+    const cacheReadCost =
+      (usage.cache_read_input_tokens / 1_000_000) * pricing.cacheRead;
     parts.push(`Cache read: ${formatCost(cacheReadCost)}`);
   }
 
   const total = calculateCost(usage, model);
   parts.push(`Total: ${formatCost(total)}`);
 
-  return parts.join(' | ');
+  return parts.join(" | ");
 }
 
 // ============================================================================
@@ -409,7 +424,7 @@ export interface FilePathOptions {
  */
 export function formatFilePath(
   path: string,
-  options: FilePathOptions = {}
+  options: FilePathOptions = {},
 ): string {
   const {
     maxLength = 50,
@@ -418,22 +433,22 @@ export function formatFilePath(
     parentDirs = 2,
   } = options;
 
-  if (!path) return '';
+  if (!path) return "";
 
   // Normalize path separators
-  let formatted = path.replace(/\\/g, '/');
+  let formatted = path.replace(/\\/g, "/");
 
   // Replace home directory with ~
   if (homeAsTilde) {
     // Common home directory patterns
-    formatted = formatted.replace(/^\/Users\/[^/]+/, '~');
-    formatted = formatted.replace(/^\/home\/[^/]+/, '~');
-    formatted = formatted.replace(/^C:\/Users\/[^/]+/i, '~');
+    formatted = formatted.replace(/^\/Users\/[^/]+/, "~");
+    formatted = formatted.replace(/^\/home\/[^/]+/, "~");
+    formatted = formatted.replace(/^C:\/Users\/[^/]+/i, "~");
   }
 
   // Return only filename if requested
   if (filenameOnly) {
-    const parts = formatted.split('/');
+    const parts = formatted.split("/");
     return parts[parts.length - 1];
   }
 
@@ -443,8 +458,8 @@ export function formatFilePath(
   }
 
   // Truncate path keeping filename and some parent directories
-  const parts = formatted.split('/');
-  const filename = parts.pop() || '';
+  const parts = formatted.split("/");
+  const filename = parts.pop() || "";
 
   if (filename.length >= maxLength) {
     // Truncate filename itself
@@ -453,13 +468,13 @@ export function formatFilePath(
 
   // Keep last N parent directories
   const parentsToShow = parts.slice(-parentDirs);
-  let result = parentsToShow.join('/');
+  let result = parentsToShow.join("/");
 
   if (parentsToShow.length < parts.length) {
-    result = '.../' + result;
+    result = ".../" + result;
   }
 
-  result = result + '/' + filename;
+  result = result + "/" + filename;
 
   if (result.length > maxLength) {
     return truncateMiddle(result, maxLength);
@@ -474,7 +489,7 @@ export function formatFilePath(
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
 
-  const ellipsis = '...';
+  const ellipsis = "...";
   const charsToShow = maxLength - ellipsis.length;
   const frontChars = Math.ceil(charsToShow / 2);
   const backChars = Math.floor(charsToShow / 2);
@@ -487,15 +502,15 @@ export function truncateMiddle(str: string, maxLength: number): string {
  */
 export function getFileExtension(path: string): string {
   const match = path.match(/\.([^./\\]+)$/);
-  return match ? match[1].toLowerCase() : '';
+  return match ? match[1].toLowerCase() : "";
 }
 
 /**
  * Get filename from path
  */
 export function getFilename(path: string): string {
-  const normalized = path.replace(/\\/g, '/');
-  const parts = normalized.split('/');
+  const normalized = path.replace(/\\/g, "/");
+  const parts = normalized.split("/");
   return parts[parts.length - 1];
 }
 
@@ -503,10 +518,10 @@ export function getFilename(path: string): string {
  * Get directory from path
  */
 export function getDirectory(path: string): string {
-  const normalized = path.replace(/\\/g, '/');
-  const parts = normalized.split('/');
+  const normalized = path.replace(/\\/g, "/");
+  const parts = normalized.split("/");
   parts.pop();
-  return parts.join('/') || '/';
+  return parts.join("/") || "/";
 }
 
 // ============================================================================
@@ -525,24 +540,17 @@ export interface ByteOptions {
   includeSuffix?: boolean;
 }
 
-const BYTE_UNITS_BINARY = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
-const BYTE_UNITS_DECIMAL = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+const BYTE_UNITS_BINARY = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
+const BYTE_UNITS_DECIMAL = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 /**
  * Format a byte count for display
  */
-export function formatBytes(
-  bytes: number,
-  options: ByteOptions = {}
-): string {
-  const {
-    binary = true,
-    decimals = 2,
-    includeSuffix = true,
-  } = options;
+export function formatBytes(bytes: number, options: ByteOptions = {}): string {
+  const { binary = true, decimals = 2, includeSuffix = true } = options;
 
   if (bytes === 0) {
-    return includeSuffix ? '0 B' : '0';
+    return includeSuffix ? "0 B" : "0";
   }
 
   const base = binary ? 1024 : 1000;
@@ -550,7 +558,7 @@ export function formatBytes(
 
   const exponent = Math.min(
     Math.floor(Math.log(Math.abs(bytes)) / Math.log(base)),
-    units.length - 1
+    units.length - 1,
   );
 
   const value = bytes / Math.pow(base, exponent);
@@ -577,20 +585,20 @@ export function parseBytes(sizeStr: string): number {
   const unit = match[2].toUpperCase();
 
   const unitMap: Record<string, number> = {
-    '': 1,
-    'B': 1,
-    'KB': 1000,
-    'KIB': 1024,
-    'K': 1024,
-    'MB': 1000000,
-    'MIB': 1048576,
-    'M': 1048576,
-    'GB': 1000000000,
-    'GIB': 1073741824,
-    'G': 1073741824,
-    'TB': 1000000000000,
-    'TIB': 1099511627776,
-    'T': 1099511627776,
+    "": 1,
+    B: 1,
+    KB: 1000,
+    KIB: 1024,
+    K: 1024,
+    MB: 1000000,
+    MIB: 1048576,
+    M: 1048576,
+    GB: 1000000000,
+    GIB: 1073741824,
+    G: 1073741824,
+    TB: 1000000000000,
+    TIB: 1099511627776,
+    T: 1099511627776,
   };
 
   return Math.round(value * (unitMap[unit] || 1));
@@ -605,9 +613,9 @@ export function parseBytes(sizeStr: string): number {
  */
 export function formatNumber(
   num: number,
-  options: { decimals?: number; locale?: string } = {}
+  options: { decimals?: number; locale?: string } = {},
 ): string {
-  const { decimals, locale = 'en-US' } = options;
+  const { decimals, locale = "en-US" } = options;
 
   if (decimals !== undefined) {
     return num.toLocaleString(locale, {
@@ -624,7 +632,7 @@ export function formatNumber(
  */
 export function formatPercentage(
   value: number,
-  options: { decimals?: number; includeSign?: boolean } = {}
+  options: { decimals?: number; includeSign?: boolean } = {},
 ): string {
   const { decimals = 1, includeSign = true } = options;
   const formatted = value.toFixed(decimals);
@@ -636,13 +644,13 @@ export function formatPercentage(
  */
 export function formatCompact(num: number): string {
   if (Math.abs(num) >= 1e9) {
-    return (num / 1e9).toFixed(1) + 'B';
+    return (num / 1e9).toFixed(1) + "B";
   }
   if (Math.abs(num) >= 1e6) {
-    return (num / 1e6).toFixed(1) + 'M';
+    return (num / 1e6).toFixed(1) + "M";
   }
   if (Math.abs(num) >= 1e3) {
-    return (num / 1e3).toFixed(1) + 'K';
+    return (num / 1e3).toFixed(1) + "K";
   }
   return num.toString();
 }

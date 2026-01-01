@@ -7,7 +7,7 @@
  * @module hooks/useKeyboard
  */
 
-import { useEffect, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from "react";
 
 // ============================================================================
 // Types
@@ -54,7 +54,7 @@ export interface UseKeyboardOptions {
   /** Target element (default: document) */
   target?: HTMLElement | null;
   /** Event type to listen for (default: 'keydown') */
-  eventType?: 'keydown' | 'keyup' | 'keypress';
+  eventType?: "keydown" | "keyup" | "keypress";
 }
 
 /**
@@ -108,8 +108,16 @@ export interface UseChatKeyboardOptions {
 /**
  * Check if modifiers match the event
  */
-function modifiersMatch(event: KeyboardEvent, modifiers?: KeyModifiers): boolean {
-  const { ctrl = false, alt = false, shift = false, meta = false } = modifiers ?? {};
+function modifiersMatch(
+  event: KeyboardEvent,
+  modifiers?: KeyModifiers,
+): boolean {
+  const {
+    ctrl = false,
+    alt = false,
+    shift = false,
+    meta = false,
+  } = modifiers ?? {};
 
   return (
     event.ctrlKey === ctrl &&
@@ -124,12 +132,12 @@ function modifiersMatch(event: KeyboardEvent, modifiers?: KeyModifiers): boolean
  */
 function getShortcutKey(key: string, modifiers?: KeyModifiers): string {
   const parts: string[] = [];
-  if (modifiers?.ctrl) parts.push('Ctrl');
-  if (modifiers?.alt) parts.push('Alt');
-  if (modifiers?.shift) parts.push('Shift');
-  if (modifiers?.meta) parts.push('Meta');
+  if (modifiers?.ctrl) parts.push("Ctrl");
+  if (modifiers?.alt) parts.push("Alt");
+  if (modifiers?.shift) parts.push("Shift");
+  if (modifiers?.meta) parts.push("Meta");
   parts.push(key);
-  return parts.join('+');
+  return parts.join("+");
 }
 
 // ============================================================================
@@ -163,8 +171,15 @@ function getShortcutKey(key: string, modifiers?: KeyModifiers): string {
  * }
  * ```
  */
-export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn {
-  const { shortcuts = [], enabled = true, target, eventType = 'keydown' } = options;
+export function useKeyboard(
+  options: UseKeyboardOptions = {},
+): UseKeyboardReturn {
+  const {
+    shortcuts = [],
+    enabled = true,
+    target,
+    eventType = "keydown",
+  } = options;
 
   // Store shortcuts in a ref to avoid recreating the handler
   const shortcutsRef = useRef<Map<string, KeyboardShortcut>>(new Map());
@@ -208,13 +223,16 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
   /**
    * Add a new shortcut
    */
-  const addShortcut = useCallback((shortcut: KeyboardShortcut): (() => void) => {
-    const key = getShortcutKey(shortcut.key, shortcut.modifiers);
-    shortcutsRef.current.set(key, shortcut);
-    return () => {
-      shortcutsRef.current.delete(key);
-    };
-  }, []);
+  const addShortcut = useCallback(
+    (shortcut: KeyboardShortcut): (() => void) => {
+      const key = getShortcutKey(shortcut.key, shortcut.modifiers);
+      shortcutsRef.current.set(key, shortcut);
+      return () => {
+        shortcutsRef.current.delete(key);
+      };
+    },
+    [],
+  );
 
   /**
    * Remove a shortcut
@@ -224,7 +242,7 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
       const shortcutKey = getShortcutKey(key, modifiers);
       shortcutsRef.current.delete(shortcutKey);
     },
-    []
+    [],
   );
 
   /**
@@ -238,7 +256,7 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
         shortcut.enabled = true;
       }
     },
-    []
+    [],
   );
 
   /**
@@ -252,7 +270,7 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
         shortcut.enabled = false;
       }
     },
-    []
+    [],
   );
 
   /**
@@ -274,7 +292,10 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
     targetElement.addEventListener(eventType, handleKeyEvent as EventListener);
 
     return () => {
-      targetElement.removeEventListener(eventType, handleKeyEvent as EventListener);
+      targetElement.removeEventListener(
+        eventType,
+        handleKeyEvent as EventListener,
+      );
     };
   }, [enabled, target, eventType, handleKeyEvent]);
 
@@ -321,7 +342,7 @@ export function useKeyboard(options: UseKeyboardOptions = {}): UseKeyboardReturn
  * ```
  */
 export function useChatKeyboard(
-  options: UseChatKeyboardOptions = {}
+  options: UseChatKeyboardOptions = {},
 ): (event: React.KeyboardEvent) => void {
   const {
     onSend,
@@ -354,7 +375,7 @@ export function useChatKeyboard(
       } = handlersRef.current;
 
       switch (event.key) {
-        case 'Enter':
+        case "Enter":
           if (ctrlEnterToSend) {
             // Ctrl+Enter to send, Enter for newline
             if (event.ctrlKey || event.metaKey) {
@@ -374,12 +395,12 @@ export function useChatKeyboard(
           }
           break;
 
-        case 'Escape':
+        case "Escape":
           event.preventDefault();
           onEscape?.();
           break;
 
-        case '@':
+        case "@":
           // Only trigger file picker at start of input or after whitespace
           if (!event.ctrlKey && !event.altKey && !event.metaKey) {
             // Let the character be typed, then trigger picker
@@ -388,14 +409,19 @@ export function useChatKeyboard(
           }
           break;
 
-        case '/':
+        case "/":
           // Only trigger slash commands when input is empty
-          if (isInputEmpty && !event.ctrlKey && !event.altKey && !event.metaKey) {
+          if (
+            isInputEmpty &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+          ) {
             setTimeout(() => onSlashCommand?.(), 0);
           }
           break;
 
-        case 'ArrowUp':
+        case "ArrowUp":
           // History navigation when input is empty or at start
           if (isInputEmpty || suggestionsVisible) {
             event.preventDefault();
@@ -403,14 +429,14 @@ export function useChatKeyboard(
           }
           break;
 
-        case 'ArrowDown':
+        case "ArrowDown":
           if (suggestionsVisible) {
             event.preventDefault();
             onHistoryNext?.();
           }
           break;
 
-        case 'Tab':
+        case "Tab":
           if (suggestionsVisible) {
             event.preventDefault();
             onTab?.();
@@ -418,7 +444,7 @@ export function useChatKeyboard(
           break;
       }
     },
-    [ctrlEnterToSend, isInputEmpty, suggestionsVisible]
+    [ctrlEnterToSend, isInputEmpty, suggestionsVisible],
   );
 }
 
@@ -431,39 +457,40 @@ export function useChatKeyboard(
  */
 export function formatShortcut(key: string, modifiers?: KeyModifiers): string {
   const isMac =
-    typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    typeof navigator !== "undefined" &&
+    /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
   const parts: string[] = [];
 
   if (modifiers?.ctrl) {
-    parts.push(isMac ? '\u2318' : 'Ctrl');
+    parts.push(isMac ? "\u2318" : "Ctrl");
   }
   if (modifiers?.alt) {
-    parts.push(isMac ? '\u2325' : 'Alt');
+    parts.push(isMac ? "\u2325" : "Alt");
   }
   if (modifiers?.shift) {
-    parts.push(isMac ? '\u21E7' : 'Shift');
+    parts.push(isMac ? "\u21E7" : "Shift");
   }
   if (modifiers?.meta) {
-    parts.push(isMac ? '\u2318' : 'Win');
+    parts.push(isMac ? "\u2318" : "Win");
   }
 
   // Format special keys
   const keyDisplay =
     {
-      Enter: isMac ? '\u21A9' : 'Enter',
-      Escape: isMac ? '\u238B' : 'Esc',
-      ArrowUp: '\u2191',
-      ArrowDown: '\u2193',
-      ArrowLeft: '\u2190',
-      ArrowRight: '\u2192',
-      Tab: '\u21E5',
-      Backspace: isMac ? '\u232B' : 'Backspace',
-      Delete: isMac ? '\u2326' : 'Del',
-      ' ': 'Space',
+      Enter: isMac ? "\u21A9" : "Enter",
+      Escape: isMac ? "\u238B" : "Esc",
+      ArrowUp: "\u2191",
+      ArrowDown: "\u2193",
+      ArrowLeft: "\u2190",
+      ArrowRight: "\u2192",
+      Tab: "\u21E5",
+      Backspace: isMac ? "\u232B" : "Backspace",
+      Delete: isMac ? "\u2326" : "Del",
+      " ": "Space",
     }[key] ?? key.toUpperCase();
 
   parts.push(keyDisplay);
 
-  return parts.join(isMac ? '' : '+');
+  return parts.join(isMac ? "" : "+");
 }

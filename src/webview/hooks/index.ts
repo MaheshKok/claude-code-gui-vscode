@@ -17,7 +17,7 @@ export {
   getVSCode,
   postMessageToExtension,
   type UseVSCodeReturn,
-} from './useVSCode';
+} from "./useVSCode";
 
 // ============================================================================
 // Message Handling
@@ -30,7 +30,7 @@ export {
   createBatchedHandler,
   type UseMessagesOptions,
   type UseMessagesReturn,
-} from './useMessages';
+} from "./useMessages";
 
 // ============================================================================
 // Auto-Scroll
@@ -42,7 +42,7 @@ export {
   isElementAtBottom,
   type UseAutoScrollOptions,
   type UseAutoScrollReturn,
-} from './useAutoScroll';
+} from "./useAutoScroll";
 
 // ============================================================================
 // Auto-Resize Textarea
@@ -54,7 +54,7 @@ export {
   createMeasureElement,
   type UseAutoResizeOptions,
   type UseAutoResizeReturn,
-} from './useAutoResize';
+} from "./useAutoResize";
 
 // ============================================================================
 // Keyboard Shortcuts
@@ -69,7 +69,7 @@ export {
   type UseKeyboardOptions,
   type UseKeyboardReturn,
   type UseChatKeyboardOptions,
-} from './useKeyboard';
+} from "./useKeyboard";
 
 // ============================================================================
 // Clipboard Operations
@@ -84,7 +84,7 @@ export {
   type PasteEventData,
   type UseClipboardOptions,
   type UseClipboardReturn,
-} from './useClipboard';
+} from "./useClipboard";
 
 // ============================================================================
 // File Picker
@@ -98,7 +98,7 @@ export {
   type FilePickerCategory,
   type UseFilePickerOptions,
   type UseFilePickerReturn,
-} from './useFilePicker';
+} from "./useFilePicker";
 
 // ============================================================================
 // Permission Handling
@@ -113,7 +113,7 @@ export {
   type ToolPermissionConfig,
   type UsePermissionsOptions,
   type UsePermissionsReturn,
-} from './usePermissions';
+} from "./usePermissions";
 
 // ============================================================================
 // Theme Detection
@@ -128,4 +128,4 @@ export {
   type ThemeColors,
   type UseThemeOptions,
   type UseThemeReturn,
-} from './useTheme';
+} from "./useTheme";

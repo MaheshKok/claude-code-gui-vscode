@@ -1,10 +1,10 @@
-import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { Header } from '../../webview/components/Header/Header';
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { Header } from "../../webview/components/Header/Header";
 
-describe('Header', () => {
-  it('renders the progress summary ribbon', () => {
+describe("Header", () => {
+  it("renders the progress summary ribbon", () => {
     render(
       <Header
         session={null}
@@ -23,7 +23,7 @@ describe('Header', () => {
             pending: 1,
           },
         }}
-      />
+      />,
     );
 
     expect(screen.getByText(/Tokens:/)).toBeInTheDocument();

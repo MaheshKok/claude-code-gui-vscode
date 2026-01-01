@@ -201,14 +201,14 @@ export const MyComponent: React.FC<MyComponentProps> = ({
 
 ```typescript
 // src/webview/components/MyComponent/index.ts
-export { MyComponent } from './MyComponent';
+export { MyComponent } from "./MyComponent";
 ```
 
 3. Add to the main components index:
 
 ```typescript
 // src/webview/components/index.ts
-export * from './MyComponent';
+export * from "./MyComponent";
 ```
 
 ### Adding a New Store
@@ -217,7 +217,7 @@ export * from './MyComponent';
 
 ```typescript
 // src/webview/stores/myStore.ts
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface MyState {
   value: string;
@@ -225,7 +225,7 @@ interface MyState {
 }
 
 export const useMyStore = create<MyState>((set) => ({
-  value: '',
+  value: "",
   setValue: (value) => set({ value }),
 }));
 ```
@@ -234,7 +234,7 @@ export const useMyStore = create<MyState>((set) => ({
 
 ```typescript
 // src/webview/stores/index.ts
-export { useMyStore } from './myStore';
+export { useMyStore } from "./myStore";
 ```
 
 ### Adding a New Hook
@@ -243,7 +243,7 @@ export { useMyStore } from './myStore';
 
 ```typescript
 // src/webview/hooks/useMyHook.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useMyHook(initialValue: string) {
   const [value, setValue] = useState(initialValue);
@@ -263,7 +263,7 @@ export function useMyHook(initialValue: string) {
 
 ```typescript
 // src/webview/hooks/index.ts
-export { useMyHook } from './useMyHook';
+export { useMyHook } from "./useMyHook";
 ```
 
 ### Adding a New Extension Command
@@ -288,10 +288,10 @@ export { useMyHook } from './useMyHook';
 
 ```typescript
 const myCommand = vscode.commands.registerCommand(
-  'claude-flow-chat.myCommand',
+  "claude-flow-chat.myCommand",
   () => {
     // Command implementation
-  }
+  },
 );
 context.subscriptions.push(myCommand);
 ```
@@ -302,7 +302,7 @@ context.subscriptions.push(myCommand);
 
 ```typescript
 // src/extension/services/MyService.ts
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class MyService implements vscode.Disposable {
   constructor(private readonly context: vscode.ExtensionContext) {}
@@ -367,16 +367,16 @@ describe('MyComponent', () => {
 
 ```typescript
 // src/test/stores/myStore.test.ts
-import { useMyStore } from '@/webview/stores/myStore';
+import { useMyStore } from "@/webview/stores/myStore";
 
-describe('myStore', () => {
+describe("myStore", () => {
   beforeEach(() => {
-    useMyStore.getState().setValue('');
+    useMyStore.getState().setValue("");
   });
 
-  it('updates value', () => {
-    useMyStore.getState().setValue('test');
-    expect(useMyStore.getState().value).toBe('test');
+  it("updates value", () => {
+    useMyStore.getState().setValue("test");
+    expect(useMyStore.getState().value).toBe("test");
   });
 });
 ```
@@ -385,11 +385,11 @@ describe('myStore', () => {
 
 ```typescript
 // src/test/utils/myUtil.test.ts
-import { myUtilFunction } from '@/webview/utils/myUtil';
+import { myUtilFunction } from "@/webview/utils/myUtil";
 
-describe('myUtilFunction', () => {
-  it('returns expected result', () => {
-    expect(myUtilFunction('input')).toBe('expectedOutput');
+describe("myUtilFunction", () => {
+  it("returns expected result", () => {
+    expect(myUtilFunction("input")).toBe("expectedOutput");
   });
 });
 ```
@@ -418,8 +418,8 @@ describe('myUtilFunction', () => {
 Add logging in ClaudeService.ts:
 
 ```typescript
-console.log('Sending to Claude:', JSON.stringify(message));
-console.log('Received from Claude:', line);
+console.log("Sending to Claude:", JSON.stringify(message));
+console.log("Received from Claude:", line);
 ```
 
 #### Message Passing
@@ -428,10 +428,10 @@ Add logging in both extension and webview:
 
 ```typescript
 // Extension
-console.log('Posting to webview:', message);
+console.log("Posting to webview:", message);
 
 // Webview
-console.log('Received from extension:', event.data);
+console.log("Received from extension:", event.data);
 ```
 
 ### Debug Configuration

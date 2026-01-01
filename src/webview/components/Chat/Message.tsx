@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { ToolUseCard, ToolResultCard, TodoDisplay } from '../Tools';
-import { extractTodosFromInput } from '../../utils';
-import type { Message as MessageType } from '../App';
+import React, { useState, useCallback } from "react";
+import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
+import { extractTodosFromInput } from "../../utils";
+import type { Message as MessageType } from "../App";
 
 interface MessageProps {
   message: MessageType;
@@ -10,7 +10,7 @@ interface MessageProps {
 /** Format duration in human readable format */
 const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, "")}s`;
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor((ms % 60000) / 1000);
   return `${minutes}m ${seconds}s`;
@@ -19,49 +19,69 @@ const formatDuration = (ms: number): string => {
 /** Format tokens in human readable format */
 const formatTokens = (tokens: number): string => {
   if (tokens < 1000) return `${tokens}`;
-  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K`;
 };
 
 export const Message: React.FC<MessageProps> = ({ message }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  const isUser = message.role === 'user';
-  const isError = message.role === 'error';
-  const isTool = message.role === 'tool';
-  const isToolUse = isTool && message.messageType === 'tool_use';
-  const isToolResult = isTool && message.messageType === 'tool_result';
+  const isUser = message.role === "user";
+  const isError = message.role === "error";
+  const isTool = message.role === "tool";
+  const isToolUse = isTool && message.messageType === "tool_use";
+  const isToolResult = isTool && message.messageType === "tool_result";
 
   const toggleCollapsed = useCallback(() => {
-    setIsCollapsed(prev => !prev);
+    setIsCollapsed((prev) => !prev);
   }, []);
 
   const getRoleLabel = () => {
     switch (message.role) {
-      case 'user':
-        return 'You';
-      case 'assistant':
-        return 'Claude';
-      case 'tool':
-        return message.toolName || 'Tool';
-      case 'error':
-        return 'Error';
+      case "user":
+        return "You";
+      case "assistant":
+        return "Claude";
+      case "tool":
+        return message.toolName || "Tool";
+      case "error":
+        return "Error";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const getRoleIcon = () => {
     switch (message.role) {
-      case 'user':
+      case "user":
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
         );
-      case 'assistant':
+      case "assistant":
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M12 8V4H8" />
             <rect width="16" height="12" x="4" y="8" rx="2" />
             <path d="M2 14h2" />
@@ -70,15 +90,35 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             <path d="M9 13v2" />
           </svg>
         );
-      case 'tool':
+      case "tool":
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
           </svg>
         );
-      case 'error':
+      case "error":
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -90,7 +130,7 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   };
 
   const getContainerClasses = () => {
-    const baseClasses = 'rounded-lg p-4';
+    const baseClasses = "rounded-lg p-4";
 
     if (isUser) {
       return `${baseClasses} bg-[var(--vscode-input-background)] border border-[var(--vscode-input-border)]`;
@@ -105,18 +145,19 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   };
 
   const formatTimestamp = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
       hour12: true,
     }).format(date);
   };
 
   if (isToolUse) {
     const input = message.rawInput || {};
-    const todos = message.toolName === 'TodoWrite' ? extractTodosFromInput(input) : [];
+    const todos =
+      message.toolName === "TodoWrite" ? extractTodosFromInput(input) : [];
     const isExecuting = message.status
-      ? !['completed', 'failed', 'denied'].includes(message.status)
+      ? !["completed", "failed", "denied"].includes(message.status)
       : Boolean(message.isStreaming);
 
     return (
@@ -136,7 +177,7 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
           <TodoDisplay todos={todos} title="Todo Update" />
         ) : (
           <ToolUseCard
-            toolName={message.toolName || 'Tool'}
+            toolName={message.toolName || "Tool"}
             input={input}
             isExecuting={isExecuting}
             duration={message.duration}
@@ -199,11 +240,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform flex-shrink-0 ${isCollapsed ? '' : 'rotate-90'}`}
+            className={`text-[var(--vscode-descriptionForeground)] transition-transform flex-shrink-0 ${isCollapsed ? "" : "rotate-90"}`}
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
-          <span className={`flex items-center justify-center w-6 h-6 rounded-full bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]`}>
+          <span
+            className={`flex items-center justify-center w-6 h-6 rounded-full bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]`}
+          >
             {getRoleIcon()}
           </span>
           <span className="font-medium text-sm text-[var(--vscode-foreground)]">
@@ -217,7 +260,17 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
           <div className="ml-auto flex items-center gap-2">
             {duration !== undefined && (
               <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
@@ -226,7 +279,17 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             )}
             {tokens !== undefined && (
               <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                   <line x1="7" y1="7" x2="7.01" y2="7" />
                 </svg>
@@ -257,13 +320,15 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   return (
     <div className={getContainerClasses()}>
       <div className="flex items-center gap-2 mb-2">
-        <span className={`flex items-center justify-center w-6 h-6 rounded-full ${
-          isError
-            ? 'bg-[var(--vscode-errorForeground)] text-white'
-            : isUser
-              ? 'bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]'
-              : 'bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]'
-        }`}>
+        <span
+          className={`flex items-center justify-center w-6 h-6 rounded-full ${
+            isError
+              ? "bg-[var(--vscode-errorForeground)] text-white"
+              : isUser
+                ? "bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]"
+                : "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
+          }`}
+        >
           {getRoleIcon()}
         </span>
         <span className="font-medium text-sm text-[var(--vscode-foreground)]">
@@ -297,11 +362,15 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
   return (
     <>
       {parts.map((part, index) => {
-        if (part.startsWith('```') && part.endsWith('```')) {
+        if (part.startsWith("```") && part.endsWith("```")) {
           const codeContent = part.slice(3, -3);
-          const firstNewline = codeContent.indexOf('\n');
-          const language = firstNewline > 0 ? codeContent.slice(0, firstNewline).trim() : '';
-          const code = firstNewline > 0 ? codeContent.slice(firstNewline + 1) : codeContent;
+          const firstNewline = codeContent.indexOf("\n");
+          const language =
+            firstNewline > 0 ? codeContent.slice(0, firstNewline).trim() : "";
+          const code =
+            firstNewline > 0
+              ? codeContent.slice(firstNewline + 1)
+              : codeContent;
 
           return (
             <div key={index} className="my-2">
@@ -310,7 +379,9 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
                   {language}
                 </div>
               )}
-              <pre className={`font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-3 overflow-x-auto ${language ? 'rounded-b' : 'rounded'}`}>
+              <pre
+                className={`font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-3 overflow-x-auto ${language ? "rounded-b" : "rounded"}`}
+              >
                 <code>{code}</code>
               </pre>
             </div>
@@ -321,7 +392,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
         return (
           <span key={index}>
             {part.split(/(`[^`]+`)/g).map((segment, i) => {
-              if (segment.startsWith('`') && segment.endsWith('`')) {
+              if (segment.startsWith("`") && segment.endsWith("`")) {
                 return (
                   <code
                     key={i}

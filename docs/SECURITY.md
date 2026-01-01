@@ -56,6 +56,7 @@ const command = `wsl -d ${distro} bash -ic "claude ..."`;
 **Risk:** Arbitrary command execution via crafted file paths.
 
 **Mitigation:**
+
 - Validate paths against allowlist
 - Use proper shell escaping
 - Consider using execFile instead of exec
@@ -70,13 +71,14 @@ const command = `wsl -d ${distro} bash -ic "claude ..."`;
 
 ```typescript
 if (yoloMode) {
-  args.push('--dangerously-skip-permissions');
+  args.push("--dangerously-skip-permissions");
 }
 ```
 
 **Risk:** All tool executions bypass user approval, enabling potential malicious actions.
 
 **Mitigation:**
+
 - Add prominent warning in UI when enabled
 - Require explicit confirmation each session
 - Log all actions taken in YOLO mode
@@ -94,7 +96,7 @@ if (yoloMode) {
 
 ```typescript
 // VULNERABLE: No origin check
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   const message = event.data as ExtensionToWebviewMessage;
   // ... process message
 });
@@ -103,11 +105,12 @@ window.addEventListener('message', (event) => {
 **Risk:** Malicious iframes could inject messages into webview.
 
 **Mitigation:**
+
 ```typescript
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   // Validate origin
-  if (event.origin !== 'vscode-webview://') {
-    console.warn('Rejected message from untrusted origin:', event.origin);
+  if (event.origin !== "vscode-webview://") {
+    console.warn("Rejected message from untrusted origin:", event.origin);
     return;
   }
   // ... process message
@@ -125,6 +128,7 @@ window.addEventListener('message', (event) => {
 **Risk:** Reflected XSS if attacker-controlled content rendered.
 
 **Mitigation:**
+
 - Use React's built-in XSS protection
 - Sanitize any raw HTML with DOMPurify
 - Avoid dangerouslySetInnerHTML
@@ -140,6 +144,7 @@ window.addEventListener('message', (event) => {
 **Risk:** Users could grant themselves permanent permissions or attackers with physical access could modify permissions.
 
 **Mitigation:**
+
 - Store critical permissions in extension storage
 - Sign/verify permission entries
 - Implement server-side validation for sensitive operations
@@ -151,6 +156,7 @@ window.addEventListener('message', (event) => {
 #### 6. Path Traversal in File Operations
 
 **Locations:**
+
 - `src/extension/webview/PanelProvider.ts`
 - `src/extension/services/ConversationService.ts`
 
@@ -164,6 +170,7 @@ await vscode.workspace.openTextDocument(filePath);
 **Risk:** Access to files outside workspace.
 
 **Mitigation:**
+
 ```typescript
 function isPathSafe(filePath: string, workspaceRoot: string): boolean {
   const resolved = path.resolve(filePath);
@@ -182,6 +189,7 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 **Risk:** Data accessible via XSS or shared computer access.
 
 **Mitigation:**
+
 - Use VS Code's SecretStorage for sensitive data
 - Encrypt localStorage content
 - Implement auto-expiry for session data
@@ -197,6 +205,7 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 **Risk:** Malicious MCP configurations could execute arbitrary commands.
 
 **Mitigation:**
+
 - Validate command paths against allowlist
 - Require explicit user approval for new servers
 - Sandbox MCP server processes
@@ -212,6 +221,7 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 **Issue:** Detailed error messages may expose system paths or configuration.
 
 **Mitigation:**
+
 - Sanitize error messages before display
 - Log detailed errors, show generic messages to user
 
@@ -224,6 +234,7 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 **Issue:** No limits on API calls or process spawning.
 
 **Mitigation:**
+
 - Implement request throttling
 - Add concurrent process limits
 
@@ -252,22 +263,22 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 
 ```typescript
 // Package managers
-'npm install *', 'yarn add *', 'pnpm add *'
+("npm install *", "yarn add *", "pnpm add *");
 
 // Version control
-'git add *', 'git commit *', 'git push *'
+("git add *", "git commit *", "git push *");
 
 // Build tools
-'make *', 'cargo build *'
+("make *", "cargo build *");
 ```
 
 ### Permission Scopes
 
-| Scope | Duration | Storage |
-|-------|----------|---------|
-| `once` | Single execution | Memory only |
-| `session` | Until extension restart | Memory only |
-| `always` | Persistent | localStorage + disk |
+| Scope     | Duration                | Storage             |
+| --------- | ----------------------- | ------------------- |
+| `once`    | Single execution        | Memory only         |
+| `session` | Until extension restart | Memory only         |
+| `always`  | Persistent              | localStorage + disk |
 
 ---
 

@@ -22,11 +22,11 @@ private _pendingPermissionRequests: Map<string, PendingPermissionRequest>;
 
 ### Event Emitters
 
-| Emitter | Purpose |
-|---------|---------|
-| `_messageEmitter` | JSON stream data from Claude |
-| `_processEndEmitter` | Process termination |
-| `_errorEmitter` | Process errors |
+| Emitter                     | Purpose                         |
+| --------------------------- | ------------------------------- |
+| `_messageEmitter`           | JSON stream data from Claude    |
+| `_processEndEmitter`        | Process termination             |
+| `_errorEmitter`             | Process errors                  |
 | `_permissionRequestEmitter` | Permission requests from Claude |
 
 ### Core Methods
@@ -47,6 +47,7 @@ async sendMessage(
 ```
 
 **CLI Arguments:**
+
 - `--output-format stream-json`
 - `--input-format stream-json`
 - `--verbose`
@@ -58,15 +59,16 @@ async sendMessage(
 - `--mcp-config <path>` (if provided)
 
 **Message Format:**
+
 ```typescript
 const userMessage = {
-  type: 'user',
-  session_id: this._sessionId || '',
+  type: "user",
+  session_id: this._sessionId || "",
   message: {
-    role: 'user',
-    content: [{ type: 'text', text: message }]
+    role: "user",
+    content: [{ type: "text", text: message }],
   },
-  parent_tool_use_id: null
+  parent_tool_use_id: null,
 };
 ```
 
@@ -81,6 +83,7 @@ sendPermissionResponse(
 ```
 
 Sends control response back to Claude CLI:
+
 ```typescript
 {
   type: 'control_response',
@@ -99,6 +102,7 @@ async stopProcess(): Promise<void>
 ```
 
 Gracefully terminates Claude process:
+
 - WSL: Uses `taskkill` on Windows
 - Native: Uses `process.kill()`
 - Aborts via AbortController
@@ -224,6 +228,7 @@ ${storageUri}/permissions/permissions.json
 ### Pattern Matching
 
 **Supported Patterns:**
+
 ```typescript
 // Package managers
 ['npm', 'install', 'npm install *'],
@@ -245,6 +250,7 @@ ${storageUri}/permissions/permissions.json
 ```
 
 **Wildcard Matching:**
+
 ```typescript
 // Pattern "npm install *" matches:
 // - "npm install express"
@@ -352,8 +358,9 @@ private _requestCount: number = 0;
 private _isProcessing: boolean = false;
 private _hasOpenOutput: boolean = false;
 private _draftMessage: string = '';
-private _selectedModel: string;
+private _selectedModel: string = 'default';
 private _subscriptionType: string | undefined;
+private _accountInfoFetchedThisSession: boolean = false;
 ```
 
 ### Webview Dual Support
@@ -368,50 +375,55 @@ private _webviewView: vscode.WebviewView | undefined; // Sidebar view
 
 **Webview → Extension:**
 
-| Message Type | Handler |
-|--------------|---------|
-| `sendMessage` | `_sendMessageToClaude()` |
-| `startSession` | `newSession()` |
-| `endSession` | `claudeService.stopProcess()` |
-| `clearConversation` | `newSession()` |
-| `getConversationList` | `_sendConversationList()` |
-| `loadConversation` | `loadConversation(filename)` |
-| `deleteConversation` | `_deleteConversation(filename)` (NEW) |
-| `getSettings` | `_sendCurrentSettings()` |
-| `saveSettings` | `_updateSettings()` |
-| `selectModel` | `_setSelectedModel()` |
-| `openFile` | `_openFileInEditor()` |
-| `openDiff` | `_openDiffEditor()` |
-| `permissionResponse` | `claudeService.sendPermissionResponse()` |
-| `copyToClipboard` | `vscode.env.clipboard.writeText()` |
-| `getPermissions` | `_sendPermissions()` |
-| `loadMCPServers` | `_loadMCPServers()` |
-| `saveMCPServer` | `mcpService.saveServer()` |
-| `deleteMCPServer` | `mcpService.deleteServer()` |
-| `openExternal` | `vscode.env.openExternal(url)` (NEW) |
-| `showInfo` | `vscode.window.showInformationMessage()` (NEW) |
-| `showError` | `vscode.window.showErrorMessage()` (NEW) |
-| `telemetry` | `_handleTelemetry()` (NEW) |
+| Message Type          | Handler                                  |
+| --------------------- | ---------------------------------------- |
+| `sendMessage`         | `_sendMessageToClaude()`                 |
+| `startSession`        | `newSession()`                           |
+| `endSession`          | `claudeService.stopProcess()`            |
+| `clearConversation`   | `newSession()`                           |
+| `getConversationList` | `_sendConversationList()`                |
+| `loadConversation`    | `loadConversation(filename)`             |
+| `deleteConversation`  | `_deleteConversation(filename)` (NEW)    |
+| `getSettings`         | `_sendCurrentSettings()`                 |
+| `saveSettings`        | `_updateSettings()`                      |
+| `selectModel`         | `_setSelectedModel()`                    |
+| `openFile`            | `_openFileInEditor()`                    |
+| `openDiff`            | `_openDiffEditor()`                      |
+| `permissionResponse`  | `claudeService.sendPermissionResponse()` |
+| `copyToClipboard`     | `vscode.env.clipboard.writeText()`       |
+| `getPermissions`      | `_sendPermissions()`                     |
+| `loadMCPServers`      | `_loadMCPServers()`                      |
+| `saveMCPServer`       | `mcpService.saveServer()`                |
+| `deleteMCPServer`     | `mcpService.deleteServer()`              |
+| `openExternal`        | `vscode.env.openExternal(url)`           |
+| `showInfo`            | `vscode.window.showInformationMessage()` |
+| `showError`           | `vscode.window.showErrorMessage()`       |
+| `saveInputText`       | Saves draft message text                 |
+| `enableYoloMode`      | Enables YOLO mode (auto-approve all)     |
+| `getClipboardText`    | Returns clipboard contents               |
 
 **Extension → Webview:**
 
-| Message Type | Purpose |
-|--------------|---------|
-| `sessionInfo` | Session ID, tools, MCP servers |
-| `accountInfo` | Subscription details |
-| `output` | Assistant text response |
-| `thinking` | Extended thinking content |
-| `toolUse` | Tool execution request |
-| `toolResult` | Tool execution result |
-| `updateTokens` | Token usage update |
-| `updateTotals` | Cumulative totals |
-| `permissionRequest` | Permission prompt |
-| `setProcessing` | Processing state |
-| `error` | Error message |
-| `settingsUpdate` | Settings changed |
-| `restoreState` | Restore saved state |
-| `conversationList` | List of saved conversations (NEW) |
-| `conversationDeleted` | Confirmation of deletion (NEW) |
+| Message Type          | Purpose                        |
+| --------------------- | ------------------------------ |
+| `sessionInfo`         | Session ID, tools, MCP servers |
+| `accountInfo`         | Subscription details           |
+| `output`              | Assistant text response        |
+| `thinking`            | Extended thinking content      |
+| `toolUse`             | Tool execution request         |
+| `toolResult`          | Tool execution result          |
+| `updateTokens`        | Token usage update             |
+| `updateTotals`        | Cumulative totals              |
+| `permissionRequest`   | Permission prompt              |
+| `setProcessing`       | Processing state               |
+| `error`               | Error message                  |
+| `settingsUpdate`      | Settings changed               |
+| `restoreState`        | Restore saved state            |
+| `conversationList`    | List of saved conversations    |
+| `conversationDeleted` | Confirmation of deletion       |
+| `clipboardText`       | Returns clipboard content      |
+| `permissionsData`     | Current permission settings    |
+| `mcpServers`          | MCP server configurations      |
 
 ### Conversation Management Handlers
 
@@ -454,10 +466,10 @@ async _deleteConversation(filename: string): Promise<void> {
 
 ```typescript
 const intensityPrefixes = {
-  'think': 'THINK',
-  'think-hard': 'THINK HARD',
-  'think-harder': 'THINK HARDER',
-  'ultrathink': 'ULTRATHINK'
+  think: "THINK",
+  "think-hard": "THINK HARD",
+  "think-harder": "THINK HARDER",
+  ultrathink: "ULTRATHINK",
 };
 
 // Message transformation:
@@ -495,5 +507,6 @@ resolveWebviewView(webviewView, _context, _token): void {
 ### Panel Conflict Management
 
 Only one UI active at a time:
+
 - When sidebar becomes visible → Close editor panel
 - When editor panel opens → Sidebar remains but inactive

@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Modal } from './Modal';
+import React, { useState, useCallback, useEffect } from "react";
+import { Modal } from "./Modal";
 
 export type ThinkingLevel = 0 | 1 | 2 | 3;
 
@@ -12,23 +12,23 @@ export interface ThinkingLevelInfo {
 const THINKING_LEVELS: ThinkingLevelInfo[] = [
   {
     level: 0,
-    label: 'Think',
-    description: 'Basic reasoning - fastest response times',
+    label: "Think",
+    description: "Basic reasoning - fastest response times",
   },
   {
     level: 1,
-    label: 'Think Hard',
-    description: 'More detailed reasoning for complex problems',
+    label: "Think Hard",
+    description: "More detailed reasoning for complex problems",
   },
   {
     level: 2,
-    label: 'Think Harder',
-    description: 'Extended reasoning for challenging tasks',
+    label: "Think Harder",
+    description: "Extended reasoning for challenging tasks",
   },
   {
     level: 3,
-    label: 'Ultrathink',
-    description: 'Maximum reasoning depth - highest token usage',
+    label: "Ultrathink",
+    description: "Maximum reasoning depth - highest token usage",
   },
 ];
 
@@ -45,7 +45,8 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
   currentLevel,
   onConfirm,
 }) => {
-  const [selectedLevel, setSelectedLevel] = useState<ThinkingLevel>(currentLevel);
+  const [selectedLevel, setSelectedLevel] =
+    useState<ThinkingLevel>(currentLevel);
 
   // Reset to current level when modal opens
   useEffect(() => {
@@ -58,7 +59,7 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSelectedLevel(parseInt(e.target.value, 10) as ThinkingLevel);
     },
-    []
+    [],
   );
 
   const handleLabelClick = useCallback((level: ThinkingLevel) => {
@@ -115,8 +116,8 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
                   text-xs px-2 py-1 rounded transition-colors
                   ${
                     selectedLevel === level.level
-                      ? 'text-[var(--vscode-foreground)] font-medium'
-                      : 'text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)]'
+                      ? "text-[var(--vscode-foreground)] font-medium"
+                      : "text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)]"
                   }
                 `}
               >
@@ -144,12 +145,12 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
             </span>
             <span className="font-medium">
               {selectedLevel === 0
-                ? 'Low'
+                ? "Low"
                 : selectedLevel === 1
-                ? 'Medium'
-                : selectedLevel === 2
-                ? 'High'
-                : 'Very High'}
+                  ? "Medium"
+                  : selectedLevel === 2
+                    ? "High"
+                    : "Very High"}
             </span>
           </div>
           <div className="h-2 rounded-full bg-[var(--vscode-input-background)] overflow-hidden">
@@ -159,10 +160,10 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
                 width: `${((selectedLevel + 1) / 4) * 100}%`,
                 backgroundColor:
                   selectedLevel < 2
-                    ? 'var(--vscode-progressBar-background)'
+                    ? "var(--vscode-progressBar-background)"
                     : selectedLevel === 2
-                    ? 'var(--vscode-editorWarning-foreground)'
-                    : 'var(--vscode-editorError-foreground)',
+                      ? "var(--vscode-editorWarning-foreground)"
+                      : "var(--vscode-editorError-foreground)",
               }}
             />
           </div>
@@ -174,8 +175,8 @@ export const ThinkingIntensityModal: React.FC<ThinkingIntensityModalProps> = ({
             onClick={onClose}
             className="btn-secondary px-4 py-1.5 text-sm rounded"
             style={{
-              backgroundColor: 'var(--vscode-button-secondaryBackground)',
-              color: 'var(--vscode-button-secondaryForeground)',
+              backgroundColor: "var(--vscode-button-secondaryBackground)",
+              color: "var(--vscode-button-secondaryForeground)",
             }}
           >
             Cancel

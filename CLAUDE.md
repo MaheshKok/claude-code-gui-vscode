@@ -3,6 +3,7 @@
 ## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
 **ABSOLUTE RULES**:
+
 1. ALL operations MUST be concurrent/parallel in a single message
 2. **NEVER save working files, text/mds and tests to the root folder**
 3. ALWAYS organize files in appropriate subdirectories
@@ -11,6 +12,7 @@
 ### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
 **MANDATORY PATTERNS:**
+
 - **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
 - **Task tool (Claude Code)**: ALWAYS spawn ALL agents in ONE message with full instructions
 - **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
@@ -20,6 +22,7 @@
 ### 🎯 CRITICAL: Claude Code Task Tool for Agent Execution
 
 **Claude Code's Task tool is the PRIMARY way to spawn agents:**
+
 ```javascript
 // ✅ CORRECT: Use Claude Code's Task tool for parallel agent execution
 [Single Message]:
@@ -31,6 +34,7 @@
 ```
 
 **MCP tools are ONLY for coordination setup:**
+
 - `mcp__claude-flow__swarm_init` - Initialize coordination topology
 - `mcp__claude-flow__agent_spawn` - Define agent types for coordination
 - `mcp__claude-flow__task_orchestrate` - Orchestrate high-level workflows
@@ -38,6 +42,7 @@
 ### 📁 File Organization Rules
 
 **NEVER save to root folder. Use these directories:**
+
 - `/src` - Source code files
 - `/tests` - Test files
 - `/docs` - Documentation and markdown files
@@ -52,17 +57,20 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 ## SPARC Commands
 
 ### Core Commands
+
 - `npx claude-flow sparc modes` - List available modes
 - `npx claude-flow sparc run <mode> "<task>"` - Execute specific mode
 - `npx claude-flow sparc tdd "<feature>"` - Run complete TDD workflow
 - `npx claude-flow sparc info <mode>` - Get mode details
 
 ### Batchtools Commands
+
 - `npx claude-flow sparc batch <modes> "<task>"` - Parallel execution
 - `npx claude-flow sparc pipeline "<task>"` - Full pipeline processing
 - `npx claude-flow sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
 
 ### Build Commands
+
 - `npm run build` - Build project
 - `npm run test` - Run tests
 - `npm run lint` - Linting
@@ -87,35 +95,45 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 ## 🚀 Available Agents (54 Total)
 
 ### Core Development
+
 `coder`, `reviewer`, `tester`, `planner`, `researcher`
 
 ### Swarm Coordination
+
 `hierarchical-coordinator`, `mesh-coordinator`, `adaptive-coordinator`, `collective-intelligence-coordinator`, `swarm-memory-manager`
 
 ### Consensus & Distributed
+
 `byzantine-coordinator`, `raft-manager`, `gossip-coordinator`, `consensus-builder`, `crdt-synchronizer`, `quorum-manager`, `security-manager`
 
 ### Performance & Optimization
+
 `perf-analyzer`, `performance-benchmarker`, `task-orchestrator`, `memory-coordinator`, `smart-agent`
 
 ### GitHub & Repository
+
 `github-modes`, `pr-manager`, `code-review-swarm`, `issue-tracker`, `release-manager`, `workflow-automation`, `project-board-sync`, `repo-architect`, `multi-repo-swarm`
 
 ### SPARC Methodology
+
 `sparc-coord`, `sparc-coder`, `specification`, `pseudocode`, `architecture`, `refinement`
 
 ### Specialized Development
+
 `backend-dev`, `mobile-dev`, `ml-developer`, `cicd-engineer`, `api-docs`, `system-architect`, `code-analyzer`, `base-template-generator`
 
 ### Testing & Validation
+
 `tdd-london-swarm`, `production-validator`
 
 ### Migration & Planning
+
 `migration-planner`, `swarm-init`
 
 ## 🎯 Claude Code vs MCP Tools
 
 ### Claude Code Handles ALL EXECUTION:
+
 - **Task tool**: Spawn and run agents concurrently for actual work
 - File operations (Read, Write, Edit, MultiEdit, Glob, Grep)
 - Code generation and programming
@@ -128,6 +146,7 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 - Testing and debugging
 
 ### MCP Tools ONLY COORDINATE:
+
 - Swarm initialization (topology setup)
 - Agent type definitions (coordination patterns)
 - Task orchestration (high-level planning)
@@ -150,24 +169,31 @@ claude mcp add flow-nexus npx flow-nexus@latest mcp start  # Optional: Cloud fea
 ## MCP Tool Categories
 
 ### Coordination
+
 `swarm_init`, `agent_spawn`, `task_orchestrate`
 
 ### Monitoring
+
 `swarm_status`, `agent_list`, `agent_metrics`, `task_status`, `task_results`
 
 ### Memory & Neural
+
 `memory_usage`, `neural_status`, `neural_train`, `neural_patterns`
 
 ### GitHub Integration
+
 `github_swarm`, `repo_analyze`, `pr_enhance`, `issue_triage`, `code_review`
 
 ### System
+
 `benchmark_run`, `features_detect`, `swarm_monitor`
 
 ### Flow-Nexus MCP Tools (Optional Advanced Features)
+
 Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
 
 **Key MCP Tool Categories:**
+
 - **Swarm & Agents**: `swarm_init`, `swarm_scale`, `agent_spawn`, `task_orchestrate`
 - **Sandboxes**: `sandbox_create`, `sandbox_execute`, `sandbox_upload` (cloud execution)
 - **Templates**: `template_list`, `template_deploy` (pre-built project templates)
@@ -177,6 +203,7 @@ Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
 - **Storage**: `storage_upload`, `storage_list` (cloud file management)
 
 **Authentication Required:**
+
 - Register: `mcp__flow-nexus__user_register` or `npx flow-nexus@latest register`
 - Login: `mcp__flow-nexus__user_login` or `npx flow-nexus@latest login`
 - Access 70+ specialized MCP tools for advanced orchestration
@@ -201,10 +228,10 @@ Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
   Task("Test Engineer", "Write Jest tests. Check memory for API contracts.", "tester")
   Task("DevOps Engineer", "Setup Docker and CI/CD. Document in memory.", "cicd-engineer")
   Task("Security Auditor", "Review authentication. Report findings via hooks.", "reviewer")
-  
+
   // All todos batched together
   TodoWrite { todos: [...8-10 todos...] }
-  
+
   // All file operations together
   Write "backend/server.js"
   Write "frontend/App.jsx"
@@ -216,18 +243,21 @@ Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
 ### Every Agent Spawned via Task Tool MUST:
 
 **1️⃣ BEFORE Work:**
+
 ```bash
 npx claude-flow@alpha hooks pre-task --description "[task]"
 npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
 ```
 
 **2️⃣ DURING Work:**
+
 ```bash
 npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
 npx claude-flow@alpha hooks notify --message "[what was done]"
 ```
 
 **3️⃣ AFTER Work:**
+
 ```bash
 npx claude-flow@alpha hooks post-task --task-id "[task]"
 npx claude-flow@alpha hooks session-end --export-metrics true
@@ -253,7 +283,7 @@ npx claude-flow@alpha hooks session-end --export-metrics true
   Task("Database agent", "Design and implement database schema. Store decisions in memory.", "code-analyzer")
   Task("Tester agent", "Create comprehensive test suite with 90% coverage.", "tester")
   Task("Reviewer agent", "Review code quality and security. Document findings.", "reviewer")
-  
+
   // Batch ALL todos in ONE call
   TodoWrite { todos: [
     {id: "1", content: "Research API patterns", status: "in_progress", priority: "high"},
@@ -265,7 +295,7 @@ npx claude-flow@alpha hooks session-end --export-metrics true
     {id: "7", content: "API documentation", status: "pending", priority: "low"},
     {id: "8", content: "Performance optimization", status: "pending", priority: "low"}
   ]}
-  
+
   // Parallel file operations
   Bash "mkdir -p app/{src,tests,docs,config}"
   Write "app/package.json"
@@ -275,6 +305,7 @@ npx claude-flow@alpha hooks session-end --export-metrics true
 ```
 
 ### ❌ WRONG (Multiple Messages):
+
 ```javascript
 Message 1: mcp__claude-flow__swarm_init
 Message 2: Task("agent 1")
@@ -293,6 +324,7 @@ Message 4: Write "file.js"
 ## Hooks Integration
 
 ### Pre-Operation
+
 - Auto-assign agents by file type
 - Validate commands for safety
 - Prepare resources automatically
@@ -300,6 +332,7 @@ Message 4: Write "file.js"
 - Cache searches
 
 ### Post-Operation
+
 - Auto-format code
 - Train neural patterns
 - Update memory
@@ -307,6 +340,7 @@ Message 4: Write "file.js"
 - Track token usage
 
 ### Session Management
+
 - Generate summaries
 - Persist state
 - Track metrics
@@ -345,8 +379,9 @@ Message 4: Write "file.js"
 Remember: **Claude Flow coordinates, Claude Code creates!**
 
 # important-instruction-reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.
 Never save working files, text/mds and tests to the root folder.

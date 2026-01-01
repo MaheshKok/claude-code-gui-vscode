@@ -7,15 +7,15 @@
  * @module stores/chatStore
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type {
   ChatMessage,
   TokenUsage,
   CumulativeTokenUsage,
   CostBreakdown,
-} from '../types';
-import type { TodoItem } from '../components/Tools';
+} from "../types";
+import type { TodoItem } from "../components/Tools";
 
 // ============================================================================
 // Types
@@ -179,7 +179,7 @@ export const useChatStore = create<ChatStore>()(
       updateMessage: (id, updates) =>
         set((state) => ({
           messages: state.messages.map((msg) =>
-            msg.id === id ? ({ ...msg, ...updates } as ChatMessage) : msg
+            msg.id === id ? ({ ...msg, ...updates } as ChatMessage) : msg,
           ),
         })),
 
@@ -194,17 +194,13 @@ export const useChatStore = create<ChatStore>()(
           numTurns: 0,
         }),
 
-      setProcessing: (isProcessing) =>
-        set({ isProcessing }),
+      setProcessing: (isProcessing) => set({ isProcessing }),
 
-      setSessionId: (sessionId) =>
-        set({ currentSessionId: sessionId }),
+      setSessionId: (sessionId) => set({ currentSessionId: sessionId }),
 
-      setTodos: (todos) =>
-        set({ todos }),
+      setTodos: (todos) => set({ todos }),
 
-      clearTodos: () =>
-        set({ todos: [] }),
+      clearTodos: () => set({ todos: [] }),
 
       updateTokens: (usage) =>
         set((state) => ({
@@ -259,14 +255,11 @@ export const useChatStore = create<ChatStore>()(
           },
         }),
 
-      startRequestTiming: () =>
-        set({ requestStartTime: Date.now() }),
+      startRequestTiming: () => set({ requestStartTime: Date.now() }),
 
-      stopRequestTiming: () =>
-        set({ requestStartTime: null }),
+      stopRequestTiming: () => set({ requestStartTime: null }),
 
-      incrementTurns: () =>
-        set((state) => ({ numTurns: state.numTurns + 1 })),
+      incrementTurns: () => set((state) => ({ numTurns: state.numTurns + 1 })),
 
       resetChat: () =>
         set({
@@ -277,14 +270,21 @@ export const useChatStore = create<ChatStore>()(
           },
         }),
 
-      hydrateConversation: ({ messages, sessionId, totalCost, totalTokens, todos }) =>
+      hydrateConversation: ({
+        messages,
+        sessionId,
+        totalCost,
+        totalTokens,
+        todos,
+      }) =>
         set((state) => ({
           messages,
           currentSessionId: sessionId ?? null,
           isProcessing: false,
           requestStartTime: null,
           todos: todos ?? state.todos,
-          numTurns: messages.filter((message) => message.type === 'user').length,
+          numTurns: messages.filter((message) => message.type === "user")
+            .length,
           tokens: {
             current: {
               input_tokens: 0,
@@ -312,7 +312,7 @@ export const useChatStore = create<ChatStore>()(
         })),
     }),
     {
-      name: 'claude-code-gui-store',
+      name: "claude-code-gui-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist costs across sessions
@@ -320,8 +320,8 @@ export const useChatStore = create<ChatStore>()(
           allTimeCostUsd: state.costs.allTimeCostUsd,
         },
       }),
-    }
-  )
+    },
+  ),
 );
 
 // ============================================================================
@@ -373,5 +373,6 @@ export const selectLastMessage = (state: ChatStore) =>
 /**
  * Select messages by type
  */
-export const selectMessagesByType = (type: ChatMessage['type']) => (state: ChatStore) =>
-  state.messages.filter((msg) => msg.type === type);
+export const selectMessagesByType =
+  (type: ChatMessage["type"]) => (state: ChatStore) =>
+    state.messages.filter((msg) => msg.type === type);

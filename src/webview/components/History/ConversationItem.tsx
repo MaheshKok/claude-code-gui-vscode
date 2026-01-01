@@ -7,8 +7,8 @@
  * @module components/History/ConversationItem
  */
 
-import React, { useState, useCallback } from 'react';
-import type { ConversationListItem } from '../../types/history';
+import React, { useState, useCallback } from "react";
+import type { ConversationListItem } from "../../types/history";
 
 export interface ConversationItemProps {
   /** Conversation summary data */
@@ -38,21 +38,21 @@ const formatRelativeTime = (timestamp: number): string => {
   const months = Math.floor(days / 30);
 
   if (months > 0) {
-    return months === 1 ? '1 month ago' : `${months} months ago`;
+    return months === 1 ? "1 month ago" : `${months} months ago`;
   }
   if (weeks > 0) {
-    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+    return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
   }
   if (days > 0) {
-    return days === 1 ? 'Yesterday' : `${days} days ago`;
+    return days === 1 ? "Yesterday" : `${days} days ago`;
   }
   if (hours > 0) {
-    return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
   }
   if (minutes > 0) {
-    return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+    return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
   }
-  return 'Just now';
+  return "Just now";
 };
 
 /**
@@ -60,7 +60,7 @@ const formatRelativeTime = (timestamp: number): string => {
  */
 const formatCost = (cost: number): string => {
   if (cost < 0.01) {
-    return '<$0.01';
+    return "<$0.01";
   }
   return `$${cost.toFixed(2)}`;
 };
@@ -78,13 +78,10 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
     onClick(conversation.id);
   }, [onClick, conversation.id]);
 
-  const handleDeleteClick = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      setShowDeleteConfirm(true);
-    },
-    []
-  );
+  const handleDeleteClick = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+    setShowDeleteConfirm(true);
+  }, []);
 
   const handleConfirmDelete = useCallback(
     (event: React.MouseEvent) => {
@@ -92,25 +89,22 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
       onDelete(conversation.id);
       setShowDeleteConfirm(false);
     },
-    [onDelete, conversation.id]
+    [onDelete, conversation.id],
   );
 
-  const handleCancelDelete = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      setShowDeleteConfirm(false);
-    },
-    []
-  );
+  const handleCancelDelete = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+    setShowDeleteConfirm(false);
+  }, []);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onClick(conversation.id);
       }
     },
-    [onClick, conversation.id]
+    [onClick, conversation.id],
   );
 
   return (
@@ -126,8 +120,8 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         transition-colors
         ${
           isActive
-            ? 'bg-[var(--vscode-list-activeSelectionBackground)]'
-            : 'hover:bg-[var(--vscode-list-hoverBackground)]'
+            ? "bg-[var(--vscode-list-activeSelectionBackground)]"
+            : "hover:bg-[var(--vscode-list-hoverBackground)]"
         }
       `}
       aria-selected={isActive}
@@ -141,8 +135,8 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             text-sm font-medium truncate
             ${
               isActive
-                ? 'text-[var(--vscode-list-activeSelectionForeground)]'
-                : 'text-[var(--vscode-foreground)]'
+                ? "text-[var(--vscode-list-activeSelectionForeground)]"
+                : "text-[var(--vscode-foreground)]"
             }
           `}
         >
@@ -156,8 +150,8 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               mt-1 text-xs truncate
               ${
                 isActive
-                  ? 'text-[var(--vscode-list-activeSelectionForeground)] opacity-80'
-                  : 'text-[var(--vscode-descriptionForeground)]'
+                  ? "text-[var(--vscode-list-activeSelectionForeground)] opacity-80"
+                  : "text-[var(--vscode-descriptionForeground)]"
               }
             `}
           >
@@ -173,8 +167,8 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               text-xs
               ${
                 isActive
-                  ? 'text-[var(--vscode-list-activeSelectionForeground)] opacity-70'
-                  : 'text-[var(--vscode-descriptionForeground)]'
+                  ? "text-[var(--vscode-list-activeSelectionForeground)] opacity-70"
+                  : "text-[var(--vscode-descriptionForeground)]"
               }
             `}
           >
@@ -188,12 +182,13 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               text-xs rounded
               ${
                 isActive
-                  ? 'bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]'
-                  : 'bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]'
+                  ? "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
+                  : "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
               }
             `}
           >
-            {conversation.messageCount} {conversation.messageCount === 1 ? 'msg' : 'msgs'}
+            {conversation.messageCount}{" "}
+            {conversation.messageCount === 1 ? "msg" : "msgs"}
           </span>
 
           {/* Cost Badge */}

@@ -7,7 +7,7 @@
  * @module components/History/ConversationSearch
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 export interface ConversationSearchProps {
   /** Callback when search query changes (debounced) */
@@ -22,11 +22,11 @@ export interface ConversationSearchProps {
 
 export const ConversationSearch: React.FC<ConversationSearchProps> = ({
   onSearch,
-  placeholder = 'Search conversations...',
+  placeholder = "Search conversations...",
   debounceMs = 300,
   autoFocus = false,
 }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -41,7 +41,7 @@ export const ConversationSearch: React.FC<ConversationSearchProps> = ({
         onSearch(query);
       }, debounceMs);
     },
-    [onSearch, debounceMs]
+    [onSearch, debounceMs],
   );
 
   // Update search on value change
@@ -60,26 +60,26 @@ export const ConversationSearch: React.FC<ConversationSearchProps> = ({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setValue(event.target.value);
     },
-    []
+    [],
   );
 
   // Clear search
   const handleClear = useCallback(() => {
-    setValue('');
-    onSearch('');
+    setValue("");
+    onSearch("");
     inputRef.current?.focus();
   }, [onSearch]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         if (value) {
           handleClear();
         }
       }
     },
-    [value, handleClear]
+    [value, handleClear],
   );
 
   return (

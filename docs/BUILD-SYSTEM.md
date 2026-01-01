@@ -6,14 +6,14 @@ Claude Code GUI uses a **dual-bundle architecture** with separate build pipeline
 
 ## Build Tools
 
-| Tool | Purpose | Target |
-|------|---------|--------|
-| **esbuild** | Extension bundling | Node.js (CommonJS) |
-| **Vite** | Webview bundling | Browser (ES Modules) |
-| **TypeScript** | Type checking | Both |
-| **Tailwind CSS** | Styling | Webview |
-| **PostCSS** | CSS processing | Webview |
-| **Vitest** | Testing | Both |
+| Tool             | Purpose            | Target               |
+| ---------------- | ------------------ | -------------------- |
+| **esbuild**      | Extension bundling | Node.js (CommonJS)   |
+| **Vite**         | Webview bundling   | Browser (ES Modules) |
+| **TypeScript**   | Type checking      | Both                 |
+| **Tailwind CSS** | Styling            | Webview              |
+| **PostCSS**      | CSS processing     | Webview              |
+| **Vitest**       | Testing            | Both                 |
 
 ---
 
@@ -51,14 +51,14 @@ npm run clean
 
 ### Script Details
 
-| Script | Command | Description |
-|--------|---------|-------------|
-| `build` | `build:extension && build:webview` | Full production build |
-| `build:extension` | `esbuild ... --minify` | Bundle extension |
-| `build:webview` | `vite build` | Bundle webview |
-| `watch` | `concurrently watch:extension watch:webview` | Development mode |
-| `watch:extension` | `esbuild ... --watch --sourcemap` | Watch extension |
-| `watch:webview` | `vite build --watch` | Watch webview |
+| Script            | Command                                      | Description           |
+| ----------------- | -------------------------------------------- | --------------------- |
+| `build`           | `build:extension && build:webview`           | Full production build |
+| `build:extension` | `esbuild ... --minify`                       | Bundle extension      |
+| `build:webview`   | `vite build`                                 | Bundle webview        |
+| `watch`           | `concurrently watch:extension watch:webview` | Development mode      |
+| `watch:extension` | `esbuild ... --watch --sourcemap`            | Watch extension       |
+| `watch:webview`   | `vite build --watch`                         | Watch webview         |
 
 ---
 
@@ -111,35 +111,35 @@ alias: {
 
 ```typescript
 export default defineConfig({
-  root: 'src/webview',
+  root: "src/webview",
   plugins: [react()],
   build: {
-    outDir: '../../dist/webview',
+    outDir: "../../dist/webview",
     emptyOutDir: false,
     rollupOptions: {
       output: {
-        entryFileNames: 'main.js',
-        assetFileNames: 'main[extname]',
+        entryFileNames: "main.js",
+        assetFileNames: "main[extname]",
         // Single bundle - no code splitting
         manualChunks: undefined,
       },
     },
-    cssCodeSplit: false,  // Inline CSS
-    minify: isProduction ? 'terser' : false,
+    cssCodeSplit: false, // Inline CSS
+    minify: isProduction ? "terser" : false,
     sourcemap: !isProduction,
-    target: 'es2020',
+    target: "es2020",
   },
 });
 ```
 
 ### Key Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| Single bundle | VS Code webview requires monolithic bundle |
-| Inline CSS | Avoids separate file loading issues |
-| No code splitting | Webview loads everything at once |
-| ES2020 target | Modern browser features |
+| Decision          | Rationale                                  |
+| ----------------- | ------------------------------------------ |
+| Single bundle     | VS Code webview requires monolithic bundle |
+| Inline CSS        | Avoids separate file loading issues        |
+| No code splitting | Webview loads everything at once           |
+| ES2020 target     | Modern browser features                    |
 
 ### Path Aliases
 
@@ -225,19 +225,19 @@ resolve: {
 
 ```javascript
 module.exports = {
-  content: ['./src/webview/**/*.{ts,tsx,html}'],
-  darkMode: 'class',
+  content: ["./src/webview/**/*.{ts,tsx,html}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         // VS Code theme variables
-        'vscode-editor-bg': 'var(--vscode-editor-background)',
-        'vscode-editor-fg': 'var(--vscode-editor-foreground)',
+        "vscode-editor-bg": "var(--vscode-editor-background)",
+        "vscode-editor-fg": "var(--vscode-editor-foreground)",
         // ... more
       },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [require("@tailwindcss/typography")],
 };
 ```
 
@@ -289,13 +289,13 @@ module.exports = {
 ```typescript
 export default defineConfig({
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/tests/setup.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    environment: "jsdom",
+    setupFiles: ["./src/tests/setup.ts"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     globals: true,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       thresholds: {
         lines: 70,
         functions: 70,
@@ -315,22 +315,22 @@ export default defineConfig({
 
 ### Launch Configurations (`.vscode/launch.json`)
 
-| Configuration | Purpose |
-|---------------|---------|
-| Run Extension | Debug extension with watch |
-| Run Extension (No Watch) | Single build debug |
-| Extension Tests | Run test suite |
-| Debug Webview | Chrome DevTools for webview |
-| Run Extension + Webview Dev | Combined debugging |
+| Configuration               | Purpose                     |
+| --------------------------- | --------------------------- |
+| Run Extension               | Debug extension with watch  |
+| Run Extension (No Watch)    | Single build debug          |
+| Extension Tests             | Run test suite              |
+| Debug Webview               | Chrome DevTools for webview |
+| Run Extension + Webview Dev | Combined debugging          |
 
 ### Tasks (`.vscode/tasks.json`)
 
-| Task | Type | Purpose |
-|------|------|---------|
-| npm: watch | background | Development watch |
-| npm: compile | shell | Single build |
-| npm: lint | shell | Linting |
-| npm: test | shell | Testing |
+| Task         | Type       | Purpose           |
+| ------------ | ---------- | ----------------- |
+| npm: watch   | background | Development watch |
+| npm: compile | shell      | Single build      |
+| npm: lint    | shell      | Linting           |
+| npm: test    | shell      | Testing           |
 
 ---
 
@@ -339,6 +339,7 @@ export default defineConfig({
 ### .vscodeignore
 
 Excludes from .vsix package:
+
 - Source files (`src/**`)
 - Test files (`*.test.ts`, `*.spec.ts`)
 - Config files (`*.config.*`)
@@ -439,10 +440,10 @@ npm run package
 
 ### Bundle Size
 
-| Bundle | Size (minified) | Gzipped |
-|--------|-----------------|---------|
-| Extension | ~43 KB | ~12 KB |
-| Webview | ~250 KB | ~70 KB |
+| Bundle    | Size (minified) | Gzipped |
+| --------- | --------------- | ------- |
+| Extension | ~43 KB          | ~12 KB  |
+| Webview   | ~250 KB         | ~70 KB  |
 
 ### Optimization Techniques
 

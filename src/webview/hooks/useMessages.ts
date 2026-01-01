@@ -7,12 +7,12 @@
  * @module hooks/useMessages
  */
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from "react";
 import type {
   ExtensionToWebviewMessage,
   ExtensionToWebviewMessageType,
   ExtensionMessageHandlerMap,
-} from '../types/webview-api';
+} from "../types/webview-api";
 
 // ============================================================================
 // Types
@@ -46,7 +46,7 @@ export interface UseMessagesReturn {
   /** Add a handler for a specific message type */
   addHandler: <T extends ExtensionToWebviewMessageType>(
     type: T,
-    handler: (message: Extract<ExtensionToWebviewMessage, { type: T }>) => void
+    handler: (message: Extract<ExtensionToWebviewMessage, { type: T }>) => void,
   ) => () => void;
   /** Remove a handler for a specific message type */
   removeHandler: (type: ExtensionToWebviewMessageType) => void;
@@ -90,8 +90,15 @@ export interface UseMessagesReturn {
  * }
  * ```
  */
-export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn {
-  const { enabled = true, handlers = {}, onMessage, onUnhandledMessage } = options;
+export function useMessages(
+  options: UseMessagesOptions = {},
+): UseMessagesReturn {
+  const {
+    enabled = true,
+    handlers = {},
+    onMessage,
+    onUnhandledMessage,
+  } = options;
 
   // Store handlers in a ref to avoid re-subscribing on every render
   const handlersRef = useRef<ExtensionMessageHandlerMap>(handlers);
@@ -109,41 +116,44 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
   /**
    * Handle incoming message from extension
    */
-  const handleMessage = useCallback((event: MessageEvent<ExtensionToWebviewMessage>) => {
-    const message = event.data;
-    console.log('[useMessages] Received message event:', message?.type);
+  const handleMessage = useCallback(
+    (event: MessageEvent<ExtensionToWebviewMessage>) => {
+      const message = event.data;
+      console.log("[useMessages] Received message event:", message?.type);
 
-    // Validate message structure
-    if (!message || typeof message !== 'object' || !('type' in message)) {
-      console.log('[useMessages] Invalid message structure, ignoring');
-      return;
-    }
+      // Validate message structure
+      if (!message || typeof message !== "object" || !("type" in message)) {
+        console.log("[useMessages] Invalid message structure, ignoring");
+        return;
+      }
 
-    // Call global onMessage callback
-    if (onMessageRef.current) {
-      onMessageRef.current(message);
-    }
+      // Call global onMessage callback
+      if (onMessageRef.current) {
+        onMessageRef.current(message);
+      }
 
-    // Try to find a handler for this message type
-    const messageType = message.type as ExtensionToWebviewMessageType;
-    const staticHandler = handlersRef.current[messageType];
-    const dynamicHandler = dynamicHandlersRef.current[messageType];
+      // Try to find a handler for this message type
+      const messageType = message.type as ExtensionToWebviewMessageType;
+      const staticHandler = handlersRef.current[messageType];
+      const dynamicHandler = dynamicHandlersRef.current[messageType];
 
-    if (staticHandler) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (staticHandler as (msg: any) => void)(message);
-    }
+      if (staticHandler) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (staticHandler as (msg: any) => void)(message);
+      }
 
-    if (dynamicHandler) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (dynamicHandler as (msg: any) => void)(message);
-    }
+      if (dynamicHandler) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (dynamicHandler as (msg: any) => void)(message);
+      }
 
-    // If no handler was found, call unhandled callback
-    if (!staticHandler && !dynamicHandler && onUnhandledMessageRef.current) {
-      onUnhandledMessageRef.current(message);
-    }
-  }, []);
+      // If no handler was found, call unhandled callback
+      if (!staticHandler && !dynamicHandler && onUnhandledMessageRef.current) {
+        onUnhandledMessageRef.current(message);
+      }
+    },
+    [],
+  );
 
   /**
    * Add a handler for a specific message type
@@ -152,7 +162,9 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
   const addHandler = useCallback(
     <T extends ExtensionToWebviewMessageType>(
       type: T,
-      handler: (message: Extract<ExtensionToWebviewMessage, { type: T }>) => void
+      handler: (
+        message: Extract<ExtensionToWebviewMessage, { type: T }>,
+      ) => void,
     ): (() => void) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dynamicHandlersRef.current[type] = handler as any;
@@ -160,15 +172,18 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
         delete dynamicHandlersRef.current[type];
       };
     },
-    []
+    [],
   );
 
   /**
    * Remove a handler for a specific message type
    */
-  const removeHandler = useCallback((type: ExtensionToWebviewMessageType): void => {
-    delete dynamicHandlersRef.current[type];
-  }, []);
+  const removeHandler = useCallback(
+    (type: ExtensionToWebviewMessageType): void => {
+      delete dynamicHandlersRef.current[type];
+    },
+    [],
+  );
 
   /**
    * Clear all dynamic handlers
@@ -186,11 +201,11 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
     }
 
     // Add message listener
-    window.addEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
 
     // Cleanup on unmount
     return () => {
-      window.removeEventListener('message', handleMessage);
+      window.removeEventListener("message", handleMessage);
     };
   }, [enabled, handleMessage]);
 
@@ -210,7 +225,7 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
  * Useful for defining handlers outside of components
  */
 export function createMessageHandlers(
-  handlers: ExtensionMessageHandlerMap
+  handlers: ExtensionMessageHandlerMap,
 ): ExtensionMessageHandlerMap {
   return handlers;
 }
@@ -221,13 +236,15 @@ export function createMessageHandlers(
  */
 export function createStreamingHandler(
   onChunk: (text: string, accumulated: string) => void,
-  onComplete?: (finalText: string) => void
+  onComplete?: (finalText: string) => void,
 ): {
-  handler: (message: Extract<ExtensionToWebviewMessage, { type: 'output' }>) => void;
+  handler: (
+    message: Extract<ExtensionToWebviewMessage, { type: "output" }>,
+  ) => void;
   reset: () => void;
   getText: () => string;
 } {
-  let accumulated = '';
+  let accumulated = "";
 
   return {
     handler: (message) => {
@@ -239,7 +256,7 @@ export function createStreamingHandler(
       }
     },
     reset: () => {
-      accumulated = '';
+      accumulated = "";
     },
     getText: () => accumulated,
   };
@@ -251,7 +268,7 @@ export function createStreamingHandler(
  */
 export function createBatchedHandler<T>(
   handler: (messages: T[]) => void,
-  options: { delay?: number; maxBatchSize?: number } = {}
+  options: { delay?: number; maxBatchSize?: number } = {},
 ): (message: T) => void {
   const { delay = 16, maxBatchSize = 50 } = options;
   let batch: T[] = [];

@@ -7,9 +7,9 @@
  * @module stores/conversationStore
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ChatMessage, ConversationThread } from '../types';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { ChatMessage, ConversationThread } from "../types";
 
 // ============================================================================
 // Types
@@ -72,7 +72,11 @@ export interface ConversationActions {
   /** Save the current conversation */
   saveConversation: (messages: ChatMessage[], title?: string) => string;
   /** Update an existing conversation */
-  updateConversation: (id: string, messages: ChatMessage[], title?: string) => void;
+  updateConversation: (
+    id: string,
+    messages: ChatMessage[],
+    title?: string,
+  ) => void;
   /** Delete a conversation by ID */
   deleteConversation: (id: string) => void;
   /** Clear the current conversation */
@@ -126,8 +130,8 @@ const generateId = () =>
  * Generate a title from messages
  */
 const generateTitle = (messages: ChatMessage[]): string => {
-  const firstUserMessage = messages.find((m) => m.type === 'user');
-  if (firstUserMessage && 'content' in firstUserMessage) {
+  const firstUserMessage = messages.find((m) => m.type === "user");
+  if (firstUserMessage && "content" in firstUserMessage) {
     const content = firstUserMessage.content as string;
     return content.length > 50 ? `${content.substring(0, 50)}...` : content;
   }
@@ -139,11 +143,11 @@ const generateTitle = (messages: ChatMessage[]): string => {
  */
 const generatePreview = (messages: ChatMessage[]): string => {
   const lastMessage = messages[messages.length - 1];
-  if (lastMessage && 'content' in lastMessage) {
+  if (lastMessage && "content" in lastMessage) {
     const content = lastMessage.content as string;
     return content.length > 100 ? `${content.substring(0, 100)}...` : content;
   }
-  return '';
+  return "";
 };
 
 /**
@@ -181,7 +185,7 @@ export const useConversationStore = create<ConversationStore>()(
           set({ isLoading: false });
           return false;
         } catch (error) {
-          console.error('Failed to load conversation:', error);
+          console.error("Failed to load conversation:", error);
           set({ isLoading: false });
           return false;
         }
@@ -254,7 +258,7 @@ export const useConversationStore = create<ConversationStore>()(
         // Update index
         set((state) => ({
           conversations: state.conversations.map((c) =>
-            c.id === id ? summary : c
+            c.id === id ? summary : c,
           ),
           currentConversation: conversation,
         }));
@@ -274,8 +278,7 @@ export const useConversationStore = create<ConversationStore>()(
         }));
       },
 
-      clearCurrentConversation: () =>
-        set({ currentConversation: null }),
+      clearCurrentConversation: () => set({ currentConversation: null }),
 
       createConversation: (title) => {
         const id = generateId();
@@ -284,7 +287,7 @@ export const useConversationStore = create<ConversationStore>()(
         const summary: ConversationSummary = {
           id,
           title: title || `New Conversation`,
-          preview: '',
+          preview: "",
           createdAt: now,
           updatedAt: now,
           messageCount: 0,
@@ -309,7 +312,7 @@ export const useConversationStore = create<ConversationStore>()(
       updateTitle: (id, title) =>
         set((state) => {
           const conversations = state.conversations.map((c) =>
-            c.id === id ? { ...c, title, updatedAt: Date.now() } : c
+            c.id === id ? { ...c, title, updatedAt: Date.now() } : c,
           );
 
           // Update in localStorage too
@@ -347,7 +350,7 @@ export const useConversationStore = create<ConversationStore>()(
                   tags: c.tags ? [...c.tags, tag] : [tag],
                   updatedAt: Date.now(),
                 }
-              : c
+              : c,
           ),
         })),
 
@@ -360,7 +363,7 @@ export const useConversationStore = create<ConversationStore>()(
                   tags: c.tags?.filter((t) => t !== tag),
                   updatedAt: Date.now(),
                 }
-              : c
+              : c,
           ),
         })),
 
@@ -372,7 +375,7 @@ export const useConversationStore = create<ConversationStore>()(
           (c) =>
             c.title.toLowerCase().includes(lowerQuery) ||
             c.preview.toLowerCase().includes(lowerQuery) ||
-            c.tags?.some((t) => t.toLowerCase().includes(lowerQuery))
+            c.tags?.some((t) => t.toLowerCase().includes(lowerQuery)),
         );
       },
 
@@ -418,7 +421,7 @@ export const useConversationStore = create<ConversationStore>()(
 
           return newId;
         } catch (error) {
-          console.error('Failed to import conversation:', error);
+          console.error("Failed to import conversation:", error);
           return null;
         }
       },
@@ -431,7 +434,7 @@ export const useConversationStore = create<ConversationStore>()(
 
         // Sort by updatedAt and keep only the most recent
         const sorted = [...state.conversations].sort(
-          (a, b) => b.updatedAt - a.updatedAt
+          (a, b) => b.updatedAt - a.updatedAt,
         );
         const toKeep = sorted.slice(0, state.maxConversations);
         const toRemove = sorted.slice(state.maxConversations);
@@ -446,15 +449,15 @@ export const useConversationStore = create<ConversationStore>()(
       },
     }),
     {
-      name: 'claude-flow-conversation-index',
+      name: "claude-flow-conversation-index",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist the conversation index, not the full conversations
         conversations: state.conversations,
         maxConversations: state.maxConversations,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // ============================================================================
@@ -487,11 +490,13 @@ export const selectConversationCount = (state: ConversationStore) =>
 /**
  * Select conversation by ID
  */
-export const selectConversationById = (id: string) => (state: ConversationStore) =>
-  state.conversations.find((c) => c.id === id);
+export const selectConversationById =
+  (id: string) => (state: ConversationStore) =>
+    state.conversations.find((c) => c.id === id);
 
 /**
  * Select conversations by tag
  */
-export const selectConversationsByTag = (tag: string) => (state: ConversationStore) =>
-  state.conversations.filter((c) => c.tags?.includes(tag));
+export const selectConversationsByTag =
+  (tag: string) => (state: ConversationStore) =>
+    state.conversations.filter((c) => c.tags?.includes(tag));

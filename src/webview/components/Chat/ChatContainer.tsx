@@ -1,12 +1,12 @@
-import React from 'react';
-import { MessageInput } from './MessageInput';
-import type { Message } from '../App';
-import { TodoDisplay } from '../Tools';
-import { JourneyTimeline } from './JourneyTimeline';
-import type { TodoItem } from '../Tools';
+import React from "react";
+import { MessageInput } from "./MessageInput";
+import type { Message } from "../App";
+import { TodoDisplay } from "../Tools";
+import { JourneyTimeline } from "./JourneyTimeline";
+import type { TodoItem } from "../Tools";
 
 /** Thinking intensity levels matching Claude Code CLI */
-type ThinkingIntensity = 'think' | 'think-hard' | 'think-harder' | 'ultrathink';
+type ThinkingIntensity = "think" | "think-hard" | "think-harder" | "ultrathink";
 
 interface ChatContainerProps {
   messages: Message[];
@@ -64,7 +64,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <aside className="w-full lg:w-72 shrink-0 border-t lg:border-t-0 lg:border-l border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBar-background)] overflow-y-auto">
           <div className="p-4">
             {todos.length > 0 ? (
-              <TodoDisplay todos={todos} title="Todo Plan" defaultCollapsed={false} />
+              <TodoDisplay
+                todos={todos}
+                title="Todo Plan"
+                defaultCollapsed={false}
+              />
             ) : (
               <div className="rounded-md border border-[var(--vscode-panel-border)] p-4 text-sm text-[var(--vscode-descriptionForeground)]">
                 No planned tasks yet.

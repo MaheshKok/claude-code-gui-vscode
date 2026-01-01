@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 
-export type InstallState = 'initial' | 'installing' | 'success' | 'error';
+export type InstallState = "initial" | "installing" | "success" | "error";
 
 export interface InstallModalProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   isOpen,
   onClose,
   onInstall = async () => {},
-  installState = 'initial',
+  installState = "initial",
   errorMessage,
 }) => {
   const handleInstall = useCallback(async () => {
@@ -27,11 +27,11 @@ export const InstallModal: React.FC<InstallModalProps> = ({
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget && installState !== 'installing') {
+      if (e.target === e.currentTarget && installState !== "installing") {
         onClose();
       }
     },
-    [installState, onClose]
+    [installState, onClose],
   );
 
   if (!isOpen) return null;
@@ -53,7 +53,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
       {/* Modal Content */}
       <div className="relative w-full max-w-sm bg-[var(--vscode-editorWidget-background)] border border-[var(--vscode-editorWidget-border)] rounded-lg shadow-xl p-6">
         {/* Close Button (only show when not installing) */}
-        {installState !== 'installing' && (
+        {installState !== "installing" && (
           <button
             onClick={onClose}
             className="absolute top-3 right-3 p-1 rounded hover:bg-[var(--vscode-toolbar-hoverBackground)] transition-colors"
@@ -77,7 +77,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
         )}
 
         {/* Initial State */}
-        {installState === 'initial' && (
+        {installState === "initial" && (
           <div className="text-center space-y-4">
             <div className="flex justify-center">
               <div className="p-3 rounded-full bg-[var(--vscode-button-background)]/10">
@@ -126,7 +126,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
         )}
 
         {/* Installing State */}
-        {installState === 'installing' && (
+        {installState === "installing" && (
           <div className="text-center space-y-4 py-4">
             <div className="flex justify-center">
               <div className="relative">
@@ -146,7 +146,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
         )}
 
         {/* Success State */}
-        {installState === 'success' && (
+        {installState === "success" && (
           <div className="text-center space-y-4 py-4">
             <div className="flex justify-center">
               <div className="p-3 rounded-full bg-green-500/10">
@@ -182,7 +182,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
         )}
 
         {/* Error State */}
-        {installState === 'error' && (
+        {installState === "error" && (
           <div className="text-center space-y-4 py-4">
             <div className="flex justify-center">
               <div className="p-3 rounded-full bg-[var(--vscode-errorForeground)]/10">
@@ -223,8 +223,8 @@ export const InstallModal: React.FC<InstallModalProps> = ({
                 onClick={onClose}
                 className="btn-secondary flex-1 px-3 py-1.5 text-sm rounded"
                 style={{
-                  backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                  color: 'var(--vscode-button-secondaryForeground)',
+                  backgroundColor: "var(--vscode-button-secondaryBackground)",
+                  color: "var(--vscode-button-secondaryForeground)",
                 }}
               >
                 Close

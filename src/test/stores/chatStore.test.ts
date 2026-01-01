@@ -7,8 +7,8 @@
  * @module test/stores/chatStore
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import {
   useChatStore,
   selectMessages,
@@ -20,8 +20,8 @@ import {
   selectLastMessage,
   selectMessagesByType,
   type ChatState,
-} from '../../webview/stores/chatStore';
-import type { ChatMessage, TokenUsage } from '../../webview/types';
+} from "../../webview/stores/chatStore";
+import type { ChatMessage, TokenUsage } from "../../webview/types";
 
 // Mock localStorage for persistence tests
 const localStorageMock = (() => {
@@ -40,7 +40,7 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 
@@ -48,14 +48,14 @@ Object.defineProperty(window, 'localStorage', {
 function createMockMessage(overrides: Partial<ChatMessage> = {}): ChatMessage {
   return {
     id: `msg-${Date.now()}-${Math.random()}`,
-    type: 'user',
-    content: 'Test message',
+    type: "user",
+    content: "Test message",
     timestamp: Date.now(),
     ...overrides,
   } as ChatMessage;
 }
 
-describe('chatStore', () => {
+describe("chatStore", () => {
   beforeEach(() => {
     // Clear localStorage first to prevent hydration of old state
     localStorageMock.clear();
@@ -70,10 +70,25 @@ describe('chatStore', () => {
         currentSessionId: null,
         todos: [],
         tokens: {
-          current: { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
-          cumulative: { totalInputTokens: 0, totalOutputTokens: 0, totalCacheReadTokens: 0, totalCacheCreationTokens: 0 },
+          current: {
+            input_tokens: 0,
+            output_tokens: 0,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 0,
+          },
+          cumulative: {
+            totalInputTokens: 0,
+            totalOutputTokens: 0,
+            totalCacheReadTokens: 0,
+            totalCacheCreationTokens: 0,
+          },
         },
-        costs: { sessionCostUsd: 0, allTimeCostUsd: 0, breakdown: { inputCost: 0, outputCost: 0, cacheCost: 0 }, lastUpdated: 0 },
+        costs: {
+          sessionCostUsd: 0,
+          allTimeCostUsd: 0,
+          breakdown: { inputCost: 0, outputCost: 0, cacheCost: 0 },
+          lastUpdated: 0,
+        },
         requestStartTime: null,
         numTurns: 0,
       });
@@ -83,11 +98,11 @@ describe('chatStore', () => {
   // ==========================================================================
   // Message Management Tests
   // ==========================================================================
-  describe('message management', () => {
-    describe('addMessage', () => {
-      it('should add a message to the store', () => {
+  describe("message management", () => {
+    describe("addMessage", () => {
+      it("should add a message to the store", () => {
         const { result } = renderHook(() => useChatStore());
-        const message = createMockMessage({ content: 'Hello' });
+        const message = createMockMessage({ content: "Hello" });
 
         act(() => {
           result.current.addMessage(message);
@@ -97,10 +112,10 @@ describe('chatStore', () => {
         expect(result.current.messages[0]).toEqual(message);
       });
 
-      it('should append messages in order', () => {
+      it("should append messages in order", () => {
         const { result } = renderHook(() => useChatStore());
-        const message1 = createMockMessage({ id: '1', content: 'First' });
-        const message2 = createMockMessage({ id: '2', content: 'Second' });
+        const message1 = createMockMessage({ id: "1", content: "First" });
+        const message2 = createMockMessage({ id: "2", content: "Second" });
 
         act(() => {
           result.current.addMessage(message1);
@@ -108,15 +123,15 @@ describe('chatStore', () => {
         });
 
         expect(result.current.messages).toHaveLength(2);
-        expect(result.current.messages[0].id).toBe('1');
-        expect(result.current.messages[1].id).toBe('2');
+        expect(result.current.messages[0].id).toBe("1");
+        expect(result.current.messages[1].id).toBe("2");
       });
 
-      it('should handle different message types', () => {
+      it("should handle different message types", () => {
         const { result } = renderHook(() => useChatStore());
-        const userMsg = createMockMessage({ type: 'user' });
-        const assistantMsg = createMockMessage({ type: 'assistant' });
-        const toolMsg = createMockMessage({ type: 'tool_use' });
+        const userMsg = createMockMessage({ type: "user" });
+        const assistantMsg = createMockMessage({ type: "assistant" });
+        const toolMsg = createMockMessage({ type: "tool_use" });
 
         act(() => {
           result.current.addMessage(userMsg);
@@ -128,28 +143,12 @@ describe('chatStore', () => {
       });
     });
 
-    describe('updateMessage', () => {
-      it('should update an existing message by ID', () => {
-        const { result } = renderHook(() => useChatStore());
-        const message = createMockMessage({ id: 'update-test', content: 'Original' });
-
-        act(() => {
-          result.current.addMessage(message);
-        });
-
-        act(() => {
-          result.current.updateMessage('update-test', { content: 'Updated' });
-        });
-
-        expect(result.current.messages[0].content).toBe('Updated');
-      });
-
-      it('should preserve other message properties', () => {
+    describe("updateMessage", () => {
+      it("should update an existing message by ID", () => {
         const { result } = renderHook(() => useChatStore());
         const message = createMockMessage({
-          id: 'preserve-test',
-          content: 'Original',
-          type: 'user',
+          id: "update-test",
+          content: "Original",
         });
 
         act(() => {
@@ -157,17 +156,36 @@ describe('chatStore', () => {
         });
 
         act(() => {
-          result.current.updateMessage('preserve-test', { content: 'Updated' });
+          result.current.updateMessage("update-test", { content: "Updated" });
         });
 
-        expect(result.current.messages[0].type).toBe('user');
-        expect(result.current.messages[0].id).toBe('preserve-test');
+        expect(result.current.messages[0].content).toBe("Updated");
       });
 
-      it('should not modify other messages', () => {
+      it("should preserve other message properties", () => {
         const { result } = renderHook(() => useChatStore());
-        const msg1 = createMockMessage({ id: '1', content: 'First' });
-        const msg2 = createMockMessage({ id: '2', content: 'Second' });
+        const message = createMockMessage({
+          id: "preserve-test",
+          content: "Original",
+          type: "user",
+        });
+
+        act(() => {
+          result.current.addMessage(message);
+        });
+
+        act(() => {
+          result.current.updateMessage("preserve-test", { content: "Updated" });
+        });
+
+        expect(result.current.messages[0].type).toBe("user");
+        expect(result.current.messages[0].id).toBe("preserve-test");
+      });
+
+      it("should not modify other messages", () => {
+        const { result } = renderHook(() => useChatStore());
+        const msg1 = createMockMessage({ id: "1", content: "First" });
+        const msg2 = createMockMessage({ id: "2", content: "Second" });
 
         act(() => {
           result.current.addMessage(msg1);
@@ -175,23 +193,23 @@ describe('chatStore', () => {
         });
 
         act(() => {
-          result.current.updateMessage('1', { content: 'Updated' });
+          result.current.updateMessage("1", { content: "Updated" });
         });
 
-        expect(result.current.messages[0].content).toBe('Updated');
-        expect(result.current.messages[1].content).toBe('Second');
+        expect(result.current.messages[0].content).toBe("Updated");
+        expect(result.current.messages[1].content).toBe("Second");
       });
 
-      it('should do nothing for non-existent ID', () => {
+      it("should do nothing for non-existent ID", () => {
         const { result } = renderHook(() => useChatStore());
-        const message = createMockMessage({ id: 'existing' });
+        const message = createMockMessage({ id: "existing" });
 
         act(() => {
           result.current.addMessage(message);
         });
 
         act(() => {
-          result.current.updateMessage('non-existent', { content: 'Updated' });
+          result.current.updateMessage("non-existent", { content: "Updated" });
         });
 
         expect(result.current.messages).toHaveLength(1);
@@ -199,27 +217,27 @@ describe('chatStore', () => {
       });
     });
 
-    describe('removeMessage', () => {
-      it('should remove a message by ID', () => {
+    describe("removeMessage", () => {
+      it("should remove a message by ID", () => {
         const { result } = renderHook(() => useChatStore());
-        const message = createMockMessage({ id: 'remove-test' });
+        const message = createMockMessage({ id: "remove-test" });
 
         act(() => {
           result.current.addMessage(message);
         });
 
         act(() => {
-          result.current.removeMessage('remove-test');
+          result.current.removeMessage("remove-test");
         });
 
         expect(result.current.messages).toHaveLength(0);
       });
 
-      it('should only remove the specified message', () => {
+      it("should only remove the specified message", () => {
         const { result } = renderHook(() => useChatStore());
-        const msg1 = createMockMessage({ id: '1' });
-        const msg2 = createMockMessage({ id: '2' });
-        const msg3 = createMockMessage({ id: '3' });
+        const msg1 = createMockMessage({ id: "1" });
+        const msg2 = createMockMessage({ id: "2" });
+        const msg3 = createMockMessage({ id: "3" });
 
         act(() => {
           result.current.addMessage(msg1);
@@ -228,31 +246,31 @@ describe('chatStore', () => {
         });
 
         act(() => {
-          result.current.removeMessage('2');
+          result.current.removeMessage("2");
         });
 
         expect(result.current.messages).toHaveLength(2);
-        expect(result.current.messages.map((m) => m.id)).toEqual(['1', '3']);
+        expect(result.current.messages.map((m) => m.id)).toEqual(["1", "3"]);
       });
 
-      it('should do nothing for non-existent ID', () => {
+      it("should do nothing for non-existent ID", () => {
         const { result } = renderHook(() => useChatStore());
-        const message = createMockMessage({ id: 'existing' });
+        const message = createMockMessage({ id: "existing" });
 
         act(() => {
           result.current.addMessage(message);
         });
 
         act(() => {
-          result.current.removeMessage('non-existent');
+          result.current.removeMessage("non-existent");
         });
 
         expect(result.current.messages).toHaveLength(1);
       });
     });
 
-    describe('clearMessages', () => {
-      it('should remove all messages', () => {
+    describe("clearMessages", () => {
+      it("should remove all messages", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -270,7 +288,7 @@ describe('chatStore', () => {
         expect(result.current.messages).toHaveLength(0);
       });
 
-      it('should reset turn count', () => {
+      it("should reset turn count", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -292,9 +310,9 @@ describe('chatStore', () => {
   // ==========================================================================
   // Token Tracking Tests
   // ==========================================================================
-  describe('token tracking', () => {
-    describe('updateTokens', () => {
-      it('should update current token usage', () => {
+  describe("token tracking", () => {
+    describe("updateTokens", () => {
+      it("should update current token usage", () => {
         const { result } = renderHook(() => useChatStore());
         const usage: TokenUsage = {
           input_tokens: 100,
@@ -310,7 +328,7 @@ describe('chatStore', () => {
         expect(result.current.tokens.current).toEqual(usage);
       });
 
-      it('should accumulate cumulative tokens', () => {
+      it("should accumulate cumulative tokens", () => {
         const { result } = renderHook(() => useChatStore());
         const usage1: TokenUsage = {
           input_tokens: 100,
@@ -337,7 +355,7 @@ describe('chatStore', () => {
         expect(result.current.tokens.cumulative.totalOutputTokens).toBe(150);
       });
 
-      it('should handle missing cache tokens', () => {
+      it("should handle missing cache tokens", () => {
         const { result } = renderHook(() => useChatStore());
         const usage: TokenUsage = {
           input_tokens: 100,
@@ -349,12 +367,14 @@ describe('chatStore', () => {
         });
 
         expect(result.current.tokens.cumulative.totalCacheReadTokens).toBe(0);
-        expect(result.current.tokens.cumulative.totalCacheCreationTokens).toBe(0);
+        expect(result.current.tokens.cumulative.totalCacheCreationTokens).toBe(
+          0,
+        );
       });
     });
 
-    describe('updateCumulativeTokens', () => {
-      it('should update specific cumulative token fields', () => {
+    describe("updateCumulativeTokens", () => {
+      it("should update specific cumulative token fields", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -368,8 +388,8 @@ describe('chatStore', () => {
       });
     });
 
-    describe('resetTokenTracking', () => {
-      it('should reset token tracking to initial state', () => {
+    describe("resetTokenTracking", () => {
+      it("should reset token tracking to initial state", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -390,7 +410,7 @@ describe('chatStore', () => {
         expect(result.current.tokens.cumulative.totalInputTokens).toBe(0);
       });
 
-      it('should preserve all-time cost', () => {
+      it("should preserve all-time cost", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -411,9 +431,9 @@ describe('chatStore', () => {
   // ==========================================================================
   // Processing State Tests
   // ==========================================================================
-  describe('processing state', () => {
-    describe('setProcessing', () => {
-      it('should set processing state to true', () => {
+  describe("processing state", () => {
+    describe("setProcessing", () => {
+      it("should set processing state to true", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -423,7 +443,7 @@ describe('chatStore', () => {
         expect(result.current.isProcessing).toBe(true);
       });
 
-      it('should set processing state to false', () => {
+      it("should set processing state to false", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -438,8 +458,8 @@ describe('chatStore', () => {
       });
     });
 
-    describe('request timing', () => {
-      it('should start request timing', () => {
+    describe("request timing", () => {
+      it("should start request timing", () => {
         const { result } = renderHook(() => useChatStore());
         const beforeTime = Date.now();
 
@@ -447,10 +467,12 @@ describe('chatStore', () => {
           result.current.startRequestTiming();
         });
 
-        expect(result.current.requestStartTime).toBeGreaterThanOrEqual(beforeTime);
+        expect(result.current.requestStartTime).toBeGreaterThanOrEqual(
+          beforeTime,
+        );
       });
 
-      it('should stop request timing', () => {
+      it("should stop request timing", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -469,23 +491,23 @@ describe('chatStore', () => {
   // ==========================================================================
   // Session Management Tests
   // ==========================================================================
-  describe('session management', () => {
-    describe('setSessionId', () => {
-      it('should set the session ID', () => {
+  describe("session management", () => {
+    describe("setSessionId", () => {
+      it("should set the session ID", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
-          result.current.setSessionId('session-123');
+          result.current.setSessionId("session-123");
         });
 
-        expect(result.current.currentSessionId).toBe('session-123');
+        expect(result.current.currentSessionId).toBe("session-123");
       });
 
-      it('should allow clearing the session ID', () => {
+      it("should allow clearing the session ID", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
-          result.current.setSessionId('session-123');
+          result.current.setSessionId("session-123");
         });
 
         act(() => {
@@ -496,8 +518,8 @@ describe('chatStore', () => {
       });
     });
 
-    describe('incrementTurns', () => {
-      it('should increment turn count', () => {
+    describe("incrementTurns", () => {
+      it("should increment turn count", () => {
         const { result } = renderHook(() => useChatStore());
 
         expect(result.current.numTurns).toBe(0);
@@ -516,15 +538,15 @@ describe('chatStore', () => {
       });
     });
 
-    describe('resetChat', () => {
-      it('should reset all chat state', () => {
+    describe("resetChat", () => {
+      it("should reset all chat state", () => {
         const { result } = renderHook(() => useChatStore());
 
         // Set up some state
         act(() => {
           result.current.addMessage(createMockMessage());
           result.current.setProcessing(true);
-          result.current.setSessionId('session-123');
+          result.current.setSessionId("session-123");
           result.current.incrementTurns();
         });
 
@@ -538,7 +560,7 @@ describe('chatStore', () => {
         expect(result.current.numTurns).toBe(0);
       });
 
-      it('should preserve all-time cost', () => {
+      it("should preserve all-time cost", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
@@ -559,44 +581,46 @@ describe('chatStore', () => {
   // ==========================================================================
   // Cost Tracking Tests
   // ==========================================================================
-  describe('cost tracking', () => {
-    describe('updateSessionCost', () => {
-      it('should update session cost', () => {
+  describe("cost tracking", () => {
+    describe("updateSessionCost", () => {
+      it("should update session cost", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
-          result.current.updateSessionCost(1.50);
+          result.current.updateSessionCost(1.5);
         });
 
-        expect(result.current.costs.sessionCostUsd).toBe(1.50);
+        expect(result.current.costs.sessionCostUsd).toBe(1.5);
       });
 
-      it('should accumulate all-time cost', () => {
+      it("should accumulate all-time cost", () => {
         const { result } = renderHook(() => useChatStore());
 
         act(() => {
-          result.current.updateSessionCost(1.00);
+          result.current.updateSessionCost(1.0);
         });
 
         act(() => {
-          result.current.updateSessionCost(2.00);
+          result.current.updateSessionCost(2.0);
         });
 
         // updateSessionCost accumulates the DELTA (difference from previous session cost)
         // First call: delta = 1.00 - 0 = 1.00, allTime = 0 + 1.00 = 1.00
         // Second call: delta = 2.00 - 1.00 = 1.00, allTime = 1.00 + 1.00 = 2.00
-        expect(result.current.costs.allTimeCostUsd).toBe(2.00);
+        expect(result.current.costs.allTimeCostUsd).toBe(2.0);
       });
 
-      it('should update lastUpdated timestamp', () => {
+      it("should update lastUpdated timestamp", () => {
         const { result } = renderHook(() => useChatStore());
         const beforeTime = Date.now();
 
         act(() => {
-          result.current.updateSessionCost(1.00);
+          result.current.updateSessionCost(1.0);
         });
 
-        expect(result.current.costs.lastUpdated).toBeGreaterThanOrEqual(beforeTime);
+        expect(result.current.costs.lastUpdated).toBeGreaterThanOrEqual(
+          beforeTime,
+        );
       });
     });
   });
@@ -604,8 +628,8 @@ describe('chatStore', () => {
   // ==========================================================================
   // Selector Tests
   // ==========================================================================
-  describe('selectors', () => {
-    it('selectMessages should return messages array', () => {
+  describe("selectors", () => {
+    it("selectMessages should return messages array", () => {
       const { result } = renderHook(() => useChatStore());
       const message = createMockMessage();
 
@@ -617,7 +641,7 @@ describe('chatStore', () => {
       expect(messages).toHaveLength(1);
     });
 
-    it('selectIsProcessing should return processing state', () => {
+    it("selectIsProcessing should return processing state", () => {
       const { result } = renderHook(() => useChatStore());
 
       act(() => {
@@ -627,55 +651,55 @@ describe('chatStore', () => {
       expect(selectIsProcessing(result.current)).toBe(true);
     });
 
-    it('selectSessionId should return current session ID', () => {
+    it("selectSessionId should return current session ID", () => {
       const { result } = renderHook(() => useChatStore());
 
       act(() => {
-        result.current.setSessionId('test-session');
+        result.current.setSessionId("test-session");
       });
 
-      expect(selectSessionId(result.current)).toBe('test-session');
+      expect(selectSessionId(result.current)).toBe("test-session");
     });
 
-    it('selectTokens should return token tracking state', () => {
+    it("selectTokens should return token tracking state", () => {
       const { result } = renderHook(() => useChatStore());
       const tokens = selectTokens(result.current);
 
-      expect(tokens).toHaveProperty('current');
-      expect(tokens).toHaveProperty('cumulative');
+      expect(tokens).toHaveProperty("current");
+      expect(tokens).toHaveProperty("cumulative");
     });
 
-    it('selectCosts should return cost tracking state', () => {
+    it("selectCosts should return cost tracking state", () => {
       const { result } = renderHook(() => useChatStore());
       const costs = selectCosts(result.current);
 
-      expect(costs).toHaveProperty('sessionCostUsd');
-      expect(costs).toHaveProperty('allTimeCostUsd');
+      expect(costs).toHaveProperty("sessionCostUsd");
+      expect(costs).toHaveProperty("allTimeCostUsd");
     });
 
-    it('selectMessageById should find message by ID', () => {
+    it("selectMessageById should find message by ID", () => {
       const { result } = renderHook(() => useChatStore());
-      const message = createMockMessage({ id: 'find-me' });
+      const message = createMockMessage({ id: "find-me" });
 
       act(() => {
         result.current.addMessage(message);
       });
 
-      const found = selectMessageById('find-me')(result.current);
+      const found = selectMessageById("find-me")(result.current);
       expect(found).toEqual(message);
     });
 
-    it('selectMessageById should return undefined for non-existent ID', () => {
+    it("selectMessageById should return undefined for non-existent ID", () => {
       const { result } = renderHook(() => useChatStore());
 
-      const found = selectMessageById('non-existent')(result.current);
+      const found = selectMessageById("non-existent")(result.current);
       expect(found).toBeUndefined();
     });
 
-    it('selectLastMessage should return the last message', () => {
+    it("selectLastMessage should return the last message", () => {
       const { result } = renderHook(() => useChatStore());
-      const msg1 = createMockMessage({ id: '1' });
-      const msg2 = createMockMessage({ id: '2' });
+      const msg1 = createMockMessage({ id: "1" });
+      const msg2 = createMockMessage({ id: "2" });
 
       act(() => {
         result.current.addMessage(msg1);
@@ -683,14 +707,14 @@ describe('chatStore', () => {
       });
 
       const last = selectLastMessage(result.current);
-      expect(last.id).toBe('2');
+      expect(last.id).toBe("2");
     });
 
-    it('selectMessagesByType should filter messages by type', () => {
+    it("selectMessagesByType should filter messages by type", () => {
       const { result } = renderHook(() => useChatStore());
-      const userMsg = createMockMessage({ type: 'user' });
-      const assistantMsg = createMockMessage({ type: 'assistant' });
-      const anotherUserMsg = createMockMessage({ type: 'user' });
+      const userMsg = createMockMessage({ type: "user" });
+      const assistantMsg = createMockMessage({ type: "assistant" });
+      const anotherUserMsg = createMockMessage({ type: "user" });
 
       act(() => {
         result.current.addMessage(userMsg);
@@ -698,17 +722,17 @@ describe('chatStore', () => {
         result.current.addMessage(anotherUserMsg);
       });
 
-      const userMessages = selectMessagesByType('user')(result.current);
+      const userMessages = selectMessagesByType("user")(result.current);
       expect(userMessages).toHaveLength(2);
-      expect(userMessages.every((m) => m.type === 'user')).toBe(true);
+      expect(userMessages.every((m) => m.type === "user")).toBe(true);
     });
   });
 
   // ==========================================================================
   // Initial State Tests
   // ==========================================================================
-  describe('initial state', () => {
-    it('should have empty messages array', () => {
+  describe("initial state", () => {
+    it("should have empty messages array", () => {
       const { result } = renderHook(() => useChatStore());
       // After reset
       act(() => {
@@ -717,7 +741,7 @@ describe('chatStore', () => {
       expect(result.current.messages).toEqual([]);
     });
 
-    it('should have isProcessing as false', () => {
+    it("should have isProcessing as false", () => {
       const { result } = renderHook(() => useChatStore());
       act(() => {
         result.current.resetChat();
@@ -725,7 +749,7 @@ describe('chatStore', () => {
       expect(result.current.isProcessing).toBe(false);
     });
 
-    it('should have null session ID', () => {
+    it("should have null session ID", () => {
       const { result } = renderHook(() => useChatStore());
       act(() => {
         result.current.resetChat();
@@ -733,7 +757,7 @@ describe('chatStore', () => {
       expect(result.current.currentSessionId).toBeNull();
     });
 
-    it('should have zero tokens', () => {
+    it("should have zero tokens", () => {
       const { result } = renderHook(() => useChatStore());
       act(() => {
         result.current.resetChat();
@@ -742,7 +766,7 @@ describe('chatStore', () => {
       expect(result.current.tokens.current.output_tokens).toBe(0);
     });
 
-    it('should have zero session cost', () => {
+    it("should have zero session cost", () => {
       const { result } = renderHook(() => useChatStore());
       act(() => {
         result.current.resetChat();

@@ -9,10 +9,7 @@
     "declarationMap": false,
     "types": ["node", "vscode"]
   },
-  "include": [
-    "src/extension/**/*.ts",
-    "src/shared/**/*.ts"
-  ],
+  "include": ["src/extension/**/*.ts", "src/shared/**/*.ts"],
   "exclude": [
     "node_modules",
     "src/webview/**/*",

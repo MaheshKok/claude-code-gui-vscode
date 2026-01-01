@@ -40,7 +40,7 @@ export interface ClipboardImage {
 /**
  * Supported clipboard content types
  */
-export type ClipboardContentType = 'text' | 'image' | 'html' | 'unknown';
+export type ClipboardContentType = "text" | "image" | "html" | "unknown";
 
 // ============================================================================
 // Copy Operations
@@ -67,7 +67,7 @@ export async function copyToClipboard(text: string): Promise<ClipboardResult> {
     } catch (fallbackError) {
       return {
         success: false,
-        error: `Failed to copy to clipboard: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error: `Failed to copy to clipboard: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
     }
   }
@@ -77,21 +77,21 @@ export async function copyToClipboard(text: string): Promise<ClipboardResult> {
  * Copy text using the legacy execCommand method
  */
 function copyUsingExecCommand(text: string): ClipboardResult {
-  const textArea = document.createElement('textarea');
+  const textArea = document.createElement("textarea");
   textArea.value = text;
 
   // Make the textarea out of viewport
-  textArea.style.position = 'fixed';
-  textArea.style.left = '-999999px';
-  textArea.style.top = '-999999px';
-  textArea.style.opacity = '0';
+  textArea.style.position = "fixed";
+  textArea.style.left = "-999999px";
+  textArea.style.top = "-999999px";
+  textArea.style.opacity = "0";
 
   document.body.appendChild(textArea);
   textArea.focus();
   textArea.select();
 
   try {
-    const successful = document.execCommand('copy');
+    const successful = document.execCommand("copy");
     document.body.removeChild(textArea);
 
     if (successful) {
@@ -99,14 +99,14 @@ function copyUsingExecCommand(text: string): ClipboardResult {
     } else {
       return {
         success: false,
-        error: 'execCommand copy returned false',
+        error: "execCommand copy returned false",
       };
     }
   } catch (error) {
     document.body.removeChild(textArea);
     return {
       success: false,
-      error: `execCommand failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `execCommand failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -114,15 +114,20 @@ function copyUsingExecCommand(text: string): ClipboardResult {
 /**
  * Copy HTML content to the clipboard
  */
-export async function copyHtmlToClipboard(html: string, plainText?: string): Promise<ClipboardResult> {
+export async function copyHtmlToClipboard(
+  html: string,
+  plainText?: string,
+): Promise<ClipboardResult> {
   try {
     if (navigator.clipboard && navigator.clipboard.write) {
-      const blob = new Blob([html], { type: 'text/html' });
-      const textBlob = new Blob([plainText || html.replace(/<[^>]*>/g, '')], { type: 'text/plain' });
+      const blob = new Blob([html], { type: "text/html" });
+      const textBlob = new Blob([plainText || html.replace(/<[^>]*>/g, "")], {
+        type: "text/plain",
+      });
 
       const clipboardItem = new ClipboardItem({
-        'text/html': blob,
-        'text/plain': textBlob,
+        "text/html": blob,
+        "text/plain": textBlob,
       });
 
       await navigator.clipboard.write([clipboardItem]);
@@ -130,11 +135,11 @@ export async function copyHtmlToClipboard(html: string, plainText?: string): Pro
     }
 
     // Fallback to plain text
-    return copyToClipboard(plainText || html.replace(/<[^>]*>/g, ''));
+    return copyToClipboard(plainText || html.replace(/<[^>]*>/g, ""));
   } catch (error) {
     return {
       success: false,
-      error: `Failed to copy HTML: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to copy HTML: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -142,7 +147,9 @@ export async function copyHtmlToClipboard(html: string, plainText?: string): Pro
 /**
  * Copy an image to the clipboard
  */
-export async function copyImageToClipboard(imageBlob: Blob): Promise<ClipboardResult> {
+export async function copyImageToClipboard(
+  imageBlob: Blob,
+): Promise<ClipboardResult> {
   try {
     if (navigator.clipboard && navigator.clipboard.write) {
       const clipboardItem = new ClipboardItem({
@@ -155,12 +162,12 @@ export async function copyImageToClipboard(imageBlob: Blob): Promise<ClipboardRe
 
     return {
       success: false,
-      error: 'Clipboard API not available for image copying',
+      error: "Clipboard API not available for image copying",
     };
   } catch (error) {
     return {
       success: false,
-      error: `Failed to copy image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to copy image: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -180,7 +187,7 @@ export async function readClipboardText(): Promise<string | null> {
 
     return null;
   } catch (error) {
-    console.warn('Failed to read clipboard text:', error);
+    console.warn("Failed to read clipboard text:", error);
     return null;
   }
 }
@@ -198,7 +205,7 @@ export async function readClipboardImage(): Promise<ClipboardImage | null> {
 
     for (const item of items) {
       // Look for image types
-      const imageTypes = item.types.filter(type => type.startsWith('image/'));
+      const imageTypes = item.types.filter((type) => type.startsWith("image/"));
 
       for (const imageType of imageTypes) {
         const blob = await item.getType(imageType);
@@ -218,7 +225,7 @@ export async function readClipboardImage(): Promise<ClipboardImage | null> {
 
     return null;
   } catch (error) {
-    console.warn('Failed to read clipboard image:', error);
+    console.warn("Failed to read clipboard image:", error);
     return null;
   }
 }
@@ -248,19 +255,19 @@ export async function readClipboard(): Promise<{
 
       for (const item of items) {
         // Text
-        if (item.types.includes('text/plain')) {
-          const blob = await item.getType('text/plain');
+        if (item.types.includes("text/plain")) {
+          const blob = await item.getType("text/plain");
           result.text = await blob.text();
         }
 
         // HTML
-        if (item.types.includes('text/html')) {
-          const blob = await item.getType('text/html');
+        if (item.types.includes("text/html")) {
+          const blob = await item.getType("text/html");
           result.html = await blob.text();
         }
 
         // Image
-        const imageType = item.types.find(type => type.startsWith('image/'));
+        const imageType = item.types.find((type) => type.startsWith("image/"));
         if (imageType) {
           const blob = await item.getType(imageType);
           const base64 = await blobToBase64(blob);
@@ -279,7 +286,7 @@ export async function readClipboard(): Promise<{
       result.text = await navigator.clipboard.readText();
     }
   } catch (error) {
-    console.warn('Failed to read clipboard:', error);
+    console.warn("Failed to read clipboard:", error);
   }
 
   return result;
@@ -301,7 +308,7 @@ export async function isImageInClipboard(): Promise<boolean> {
     const items = await navigator.clipboard.read();
 
     for (const item of items) {
-      if (item.types.some(type => type.startsWith('image/'))) {
+      if (item.types.some((type) => type.startsWith("image/"))) {
         return true;
       }
     }
@@ -319,31 +326,31 @@ export async function isImageInClipboard(): Promise<boolean> {
 export async function getClipboardContentType(): Promise<ClipboardContentType> {
   try {
     if (!navigator.clipboard || !navigator.clipboard.read) {
-      return 'unknown';
+      return "unknown";
     }
 
     const items = await navigator.clipboard.read();
 
     for (const item of items) {
       // Check for image first (more specific)
-      if (item.types.some(type => type.startsWith('image/'))) {
-        return 'image';
+      if (item.types.some((type) => type.startsWith("image/"))) {
+        return "image";
       }
 
       // Check for HTML
-      if (item.types.includes('text/html')) {
-        return 'html';
+      if (item.types.includes("text/html")) {
+        return "html";
       }
 
       // Check for plain text
-      if (item.types.includes('text/plain')) {
-        return 'text';
+      if (item.types.includes("text/plain")) {
+        return "text";
       }
     }
 
-    return 'unknown';
+    return "unknown";
   } catch (error) {
-    return 'unknown';
+    return "unknown";
   }
 }
 
@@ -351,7 +358,7 @@ export async function getClipboardContentType(): Promise<ClipboardContentType> {
  * Check if clipboard access is available
  */
 export function isClipboardSupported(): boolean {
-  return !!(navigator.clipboard);
+  return !!navigator.clipboard;
 }
 
 /**
@@ -360,8 +367,8 @@ export function isClipboardSupported(): boolean {
 export function isAsyncClipboardSupported(): boolean {
   return !!(
     navigator.clipboard &&
-    typeof navigator.clipboard.read === 'function' &&
-    typeof navigator.clipboard.write === 'function'
+    typeof navigator.clipboard.read === "function" &&
+    typeof navigator.clipboard.write === "function"
   );
 }
 
@@ -377,17 +384,17 @@ export function blobToBase64(blob: Blob): Promise<string> {
     const reader = new FileReader();
 
     reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
+      if (typeof reader.result === "string") {
         // Remove the data URL prefix (e.g., "data:image/png;base64,")
-        const base64 = reader.result.split(',')[1] || reader.result;
+        const base64 = reader.result.split(",")[1] || reader.result;
         resolve(base64);
       } else {
-        reject(new Error('Failed to convert blob to base64'));
+        reject(new Error("Failed to convert blob to base64"));
       }
     };
 
     reader.onerror = () => {
-      reject(new Error('FileReader error'));
+      reject(new Error("FileReader error"));
     };
 
     reader.readAsDataURL(blob);
@@ -412,7 +419,9 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
 /**
  * Get image dimensions from a blob
  */
-async function getImageDimensions(blob: Blob): Promise<{ width: number; height: number } | null> {
+async function getImageDimensions(
+  blob: Blob,
+): Promise<{ width: number; height: number } | null> {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(blob);
@@ -448,7 +457,9 @@ export function isDataUrl(str: string): boolean {
 /**
  * Extract base64 and mime type from a data URL
  */
-export function parseDataUrl(dataUrl: string): { base64: string; mimeType: string } | null {
+export function parseDataUrl(
+  dataUrl: string,
+): { base64: string; mimeType: string } | null {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) return null;
 

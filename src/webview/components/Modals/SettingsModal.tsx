@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Modal } from './Modal';
+import React, { useState, useCallback } from "react";
+import { Modal } from "./Modal";
 
 export interface WSLSettings {
   enabled: boolean;
@@ -32,24 +32,24 @@ export interface SettingsModalProps {
 }
 
 const AVAILABLE_TOOLS = [
-  'Bash',
-  'Read',
-  'Edit',
-  'Write',
-  'MultiEdit',
-  'Glob',
-  'Grep',
-  'LS',
-  'WebSearch',
-  'WebFetch',
+  "Bash",
+  "Read",
+  "Edit",
+  "Write",
+  "MultiEdit",
+  "Glob",
+  "Grep",
+  "LS",
+  "WebSearch",
+  "WebFetch",
 ];
 
 const defaultSettings: SettingsData = {
   wsl: {
     enabled: false,
-    distro: 'Ubuntu',
-    nodePath: '/usr/bin/node',
-    claudePath: '/usr/local/bin/claude',
+    distro: "Ubuntu",
+    nodePath: "/usr/bin/node",
+    claudePath: "/usr/local/bin/claude",
   },
   permissions: [],
   yoloMode: false,
@@ -65,8 +65,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onRemovePermission = () => {},
 }) => {
   const [showAddPermission, setShowAddPermission] = useState(false);
-  const [newPermissionTool, setNewPermissionTool] = useState('');
-  const [newPermissionPattern, setNewPermissionPattern] = useState('');
+  const [newPermissionTool, setNewPermissionTool] = useState("");
+  const [newPermissionPattern, setNewPermissionPattern] = useState("");
 
   const handleWSLChange = useCallback(
     (field: keyof WSLSettings, value: string | boolean) => {
@@ -77,33 +77,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         },
       });
     },
-    [settings.wsl, onSettingsChange]
+    [settings.wsl, onSettingsChange],
   );
 
   const handleYoloModeChange = useCallback(
     (enabled: boolean) => {
       onSettingsChange({ yoloMode: enabled });
     },
-    [onSettingsChange]
+    [onSettingsChange],
   );
 
   const handleThinkingIntensityChange = useCallback(
     (intensity: number) => {
       onSettingsChange({ thinkingIntensity: intensity });
     },
-    [onSettingsChange]
+    [onSettingsChange],
   );
 
   const handleAddPermission = useCallback(() => {
     if (newPermissionTool) {
       onAddPermission(newPermissionTool, newPermissionPattern || undefined);
-      setNewPermissionTool('');
-      setNewPermissionPattern('');
+      setNewPermissionTool("");
+      setNewPermissionPattern("");
       setShowAddPermission(false);
     }
   }, [newPermissionTool, newPermissionPattern, onAddPermission]);
 
-  const showPatternInput = newPermissionTool === 'Bash';
+  const showPatternInput = newPermissionTool === "Bash";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Settings" width="lg">
@@ -123,7 +123,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <input
                 type="checkbox"
                 checked={settings.wsl.enabled}
-                onChange={(e) => handleWSLChange('enabled', e.target.checked)}
+                onChange={(e) => handleWSLChange("enabled", e.target.checked)}
                 className="w-4 h-4 rounded border-[var(--vscode-checkbox-border)] bg-[var(--vscode-checkbox-background)]"
               />
               <span className="text-sm">Enable WSL Integration</span>
@@ -142,7 +142,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     id="wsl-distro"
                     type="text"
                     value={settings.wsl.distro}
-                    onChange={(e) => handleWSLChange('distro', e.target.value)}
+                    onChange={(e) => handleWSLChange("distro", e.target.value)}
                     placeholder="Ubuntu"
                     className="input"
                   />
@@ -159,12 +159,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     id="wsl-node-path"
                     type="text"
                     value={settings.wsl.nodePath}
-                    onChange={(e) => handleWSLChange('nodePath', e.target.value)}
+                    onChange={(e) =>
+                      handleWSLChange("nodePath", e.target.value)
+                    }
                     placeholder="/usr/bin/node"
                     className="input"
                   />
                   <p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-                    Find path with:{' '}
+                    Find path with:{" "}
                     <code className="px-1 py-0.5 rounded bg-[var(--vscode-textCodeBlock-background)]">
                       which node
                     </code>
@@ -182,12 +184,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     id="wsl-claude-path"
                     type="text"
                     value={settings.wsl.claudePath}
-                    onChange={(e) => handleWSLChange('claudePath', e.target.value)}
+                    onChange={(e) =>
+                      handleWSLChange("claudePath", e.target.value)
+                    }
                     placeholder="/usr/local/bin/claude"
                     className="input"
                   />
                   <p className="text-xs text-[var(--vscode-descriptionForeground)] mt-1">
-                    Find path with:{' '}
+                    Find path with:{" "}
                     <code className="px-1 py-0.5 rounded bg-[var(--vscode-textCodeBlock-background)]">
                       which claude
                     </code>
@@ -263,7 +267,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={newPermissionTool}
                   onChange={(e) => setNewPermissionTool(e.target.value)}
                   className="input flex-shrink-0"
-                  style={{ width: '150px' }}
+                  style={{ width: "150px" }}
                 >
                   <option value="">Select tool...</option>
                   {AVAILABLE_TOOLS.map((tool) => (
@@ -286,8 +290,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <p className="text-xs text-[var(--vscode-descriptionForeground)]">
                 {showPatternInput
-                  ? 'Use * as wildcard for matching multiple commands.'
-                  : 'Select a tool to add always-allow permission.'}
+                  ? "Use * as wildcard for matching multiple commands."
+                  : "Select a tool to add always-allow permission."}
               </p>
 
               <div className="flex gap-2">
@@ -301,13 +305,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   onClick={() => {
                     setShowAddPermission(false);
-                    setNewPermissionTool('');
-                    setNewPermissionPattern('');
+                    setNewPermissionTool("");
+                    setNewPermissionPattern("");
                   }}
                   className="btn-secondary px-3 py-1.5 text-xs rounded"
                   style={{
-                    backgroundColor: 'var(--vscode-button-secondaryBackground)',
-                    color: 'var(--vscode-button-secondaryForeground)',
+                    backgroundColor: "var(--vscode-button-secondaryBackground)",
+                    color: "var(--vscode-button-secondaryForeground)",
                   }}
                 >
                   Cancel
@@ -333,9 +337,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="w-4 h-4 rounded border-[var(--vscode-checkbox-border)] bg-[var(--vscode-checkbox-background)]"
               />
               <div>
-                <span className="text-sm font-medium">
-                  Enable Yolo Mode
-                </span>
+                <span className="text-sm font-medium">Enable Yolo Mode</span>
                 <p className="text-xs text-[var(--vscode-descriptionForeground)]">
                   Auto-approve all permission requests (use with caution)
                 </p>

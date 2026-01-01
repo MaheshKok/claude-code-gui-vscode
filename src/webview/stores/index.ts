@@ -8,12 +8,12 @@
  */
 
 // Import stores for internal use in utility functions
-import { useChatStore as _useChatStore } from './chatStore';
-import { useSettingsStore as _useSettingsStore } from './settingsStore';
-import { useUIStore as _useUIStore } from './uiStore';
-import { usePermissionStore as _usePermissionStore } from './permissionStore';
-import { useConversationStore as _useConversationStore } from './conversationStore';
-import { useMCPStore as _useMCPStore } from './mcpStore';
+import { useChatStore as _useChatStore } from "./chatStore";
+import { useSettingsStore as _useSettingsStore } from "./settingsStore";
+import { useUIStore as _useUIStore } from "./uiStore";
+import { usePermissionStore as _usePermissionStore } from "./permissionStore";
+import { useConversationStore as _useConversationStore } from "./conversationStore";
+import { useMCPStore as _useMCPStore } from "./mcpStore";
 
 // ============================================================================
 // Chat Store
@@ -29,14 +29,14 @@ export {
   selectMessageById,
   selectLastMessage,
   selectMessagesByType,
-} from './chatStore';
+} from "./chatStore";
 export type {
   ChatState,
   ChatActions,
   ChatStore,
   TokenTracking,
   CostTracking,
-} from './chatStore';
+} from "./chatStore";
 
 // ============================================================================
 // Settings Store
@@ -50,7 +50,7 @@ export {
   selectYoloMode,
   selectUISettings,
   selectContextSettings,
-} from './settingsStore';
+} from "./settingsStore";
 export type {
   SettingsState,
   SettingsActions,
@@ -58,7 +58,7 @@ export type {
   WSLConfig,
   ThinkingIntensity,
   ClaudeModel,
-} from './settingsStore';
+} from "./settingsStore";
 
 // ============================================================================
 // UI Store
@@ -73,7 +73,7 @@ export {
   selectNotifications,
   selectIsModalOpen,
   selectIsConnected,
-} from './uiStore';
+} from "./uiStore";
 export type {
   UIState,
   UIActions,
@@ -82,7 +82,7 @@ export type {
   ConnectionStatus,
   Notification,
   NotificationAction,
-} from './uiStore';
+} from "./uiStore";
 
 // ============================================================================
 // Permission Store
@@ -95,13 +95,13 @@ export {
   selectPendingCount,
   selectFirstPending,
   selectPermissionsForTool,
-} from './permissionStore';
+} from "./permissionStore";
 export type {
   PermissionState,
   PermissionActions,
   PermissionStore,
   AllowedPermission,
-} from './permissionStore';
+} from "./permissionStore";
 
 // ============================================================================
 // Conversation Store
@@ -114,14 +114,14 @@ export {
   selectConversationCount,
   selectConversationById,
   selectConversationsByTag,
-} from './conversationStore';
+} from "./conversationStore";
 export type {
   ConversationState,
   ConversationActions,
   ConversationStore,
   ConversationSummary,
   Conversation,
-} from './conversationStore';
+} from "./conversationStore";
 
 // ============================================================================
 // MCP Store
@@ -136,7 +136,7 @@ export {
   selectAllTools,
   selectServerCount,
   selectServersWithErrors,
-} from './mcpStore';
+} from "./mcpStore";
 export type {
   MCPState,
   MCPActions,
@@ -144,7 +144,7 @@ export type {
   MCPServerConfig,
   MCPServerState,
   MCPServerStatus,
-} from './mcpStore';
+} from "./mcpStore";
 
 // ============================================================================
 // Combined Store Hook
@@ -230,6 +230,6 @@ export const resetSessionState = () => {
   _useChatStore.getState().resetTokenTracking();
   _usePermissionStore.getState().clearPending();
   _usePermissionStore.getState().clearSessionPermissions();
-  _useUIStore.getState().setConnectionStatus('disconnected');
+  _useUIStore.getState().setConnectionStatus("disconnected");
   _useUIStore.getState().clearDraftMessage();
 };

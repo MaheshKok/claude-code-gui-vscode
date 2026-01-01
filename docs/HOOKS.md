@@ -2,23 +2,41 @@
 
 ## Overview
 
-Claude Code GUI includes 9 custom React hooks for common functionality.
+Claude Code GUI includes 10 custom React hooks for common functionality.
 
 ## Hook Summary
 
-| Hook | Purpose | Key Features |
-|------|---------|--------------|
-| `useVSCode` | VS Code API wrapper | postMessage, state persistence |
-| `useMessages` | Extension message routing | Handler registration, type safety |
-| `useTheme` | Theme detection | CSS variables, dark mode |
-| `usePermissions` | Permission workflows | Request handling, decisions |
-| `useClipboard` | Copy/paste operations | Image support, fallbacks |
-| `useKeyboard` | Keyboard shortcuts | Modifiers, chat shortcuts |
-| `useAutoScroll` | Smart auto-scroll | User intent detection |
-| `useAutoResize` | Textarea auto-height | Min/max constraints |
-| `useFilePicker` | File selection UI | Search, keyboard nav |
+| Hook             | Purpose                   | Key Features                      |
+| ---------------- | ------------------------- | --------------------------------- |
+| `useVSCode`      | VS Code API wrapper       | postMessage, state persistence    |
+| `useMessages`    | Extension message routing | Handler registration, type safety |
+| `useTheme`       | Theme detection           | CSS variables, dark mode          |
+| `usePermissions` | Permission workflows      | Request handling, decisions       |
+| `useClipboard`   | Copy/paste operations     | Image support, fallbacks          |
+| `useKeyboard`    | Keyboard shortcuts        | Modifiers, chat shortcuts         |
+| `useAutoScroll`  | Smart auto-scroll         | User intent detection             |
+| `useAutoResize`  | Textarea auto-height      | Min/max constraints               |
+| `useFilePicker`  | File selection UI         | Search, keyboard nav              |
 
 **Note:** The `useKeyboard` hook also exports `useChatKeyboard` as a specialized variant for chat input handling.
+
+---
+
+## Hook Files
+
+```
+src/webview/hooks/
+├── index.ts           # Re-exports all hooks
+├── useVSCode.ts       # VS Code API wrapper
+├── useMessages.ts     # Message routing
+├── useTheme.ts        # Theme detection
+├── usePermissions.ts  # Permission workflows
+├── useClipboard.ts    # Clipboard operations
+├── useKeyboard.ts     # Keyboard shortcuts
+├── useAutoScroll.ts   # Auto-scroll behavior
+├── useAutoResize.ts   # Textarea auto-height
+└── useFilePicker.ts   # File selection UI
+```
 
 ---
 
@@ -119,7 +137,7 @@ function ChatContainer() {
 ```typescript
 const { handler, getText, reset } = createStreamingHandler(
   (chunk, accumulated) => updateUI(accumulated),
-  (finalText) => onComplete(finalText)
+  (finalText) => onComplete(finalText),
 );
 ```
 
@@ -135,14 +153,14 @@ const { handler, getText, reset } = createStreamingHandler(
 
 ```typescript
 interface UseThemeReturn {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   themeKind: ThemeKind;
   isDark: boolean;
   isHighContrast: boolean;
   colors: ThemeColors;
   getCssVariable(name: string, fallback?: string): string;
   themeClass(lightClass: string, darkClass: string): string;
-  toggleTheme(): void;  // For testing
+  toggleTheme(): void; // For testing
 }
 ```
 
@@ -150,16 +168,16 @@ interface UseThemeReturn {
 
 ```typescript
 colors = {
-  background: '--vscode-editor-background',
-  foreground: '--vscode-editor-foreground',
-  accent: '--vscode-focusBorder',
-  border: '--vscode-widget-border',
-  inputBackground: '--vscode-input-background',
-  buttonBackground: '--vscode-button-background',
-  error: '--vscode-errorForeground',
-  warning: '--vscode-editorWarning-foreground',
-  success: '--vscode-terminal-ansiGreen',
-}
+  background: "--vscode-editor-background",
+  foreground: "--vscode-editor-foreground",
+  accent: "--vscode-focusBorder",
+  border: "--vscode-widget-border",
+  inputBackground: "--vscode-input-background",
+  buttonBackground: "--vscode-button-background",
+  error: "--vscode-errorForeground",
+  warning: "--vscode-editorWarning-foreground",
+  success: "--vscode-terminal-ansiGreen",
+};
 ```
 
 ### Usage
@@ -291,7 +309,12 @@ function CodeBlock({ code, language }) {
 ```typescript
 interface KeyboardShortcut {
   key: string;
-  modifiers?: { ctrl?: boolean; alt?: boolean; shift?: boolean; meta?: boolean };
+  modifiers?: {
+    ctrl?: boolean;
+    alt?: boolean;
+    shift?: boolean;
+    meta?: boolean;
+  };
   handler: (event: KeyboardEvent) => void;
   preventDefault?: boolean;
   stopPropagation?: boolean;
@@ -415,8 +438,8 @@ interface UseAutoResizeReturn {
 
 ```typescript
 interface UseAutoResizeOptions {
-  maxHeight?: number;      // Default: 300
-  minRows?: number;        // Default: 1
+  maxHeight?: number; // Default: 300
+  minRows?: number; // Default: 1
   initialValue?: string;
   onChange?: (value: string) => void;
 }
@@ -492,7 +515,7 @@ interface UseFilePickerReturn {
 interface UseFilePickerOptions {
   maxSelection?: number;
   allowedExtensions?: string[];
-  excludePatterns?: string[];  // Default: ['node_modules', '.git', 'dist', 'build']
+  excludePatterns?: string[]; // Default: ['node_modules', '.git', 'dist', 'build']
   onSelect?: (files: FilePickerItem[]) => void;
 }
 ```
@@ -555,7 +578,7 @@ function MessageInput() {
 
 ```typescript
 const handleSend = useCallback(() => {
-  postMessage({ type: 'sendMessage', message: value });
+  postMessage({ type: "sendMessage", message: value });
 }, [postMessage, value]);
 ```
 
@@ -563,7 +586,7 @@ const handleSend = useCallback(() => {
 
 ```typescript
 // Good - only re-renders when messages change
-const messages = useChatStore(state => state.messages);
+const messages = useChatStore((state) => state.messages);
 
 // Avoid - re-renders on any store change
 const { messages, isProcessing, tokens } = useChatStore();
@@ -573,7 +596,7 @@ const { messages, isProcessing, tokens } = useChatStore();
 
 ```typescript
 useEffect(() => {
-  const unsubscribe = addHandler('output', handleOutput);
+  const unsubscribe = addHandler("output", handleOutput);
   return unsubscribe;
 }, []);
 ```
@@ -583,11 +606,11 @@ useEffect(() => {
 ```typescript
 // Hook implementation pattern
 const handlerRef = useRef(handler);
-handlerRef.current = handler;  // Always up-to-date
+handlerRef.current = handler; // Always up-to-date
 
 useEffect(() => {
   const listener = (e) => handlerRef.current(e);
-  window.addEventListener('message', listener);
-  return () => window.removeEventListener('message', listener);
-}, []);  // No deps = no re-subscription
+  window.addEventListener("message", listener);
+  return () => window.removeEventListener("message", listener);
+}, []); // No deps = no re-subscription
 ```
