@@ -116,7 +116,7 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
 			</div>
 
 			{!!isCollapsed && (
-				<div className="divide-y divide-white/5">
+				<div className="max-h-[60vh] overflow-y-auto custom-scrollbar divide-y divide-white/5">
 					{todos.map((todo, index) => {
 						const isCompleted = todo.status === "completed";
 						const isInProgress = todo.status === "in_progress";
