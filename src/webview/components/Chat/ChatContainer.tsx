@@ -1,9 +1,8 @@
 import React from 'react';
-import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import type { Message } from '../App';
 import { TodoDisplay } from '../Tools';
-import { ActivityTimeline } from '../Activity';
+import { JourneyTimeline } from './JourneyTimeline';
 import type { TodoItem } from '../Tools';
 
 /** Thinking intensity levels matching Claude Code CLI */
@@ -50,30 +49,30 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onSlashCommand,
   onMcpAction,
 }) => {
-  const activityMessages = messages.filter(
-    (message) => message.role === 'tool'
-      && (message.messageType === 'tool_use' || message.messageType === 'tool_result')
-  );
-  const visibleMessages = messages.filter(
-    (message) => !(message.role === 'tool'
-      && (message.messageType === 'tool_use' || message.messageType === 'tool_result'))
-  );
-  const showEmptyState = visibleMessages.length === 0 && activityMessages.length === 0;
+  const showEmptyState = messages.length === 0;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      {todos.length > 0 && (
-        <div className="px-4 pt-4">
-          <TodoDisplay todos={todos} title="Todo Progress" />
+      <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
+        <div className="flex-1 overflow-y-auto">
+          <JourneyTimeline
+            messages={messages}
+            isProcessing={isProcessing}
+            showEmptyState={showEmptyState}
+          />
         </div>
-      )}
-      <ActivityTimeline messages={activityMessages} defaultCollapsed={true} />
-
-      <MessageList
-        messages={visibleMessages}
-        isProcessing={isProcessing}
-        showEmptyState={showEmptyState}
-      />
+        <aside className="w-full lg:w-72 shrink-0 border-t lg:border-t-0 lg:border-l border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBar-background)] overflow-y-auto">
+          <div className="p-4">
+            {todos.length > 0 ? (
+              <TodoDisplay todos={todos} title="Todo Plan" defaultCollapsed={false} />
+            ) : (
+              <div className="rounded-md border border-[var(--vscode-panel-border)] p-4 text-sm text-[var(--vscode-descriptionForeground)]">
+                No planned tasks yet.
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
 
       <MessageInput
         disabled={isProcessing}

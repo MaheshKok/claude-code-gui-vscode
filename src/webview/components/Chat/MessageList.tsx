@@ -6,12 +6,14 @@ interface MessageListProps {
   messages: Message[];
   isProcessing: boolean;
   showEmptyState?: boolean;
+  isScrollable?: boolean;
 }
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   isProcessing,
   showEmptyState = true,
+  isScrollable = true,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,11 +60,12 @@ export const MessageList: React.FC<MessageListProps> = ({
     );
   }
 
+  const containerClasses = isScrollable
+    ? 'flex-1 overflow-y-auto px-4 py-4 space-y-4'
+    : 'px-4 py-4 space-y-4';
+
   return (
-    <div
-      ref={containerRef}
-      className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-    >
+    <div ref={containerRef} className={containerClasses}>
       {messages.map((message) => (
         <MessageComponent key={message.id} message={message} />
       ))}
