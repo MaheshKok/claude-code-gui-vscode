@@ -11,7 +11,8 @@
   },
   "license": "MIT",
   "engines": {
-    "vscode": "^1.94.0"
+    "vscode": "^1.94.0",
+    "node": ">=20.18.1"
   },
   "categories": [
     "AI",
