@@ -337,7 +337,11 @@ export class PanelProvider {
             };
         }
 
-        return storedState;
+        if (storedState && typeof storedState === 'object') {
+            return storedState as Record<string, unknown>;
+        }
+
+        return undefined;
     }
 
     private _setupWebviewMessageHandler(webview: vscode.Webview): void {

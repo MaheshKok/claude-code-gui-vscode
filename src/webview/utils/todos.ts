@@ -17,33 +17,36 @@ export function extractTodosFromInput(input: unknown): TodoItem[] {
     return [];
   }
 
-  return todosValue
-    .map((item) => {
-      if (!item || typeof item !== 'object') {
-        return null;
-      }
+  const todos: TodoItem[] = [];
 
-      const todo = item as Record<string, unknown>;
-      const content = typeof todo.content === 'string' ? todo.content.trim() : '';
-      if (!content) {
-        return null;
-      }
+  for (const item of todosValue) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
 
-      const statusValue = typeof todo.status === 'string' ? todo.status : 'pending';
-      const status = statusValue === 'completed' || statusValue === 'in_progress'
-        ? statusValue
-        : 'pending';
+    const todo = item as Record<string, unknown>;
+    const content = typeof todo.content === 'string' ? todo.content.trim() : '';
+    if (!content) {
+      continue;
+    }
 
-      const priority = typeof todo.priority === 'string' ? todo.priority : undefined;
+    const statusValue = typeof todo.status === 'string' ? todo.status : 'pending';
+    const status = statusValue === 'completed' || statusValue === 'in_progress'
+      ? statusValue
+      : 'pending';
 
-      return {
-        id: typeof todo.id === 'string' ? todo.id : undefined,
-        content,
-        status,
-        priority: priority as TodoItem['priority'],
-      };
-    })
-    .filter((todo): todo is TodoItem => Boolean(todo));
+    const priority = typeof todo.priority === 'string' ? todo.priority : undefined;
+    const todoItem: TodoItem = {
+      content,
+      status,
+      ...(priority ? { priority: priority as TodoItem['priority'] } : {}),
+      ...(typeof todo.id === 'string' ? { id: todo.id } : {}),
+    };
+
+    todos.push(todoItem);
+  }
+
+  return todos;
 }
 
 export function getTodoStats(todos: TodoItem[]): TodoStats {

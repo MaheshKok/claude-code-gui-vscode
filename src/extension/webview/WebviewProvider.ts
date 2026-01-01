@@ -27,8 +27,7 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
         // Configure webview options
         webviewView.webview.options = {
             enableScripts: true,
-            localResourceRoots: [this._extensionUri],
-            retainContextWhenHidden: true
+            localResourceRoots: [this._extensionUri]
         };
 
         // Use the shared panel provider instance for the sidebar

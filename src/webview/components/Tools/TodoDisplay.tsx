@@ -135,14 +135,14 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
   title = 'Tasks',
   defaultCollapsed = false,
 }) => {
-  if (!todos || todos.length === 0) {
-    return null;
-  }
-
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => !prev);
   }, []);
+
+  if (!todos || todos.length === 0) {
+    return null;
+  }
 
   const stats = {
     total: todos.length,
