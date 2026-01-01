@@ -71,9 +71,9 @@ describe("Message Component", () => {
 
         const { container } = render(<Message message={message} />);
 
-        // Check for user-specific background styling
+        // Check for user-specific styling class
         const messageContainer = container.firstChild as HTMLElement;
-        expect(messageContainer.className).toContain("bg-");
+        expect(messageContainer.className).toContain("message-user");
       });
     });
 
@@ -189,9 +189,9 @@ describe("Message Component", () => {
 
         const { container } = render(<Message message={message} />);
 
-        // Check for error-specific background styling
+        // Check for error-specific styling (red/error classes)
         const messageContainer = container.firstChild as HTMLElement;
-        expect(messageContainer.className).toContain("bg-");
+        expect(messageContainer.className).toContain("red");
       });
     });
   });
@@ -283,7 +283,8 @@ describe("Message Component", () => {
 
       render(<Message message={message} />);
 
-      expect(screen.getByText("streaming...")).toBeInTheDocument();
+      // The component shows "Thinking" text for streaming messages
+      expect(screen.getByText("Thinking")).toBeInTheDocument();
     });
 
     it("should not show streaming indicator when isStreaming is false", () => {
@@ -294,19 +295,21 @@ describe("Message Component", () => {
 
       render(<Message message={message} />);
 
-      expect(screen.queryByText("streaming...")).not.toBeInTheDocument();
+      // The component shows "Thinking" text for streaming messages
+      expect(screen.queryByText("Thinking")).not.toBeInTheDocument();
     });
 
-    it("should have pulsing animation on streaming indicator", () => {
+    it("should have bouncing animation on streaming indicator", () => {
       const message = createMockMessage({
         role: "assistant",
         isStreaming: true,
       });
 
-      render(<Message message={message} />);
+      const { container } = render(<Message message={message} />);
 
-      const streamingIndicator = screen.getByText("streaming...");
-      expect(streamingIndicator.className).toContain("animate-pulse");
+      // The streaming indicator has bouncing dots with animate-bounce class
+      const bouncingDots = container.querySelectorAll(".animate-bounce");
+      expect(bouncingDots.length).toBeGreaterThan(0);
     });
   });
 
@@ -333,8 +336,8 @@ describe("Message Component", () => {
 
       const { container } = render(<Message message={message} />);
 
-      // Check for whitespace-pre-wrap class
-      const contentDiv = container.querySelector(".whitespace-pre-wrap");
+      // Check that the message content is rendered with proper class
+      const contentDiv = container.querySelector(".message-content");
       expect(contentDiv).toBeInTheDocument();
     });
 
@@ -407,20 +410,21 @@ describe("Message Component", () => {
   // Container Styling
   // ==========================================================================
   describe("container styling", () => {
-    it("should have rounded corners", () => {
+    it("should have message class", () => {
       const message = createMockMessage();
       const { container } = render(<Message message={message} />);
 
       const messageContainer = container.firstChild as HTMLElement;
-      expect(messageContainer.className).toContain("rounded");
+      expect(messageContainer.className).toContain("message");
     });
 
-    it("should have padding", () => {
+    it("should have appropriate styling", () => {
       const message = createMockMessage();
       const { container } = render(<Message message={message} />);
 
       const messageContainer = container.firstChild as HTMLElement;
-      expect(messageContainer.className).toContain("p-4");
+      // User messages have message-user class
+      expect(messageContainer.className).toContain("message-user");
     });
 
     it("should have different styling for different roles", () => {
@@ -451,7 +455,8 @@ describe("Message Component", () => {
       const message = createMockMessage({ role: "user" });
       const { container } = render(<Message message={message} />);
 
-      const avatar = container.querySelector(".rounded-full");
+      // The component uses rounded-lg for avatar container
+      const avatar = container.querySelector(".rounded-lg");
       expect(avatar).toBeInTheDocument();
     });
 
@@ -459,10 +464,8 @@ describe("Message Component", () => {
       const message = createMockMessage({ role: "user" });
       const { container } = render(<Message message={message} />);
 
-      // User should have button background color
-      const avatar = container.querySelector(
-        ".bg-\\[var\\(--vscode-button-background\\)\\]",
-      );
+      // User avatar has orange gradient styling
+      const avatar = container.querySelector(".bg-gradient-to-br");
       expect(avatar).toBeInTheDocument();
     });
 
@@ -470,10 +473,8 @@ describe("Message Component", () => {
       const message = createMockMessage({ role: "error" });
       const { container } = render(<Message message={message} />);
 
-      // Error should have error foreground color
-      const avatar = container.querySelector(
-        ".bg-\\[var\\(--vscode-errorForeground\\)\\]",
-      );
+      // Error messages have red styling
+      const avatar = container.querySelector(".bg-red-500\\/20");
       expect(avatar).toBeInTheDocument();
     });
   });

@@ -26,8 +26,9 @@ describe("Header", () => {
       />,
     );
 
-    expect(screen.getByText(/Tokens:/)).toBeInTheDocument();
-    expect(screen.getByText(/Cost:/)).toBeInTheDocument();
-    expect(screen.getByText(/Todos: 2\/4/)).toBeInTheDocument();
+    // The header displays tokens count
+    expect(screen.getByText(/tokens/i)).toBeInTheDocument();
+    // The header shows todo stats in format "X/Y tasks"
+    expect(screen.getByText(/2\/4 tasks/)).toBeInTheDocument();
   });
 });

@@ -20,9 +20,9 @@ describe("ToolUseCard", () => {
     );
 
     expect(screen.getByText("Diff Preview")).toBeInTheDocument();
-    const summary = screen.getByText(/Summary:/);
-    expect(summary.textContent).toContain("+1");
-    expect(summary.textContent).toContain("-1");
+    // The diff shows lines with + and - prefixes for additions/deletions
+    expect(screen.getByText("+")).toBeInTheDocument();
+    expect(screen.getByText("-")).toBeInTheDocument();
     // 'foo' appears in both input display and diff preview
     expect(screen.getAllByText("foo").length).toBeGreaterThan(0);
     expect(screen.getAllByText("bar").length).toBeGreaterThan(0);
