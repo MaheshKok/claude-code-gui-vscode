@@ -126,16 +126,14 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
 								key={todo.id || index}
 								className={`flex items-start gap-3 px-4 py-3 transition-colors ${
 									isInProgress ? "bg-blue-500/5" : "hover:bg-white/5"
-								} ${isCompleted ? "opacity-50" : "opacity-100"}`}
+								}`}
 							>
 								<div className="pt-0.5 shrink-0">
 									{getStatusIcon(todo.status)}
 								</div>
 								<div className="flex-1 min-w-0 space-y-1">
 									<p
-										className={`text-sm leading-relaxed ${
-											isCompleted ? "text-white/40" : "text-white/80"
-										}`}
+										className="text-sm leading-relaxed text-white/85"
 									>
 										{todo.content}
 									</p>

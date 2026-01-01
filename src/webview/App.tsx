@@ -49,7 +49,7 @@ import type {
 } from "./types";
 import type { ConversationListItem } from "./types/history";
 import type { TodoItem } from "./components/Tools";
-import { extractTodosFromInput, getTodoStats } from "./utils";
+import { extractTodosFromInput } from "./utils";
 
 // ============================================================================
 // WSL Alert Component
@@ -1161,8 +1161,6 @@ export const App: React.FC = () => {
     : null;
   const totalTokens =
     tokens.cumulative.totalInputTokens + tokens.cumulative.totalOutputTokens;
-  const todoStats = todos.length > 0 ? getTodoStats(todos) : null;
-
   return (
     <div className="flex flex-col h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e1e2e] via-[#09090b] to-[#000000] text-white font-sans selection:bg-orange-500/30">
       {/* WSL Alert for Windows users */}
@@ -1180,12 +1178,6 @@ export const App: React.FC = () => {
         onOpenSettings={handleOpenSettings}
         onToggleHistory={handleToggleHistory}
         isHistoryOpen={isHistoryOpen}
-        summary={{
-          totalTokens,
-          sessionCostUsd: costs.sessionCostUsd,
-          subscriptionType,
-          todoStats,
-        }}
       />
 
       {/* Conversation History Panel */}
