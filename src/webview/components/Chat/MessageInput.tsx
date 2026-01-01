@@ -308,7 +308,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 						onClick={onYoloModeToggle}
 						className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
 							yoloMode
-								? "text-orange-400 bg-orange-500/10"
+								? "text-red-700 bg-red-700/10"
 								: "text-white/70 hover:bg-white/10 hover:text-white"
 						}`}
 					>

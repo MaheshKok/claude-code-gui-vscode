@@ -53,8 +53,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
 	return (
 		<div className="flex flex-col flex-1 overflow-hidden relative">
-			<div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
-				<div className="flex-1 overflow-y-auto scroll-smooth">
+			<div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
+				<div className="flex-1 lg:overflow-y-auto lg:min-h-0 scroll-smooth">
 					<JourneyTimeline
 						messages={messages}
 						isProcessing={isProcessing}
@@ -63,7 +63,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 				</div>
 
 				{/* Modernized Sidebar */}
-				<aside className="w-full lg:w-80 shrink-0 border-t lg:border-t-0 lg:border-l border-white/5 bg-black/20 backdrop-blur-md overflow-y-auto">
+				<aside className="w-full lg:w-80 shrink-0 border-t lg:border-t-0 lg:border-l border-white/5 bg-black/20 backdrop-blur-md lg:overflow-y-auto">
 					<div className="p-4 lg:p-6 mb-20 lg:mb-0">
 						{todos.length > 0 ? (
 							<TodoDisplay
@@ -89,6 +89,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 										<path d="m9 12 2 2 4-4" />
 									</svg>
 								</div>
+
 								<p className="text-sm text-white/40 font-medium">
 									No active plan
 								</p>

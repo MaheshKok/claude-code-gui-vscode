@@ -3,8 +3,9 @@
   "tasks": [
     {
       "label": "npm: watch",
-      "type": "npm",
-      "script": "watch",
+      "type": "shell",
+      "command": "${workspaceFolder}/.vscode/run-npm.sh",
+      "args": ["run", "watch"],
       "isBackground": true,
       "problemMatcher": [
         {

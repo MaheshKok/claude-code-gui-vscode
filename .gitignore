@@ -71,3 +71,7 @@ coordination/orchestration/*
 *.sqlite-wal
 claude-flow
 hive-mind-prompt-*.txt
+# Development scripts
+verify-setup.sh
+
+.vscode/

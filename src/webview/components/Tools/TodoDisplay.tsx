@@ -103,7 +103,17 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
         </div>
       </div>
 
-      {!isCollapsed && (
+      {isCollapsed ? (
+        <div className="px-4 py-2 text-xs text-white/40 flex items-center justify-between">
+          <span>
+            {stats.completed}/{stats.total} done
+          </span>
+          <div className="flex items-center gap-3">
+            <span>{stats.inProgress} active</span>
+            <span>{stats.pending} pending</span>
+          </div>
+        </div>
+      ) : (
         <div className="divide-y divide-white/5">
           {todos.map((todo, index) => {
             const isCompleted = todo.status === "completed";
@@ -121,7 +131,9 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
                   <p
-                    className={`text-sm leading-relaxed ${isCompleted ? "line-through text-white/40" : "text-white/80"}`}
+                    className={`text-sm leading-relaxed ${
+                      isCompleted ? "text-white/40" : "text-white/80"
+                    }`}
                   >
                     {todo.content}
                   </p>
