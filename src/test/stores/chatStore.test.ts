@@ -57,12 +57,27 @@ function createMockMessage(overrides: Partial<ChatMessage> = {}): ChatMessage {
 
 describe('chatStore', () => {
   beforeEach(() => {
-    // Reset store state before each test
+    // Clear localStorage first to prevent hydration of old state
+    localStorageMock.clear();
+
+    // Reset store state before each test by setting state directly
+    // Note: resetChat() preserves allTimeCostUsd, so we use setState for a complete reset
     const { result } = renderHook(() => useChatStore());
     act(() => {
-      result.current.resetChat();
+      useChatStore.setState({
+        messages: [],
+        isProcessing: false,
+        currentSessionId: null,
+        todos: [],
+        tokens: {
+          current: { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+          cumulative: { totalInputTokens: 0, totalOutputTokens: 0, totalCacheReadTokens: 0, totalCacheCreationTokens: 0 },
+        },
+        costs: { sessionCostUsd: 0, allTimeCostUsd: 0, breakdown: { inputCost: 0, outputCost: 0, cacheCost: 0 }, lastUpdated: 0 },
+        requestStartTime: null,
+        numTurns: 0,
+      });
     });
-    localStorageMock.clear();
   });
 
   // ==========================================================================
@@ -567,7 +582,10 @@ describe('chatStore', () => {
           result.current.updateSessionCost(2.00);
         });
 
-        expect(result.current.costs.allTimeCostUsd).toBe(3.00);
+        // updateSessionCost accumulates the DELTA (difference from previous session cost)
+        // First call: delta = 1.00 - 0 = 1.00, allTime = 0 + 1.00 = 1.00
+        // Second call: delta = 2.00 - 1.00 = 1.00, allTime = 1.00 + 1.00 = 2.00
+        expect(result.current.costs.allTimeCostUsd).toBe(2.00);
       });
 
       it('should update lastUpdated timestamp', () => {

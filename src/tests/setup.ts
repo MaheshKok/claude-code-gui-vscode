@@ -1,4 +1,5 @@
 import { vi, beforeAll, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
 
 // Mock VSCode API for extension tests
 const mockVscode = {

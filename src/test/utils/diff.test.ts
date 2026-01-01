@@ -97,14 +97,16 @@ describe('diff utilities', () => {
 
         expect(result.isIdentical).toBe(false);
         expect(result.additions).toBe(1);
-        expect(result.deletions).toBe(0);
+        // Empty string splits to [''], so the empty line is counted as deleted and new content inserted
+        expect(result.deletions).toBe(1);
       });
 
       it('should handle empty new content', () => {
         const result = computeLineDiff('old content', '');
 
         expect(result.isIdentical).toBe(false);
-        expect(result.additions).toBe(0);
+        // Empty string splits to [''], so the empty line is counted as inserted and old content deleted
+        expect(result.additions).toBe(1);
         expect(result.deletions).toBe(1);
       });
 

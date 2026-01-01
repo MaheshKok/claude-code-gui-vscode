@@ -409,10 +409,11 @@ describe('format utilities', () => {
         output_tokens: 1000000,
       };
 
-      const sonnetCost = calculateCost(usage, 'claude-sonnet-4-20250514');
-      const haikuCost = calculateCost(usage, 'claude-3-5-haiku-20241022');
+      // Use model names that exist in TOKEN_PRICING
+      const opusCost = calculateCost(usage, 'claude-opus-4-5-20251101');
+      const haikuCost = calculateCost(usage, 'claude-haiku-4-5-20251001');
 
-      expect(sonnetCost).toBeGreaterThan(haikuCost);
+      expect(opusCost).toBeGreaterThan(haikuCost);
     });
   });
 
@@ -475,7 +476,9 @@ describe('format utilities', () => {
     });
 
     it('should keep specified parent directories', () => {
-      const result = formatFilePath('/a/b/c/d/e/file.txt', { maxLength: 25, parentDirs: 2 });
+      // Use a path long enough to trigger truncation (32 chars > maxLength 25)
+      // Path: /some/deep/nested/path/to/file.txt = 34 chars
+      const result = formatFilePath('/some/deep/nested/path/to/file.txt', { maxLength: 25, parentDirs: 2 });
       expect(result).toContain('.../');
       expect(result).toContain('file.txt');
     });

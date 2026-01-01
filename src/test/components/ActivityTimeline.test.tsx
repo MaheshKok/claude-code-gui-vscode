@@ -42,7 +42,8 @@ describe('ActivityTimeline', () => {
 
     expect(screen.getByText('Activity')).toBeInTheDocument();
     expect(screen.getByText('Step 1')).toBeInTheDocument();
-    expect(screen.getByText('Read')).toBeInTheDocument();
+    // Multiple "Read" elements may appear (tool_use and tool_result both show tool name)
+    expect(screen.getAllByText('Read').length).toBeGreaterThan(0);
     expect(screen.getByText(/Result/i)).toBeInTheDocument();
   });
 

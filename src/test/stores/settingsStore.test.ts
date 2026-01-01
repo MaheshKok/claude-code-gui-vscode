@@ -168,7 +168,7 @@ describe('settingsStore', () => {
       it('should accept all valid model options', () => {
         const { result } = renderHook(() => useSettingsStore());
         const models: ClaudeModel[] = [
-          'claude-sonnet-4-20250514',
+          'claude-sonnet-4-5-20250929',
           'claude-opus-4-5-20251101',
           'claude-3-5-sonnet-20241022',
           'claude-3-5-haiku-20241022',
@@ -184,9 +184,9 @@ describe('settingsStore', () => {
     });
 
     describe('default value', () => {
-      it('should have claude-sonnet-4-20250514 as default', () => {
+      it('should have claude-sonnet-4-5-20250929 as default', () => {
         const { result } = renderHook(() => useSettingsStore());
-        expect(result.current.selectedModel).toBe('claude-sonnet-4-20250514');
+        expect(result.current.selectedModel).toBe('claude-sonnet-4-5-20250929');
       });
     });
   });
@@ -655,7 +655,7 @@ describe('settingsStore', () => {
         });
 
         expect(result.current.wsl.enabled).toBe(false);
-        expect(result.current.selectedModel).toBe('claude-sonnet-4-20250514');
+        expect(result.current.selectedModel).toBe('claude-sonnet-4-5-20250929');
         expect(result.current.planMode).toBe(false);
         expect(result.current.yoloMode).toBe(false);
         expect(result.current.fontSize).toBe(14);

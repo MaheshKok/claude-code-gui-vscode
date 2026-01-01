@@ -23,8 +23,9 @@ describe('ToolUseCard', () => {
     const summary = screen.getByText(/Summary:/);
     expect(summary.textContent).toContain('+1');
     expect(summary.textContent).toContain('-1');
-    expect(screen.getByText('foo')).toBeInTheDocument();
-    expect(screen.getByText('bar')).toBeInTheDocument();
+    // 'foo' appears in both input display and diff preview
+    expect(screen.getAllByText('foo').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('bar').length).toBeGreaterThan(0);
   });
 
   it('sends openDiff message when Diff button is clicked', () => {

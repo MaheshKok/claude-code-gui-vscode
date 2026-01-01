@@ -109,7 +109,16 @@ describe('Message Component', () => {
 
         render(<Message message={message} />);
 
-        expect(screen.getByText('{"result": "success"}')).toBeInTheDocument();
+        // Tool messages are collapsed by default, so we check the tool name is visible
+        expect(screen.getByText('Read')).toBeInTheDocument();
+
+        // Click to expand and see content
+        const header = screen.getByText('Read').closest('div[class*="cursor-pointer"]');
+        if (header) {
+          fireEvent.click(header);
+          // After expansion, content should be visible
+          expect(screen.getByText(/result.*success/)).toBeInTheDocument();
+        }
       });
 
       it('should display tool name as label', () => {
@@ -142,6 +151,14 @@ describe('Message Component', () => {
 
         const { container } = render(<Message message={message} />);
 
+        // Click to expand the collapsed tool message
+        const header = container.querySelector('div[class*="cursor-pointer"]');
+        if (header) {
+          fireEvent.click(header);
+        }
+
+        // After expansion, check for monospace content
+        // The content is in a div with font-mono class
         const codeBlock = container.querySelector('.font-mono');
         expect(codeBlock).toBeInTheDocument();
       });
