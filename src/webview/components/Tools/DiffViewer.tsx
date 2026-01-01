@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
+import { ChevronDown, FileDiff, SplitSquareHorizontal } from "lucide-react";
 
 export interface DiffLine {
   type: "context" | "added" | "removed";
@@ -21,10 +22,6 @@ export interface DiffViewerProps {
   onFilePathClick?: (filePath: string) => void;
 }
 
-/**
- * Compute line-by-line diff using LCS algorithm
- * Based on the original script.ts computeLineDiff function
- */
 const computeLineDiff = (
   oldLines: string[],
   newLines: string[],
@@ -32,68 +29,45 @@ const computeLineDiff = (
   const m = oldLines.length;
   const n = newLines.length;
 
-  // Compute longest common subsequence
-  const lcs: number[][] = Array(m + 1)
+  const lcs = Array(m + 1)
     .fill(null)
-    .map(() => Array(n + 1).fill(0) as number[]);
+    .map(() => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      const oldLine = oldLines[i - 1];
-      const newLine = newLines[j - 1];
-      const lcsRow = lcs[i];
-      const lcsPrevRow = lcs[i - 1];
-      if (lcsRow && lcsPrevRow) {
-        if (oldLine === newLine) {
-          lcsRow[j] = (lcsPrevRow[j - 1] ?? 0) + 1;
-        } else {
-          lcsRow[j] = Math.max(lcsPrevRow[j] ?? 0, lcsRow[j - 1] ?? 0);
-        }
+      if (oldLines[i - 1] === newLines[j - 1]) {
+        lcs[i][j] = lcs[i - 1][j - 1] + 1;
+      } else {
+        lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
       }
     }
   }
 
-  // Backtrack to build diff
   const diff: DiffLine[] = [];
   let i = m;
   let j = n;
-
   while (i > 0 || j > 0) {
-    const lcsRow = lcs[i];
-    const lcsPrevRow = lcs[i - 1];
-    const oldLine = i > 0 ? oldLines[i - 1] : undefined;
-    const newLine = j > 0 ? newLines[j - 1] : undefined;
-
-    if (i > 0 && j > 0 && oldLine === newLine) {
+    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
       diff.unshift({
         type: "context",
         oldLine: i - 1,
         newLine: j - 1,
-        content: oldLine ?? "",
+        content: oldLines[i - 1],
       });
       i--;
       j--;
-    } else if (
-      j > 0 &&
-      (i === 0 ||
-        (lcsRow && lcsPrevRow && (lcsRow[j - 1] ?? 0) >= (lcsPrevRow[j] ?? 0)))
-    ) {
-      diff.unshift({
-        type: "added",
-        newLine: j - 1,
-        content: newLine ?? "",
-      });
+    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+      diff.unshift({ type: "added", newLine: j - 1, content: newLines[j - 1] });
       j--;
-    } else if (i > 0) {
+    } else {
       diff.unshift({
         type: "removed",
         oldLine: i - 1,
-        content: oldLine ?? "",
+        content: oldLines[i - 1],
       });
       i--;
     }
   }
-
   return diff;
 };
 
@@ -130,203 +104,116 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
     return { added, removed };
   }, [diff]);
 
-  const visibleLines = isExpanded ? diff : diff.slice(0, maxVisibleLines);
-  const hiddenCount = diff.length - maxVisibleLines;
-  const shouldTruncate = diff.length > maxVisibleLines;
+  const visibleLines = isExpanded
+    ? diff
+    : diff
+        .filter(
+          (l) =>
+            l.type !== "context" ||
+            Math.abs((l.newLine || 0) - (l.oldLine || 0)) < 2,
+        )
+        .slice(0, maxVisibleLines);
+  const hiddenCount = diff.length - visibleLines.length;
 
-  const toggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
-
+  const toggleExpanded = useCallback(() => setIsExpanded((prev) => !prev), []);
   const handleOpenDiff = useCallback(() => {
-    if (onOpenDiff) {
-      onOpenDiff(filePath, oldContent, newContent);
-    }
+    if (onOpenDiff) onOpenDiff(filePath, oldContent, newContent);
   }, [onOpenDiff, filePath, oldContent, newContent]);
 
   const handleFilePathClick = useCallback(() => {
-    if (onFilePathClick) {
-      onFilePathClick(filePath);
-    }
+    if (onFilePathClick) onFilePathClick(filePath);
   }, [onFilePathClick, filePath]);
 
-  const getLineNumber = (line: DiffLine): string => {
-    if (line.type === "removed") {
-      return ((line.oldLine ?? 0) + startLine).toString().padStart(4, " ");
-    }
-    return ((line.newLine ?? 0) + startLine).toString().padStart(4, " ");
-  };
-
-  const getPrefix = (type: "context" | "added" | "removed"): string => {
-    switch (type) {
-      case "added":
-        return "+";
-      case "removed":
-        return "-";
-      default:
-        return " ";
-    }
-  };
-
-  const getLineClasses = (type: "context" | "added" | "removed"): string => {
-    switch (type) {
-      case "added":
-        return "bg-[var(--vscode-diffEditor-insertedLineBackground)] text-[var(--vscode-gitDecoration-addedResourceForeground)]";
-      case "removed":
-        return "bg-[var(--vscode-diffEditor-removedLineBackground)] text-[var(--vscode-gitDecoration-deletedResourceForeground)]";
-      default:
-        return "text-[var(--vscode-foreground)]";
-    }
-  };
-
-  const getSummary = (): string => {
-    const parts: string[] = [];
-    if (stats.added > 0) {
-      parts.push(`+${stats.added} line${stats.added > 1 ? "s" : ""} added`);
-    }
-    if (stats.removed > 0) {
-      parts.push(
-        `-${stats.removed} line${stats.removed > 1 ? "s" : ""} removed`,
-      );
-    }
-    return parts.length > 0 ? parts.join(", ") : "No changes";
-  };
-
   return (
-    <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-textCodeBlock-background)]">
-      {/* File Header */}
-      <div
-        className="flex items-center gap-2 px-3 py-1.5 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)] cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)]"
-        onClick={handleFilePathClick}
-        title={filePath}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-[var(--vscode-symbolIcon-fileForeground)]"
+    <div className="glass-panel rounded-xl overflow-hidden border border-white/10 bg-black/20 group">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
+        <div
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleFilePathClick}
         >
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14,2 14,8 20,8" />
-        </svg>
-        <span className="text-sm text-[var(--vscode-textLink-foreground)] hover:underline">
-          {formatFilePath(filePath)}
-        </span>
-      </div>
-
-      {/* Line Range Header */}
-      <div className="px-3 py-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-b border-[var(--vscode-panel-border)]">
-        Lines {startLine}-
-        {startLine +
-          Math.max(
-            oldContent.split("\n").length,
-            newContent.split("\n").length,
-          ) -
-          1}
-      </div>
-
-      {/* Diff Content */}
-      <div className="overflow-x-auto">
-        <div className="font-mono text-xs leading-5">
-          {visibleLines.map((line, index) => (
-            <div
-              key={index}
-              className={`flex whitespace-pre ${getLineClasses(line.type)}`}
-            >
-              <span className="w-4 shrink-0 text-center select-none text-[var(--vscode-editorLineNumber-foreground)]">
-                {getPrefix(line.type)}
-              </span>
-              <span className="w-12 shrink-0 text-right pr-2 select-none text-[var(--vscode-editorLineNumber-foreground)]">
-                {getLineNumber(line)}
-              </span>
-              <span className="px-2 flex-1">{line.content || " "}</span>
-            </div>
-          ))}
+          <FileDiff className="w-4 h-4 text-orange-400" />
+          <span className="font-mono text-xs text-white/90 hover:underline hover:text-orange-400 transition-colors">
+            {formatFilePath(filePath)}
+          </span>
         </div>
 
-        {/* Expand/Collapse */}
-        {shouldTruncate && (
-          <div className="px-3 py-1.5 border-t border-[var(--vscode-panel-border)] bg-[var(--vscode-editorGroupHeader-tabsBackground)]">
-            <button
-              className="flex items-center gap-1 text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
-              onClick={toggleExpanded}
-            >
-              {isExpanded ? (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="18 15 12 9 6 15" />
-                  </svg>
-                  <span>Show less</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                  <span>Show {hiddenCount} more lines</span>
-                </>
-              )}
-            </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider bg-black/20 px-2 py-1 rounded">
+            {stats.added > 0 && (
+              <span className="text-green-400">+{stats.added}</span>
+            )}
+            {stats.removed > 0 && (
+              <span className="text-red-400">-{stats.removed}</span>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Summary Row */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBarSectionHeader-background)]">
-        <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-          Summary: {getSummary()}
-        </span>
-
-        {onOpenDiff && (
-          <button
-            className="flex items-center gap-1.5 px-2 py-1 text-xs rounded bg-[var(--vscode-button-secondaryBackground)] text-[var(--vscode-button-secondaryForeground)] hover:bg-[var(--vscode-button-secondaryHoverBackground)] transition-colors"
-            onClick={handleOpenDiff}
-            title="Open side-by-side diff in VS Code"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {onOpenDiff && (
+            <button
+              onClick={handleOpenDiff}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+              title="Open Diff View"
             >
-              <rect x="3" y="3" width="7" height="18" rx="1" />
-              <rect x="14" y="3" width="7" height="18" rx="1" />
-            </svg>
-            <span>Open Diff</span>
-          </button>
-        )}
+              <SplitSquareHorizontal className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Content */}
+      <div className="overflow-x-auto custom-scrollbar">
+        <div className="font-mono text-xs">
+          {visibleLines.map((line, index) => {
+            const isAdded = line.type === "added";
+            const isRemoved = line.type === "removed";
+
+            return (
+              <div
+                key={index}
+                className={`grid grid-cols-[40px_40px_20px_1fr] hover:bg-white/5 ${
+                  isAdded
+                    ? "bg-green-500/10 text-green-200"
+                    : isRemoved
+                      ? "bg-red-500/10 text-red-200"
+                      : "text-white/40"
+                }`}
+              >
+                <div className="px-2 py-0.5 text-right select-none opacity-40 border-r border-white/5">
+                  {line.oldLine ? line.oldLine + startLine - 1 : ""}
+                </div>
+                <div className="px-2 py-0.5 text-right select-none opacity-40 border-r border-white/5">
+                  {line.newLine ? line.newLine + startLine - 1 : ""}
+                </div>
+                <div className="text-center select-none opacity-60">
+                  {isAdded ? "+" : isRemoved ? "-" : ""}
+                </div>
+                <div className="px-2 py-0.5 whitespace-pre-wrap break-all">
+                  {line.content || " "}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {hiddenCount > 0 && (
+        <button
+          onClick={toggleExpanded}
+          className="w-full flex items-center justify-center gap-2 py-2 text-xs text-white/50 hover:text-white hover:bg-white/5 transition-colors border-t border-white/5"
+        >
+          {isExpanded ? (
+            <>
+              <ChevronDown className="w-3 h-3 rotate-180" />
+              Show Less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-3 h-3" />
+              Show {hiddenCount} more lines
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 };

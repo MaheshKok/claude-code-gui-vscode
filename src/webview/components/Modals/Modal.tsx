@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useRef } from "react";
+import { X } from "lucide-react";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
@@ -86,18 +87,18 @@ export const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
         className={`
           relative w-full ${widthClasses[width]}
-          bg-[var(--vscode-editorWidget-background)]
-          border border-[var(--vscode-editorWidget-border)]
-          rounded-lg shadow-xl
+          glass-panel border-white/10 shadow-2xl
+          rounded-xl
           animate-slide-up
+          text-white
           ${className}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--vscode-editorWidget-border)]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <h2
             id="modal-title"
-            className="text-sm font-semibold text-[var(--vscode-foreground)]"
+            className="text-lg font-medium text-white/90 tracking-tight"
           >
             {title}
           </h2>
@@ -105,29 +106,18 @@ export const Modal: React.FC<ModalProps> = ({
           {showCloseButton && (
             <button
               onClick={onClose}
-              className="p-1 rounded hover:bg-[var(--vscode-toolbar-hoverBackground)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors modal-close-btn"
               aria-label="Close modal"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <X className="w-5 h-5" />
             </button>
           )}
         </div>
 
         {/* Body */}
-        <div className="p-4 max-h-[70vh] overflow-y-auto">{children}</div>
+        <div className="p-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {children}
+        </div>
       </div>
     </div>
   );

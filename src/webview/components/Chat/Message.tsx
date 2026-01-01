@@ -2,6 +2,16 @@ import React, { useState, useCallback } from "react";
 import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
 import { extractTodosFromInput } from "../../utils";
 import type { Message as MessageType } from "../App";
+import {
+  User,
+  Bot,
+  Terminal,
+  AlertCircle,
+  Clock,
+  ChevronRight,
+  Zap,
+  Cpu,
+} from "lucide-react";
 
 interface MessageProps {
   message: MessageType;
@@ -53,95 +63,24 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   const getRoleIcon = () => {
     switch (message.role) {
       case "user":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        );
+        return <User className="w-4 h-4" />;
       case "assistant":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 8V4H8" />
-            <rect width="16" height="12" x="4" y="8" rx="2" />
-            <path d="M2 14h2" />
-            <path d="M20 14h2" />
-            <path d="M15 13v2" />
-            <path d="M9 13v2" />
-          </svg>
-        );
+        return <Bot className="w-4 h-4" />;
       case "tool":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-          </svg>
-        );
+        return <Terminal className="w-4 h-4" />;
       case "error":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-        );
+        return <AlertCircle className="w-4 h-4" />;
       default:
         return null;
     }
   };
 
   const getContainerClasses = () => {
-    const baseClasses = "rounded-lg p-4";
-
-    if (isUser) {
-      return `${baseClasses} bg-[var(--vscode-input-background)] border border-[var(--vscode-input-border)]`;
-    }
-    if (isError) {
-      return `${baseClasses} bg-[var(--vscode-inputValidation-errorBackground)] border border-[var(--vscode-inputValidation-errorBorder)]`;
-    }
-    if (isTool) {
-      return `${baseClasses} bg-[var(--vscode-editor-inactiveSelectionBackground)] border border-[var(--vscode-panel-border)]`;
-    }
-    return `${baseClasses} bg-[var(--vscode-editor-background)]`;
+    if (isUser) return "message message-user text-white";
+    if (isError)
+      return "message glass border-red-500/30 bg-red-500/10 text-red-200";
+    if (isTool) return "message glass-panel border-white/5";
+    return "message message-assistant text-white/90";
   };
 
   const formatTimestamp = (date: Date) => {
@@ -161,20 +100,34 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       : Boolean(message.isStreaming);
 
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center gap-2 text-xs text-white/40 px-1">
           <span>{getRoleLabel()}</span>
           <span>{formatTimestamp(message.timestamp)}</span>
-          {message.status && <span>{message.status}</span>}
-          {message.duration !== undefined && (
-            <span>{formatDuration(message.duration)}</span>
+          {message.status && (
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold 
+                ${
+                  message.status === "completed"
+                    ? "bg-green-500/10 text-green-400"
+                    : message.status === "failed"
+                      ? "bg-red-500/10 text-red-400"
+                      : "bg-blue-500/10 text-blue-400"
+                }`}
+            >
+              {message.status}
+            </span>
           )}
-          {message.tokens !== undefined && (
-            <span>{formatTokens(message.tokens)}</span>
+          {message.duration !== undefined && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" /> {formatDuration(message.duration)}
+            </span>
           )}
         </div>
         {todos.length > 0 ? (
-          <TodoDisplay todos={todos} title="Todo Update" />
+          <div className="glass-panel rounded-xl overflow-hidden">
+            <TodoDisplay todos={todos} title="Todo Update" />
+          </div>
         ) : (
           <ToolUseCard
             toolName={message.toolName || "Tool"}
@@ -194,15 +147,12 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   if (isToolResult) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center gap-2 text-xs text-white/40 px-1">
           <span>{getRoleLabel()}</span>
           <span>{formatTimestamp(message.timestamp)}</span>
           {message.duration !== undefined && (
             <span>{formatDuration(message.duration)}</span>
-          )}
-          {message.tokens !== undefined && (
-            <span>{formatTokens(message.tokens)}</span>
           )}
         </div>
         <ToolResultCard
@@ -216,98 +166,57 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     );
   }
 
-  // For tool messages, use collapsible layout
+  // Tool Message (Collapsible)
   if (isTool) {
-    // Extract metadata from message
     const duration = message.duration;
     const tokens = message.tokens;
 
     return (
-      <div className={getContainerClasses()}>
-        {/* Clickable header for tool messages */}
+      <div className={`${getContainerClasses()} !p-0 overflow-hidden group`}>
         <div
-          className="flex items-center gap-2 cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] -m-4 p-4 rounded-lg transition-colors"
+          className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
           onClick={toggleCollapsed}
         >
-          {/* Collapse/Expand chevron */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform flex-shrink-0 ${isCollapsed ? "" : "rotate-90"}`}
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+          <ChevronRight
+            className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+          />
+
           <span
-            className={`flex items-center justify-center w-6 h-6 rounded-full bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]`}
+            className={`flex items-center justify-center w-6 h-6 rounded-lg bg-white/5 text-white/70`}
           >
             {getRoleIcon()}
           </span>
-          <span className="font-medium text-sm text-[var(--vscode-foreground)]">
+          <span className="font-medium text-sm text-white/80">
             {getRoleLabel()}
           </span>
-          <span className="text-xs text-[var(--vscode-descriptionForeground)]">
+          <span className="text-xs text-white/30 hidden sm:inline">
             {formatTimestamp(message.timestamp)}
           </span>
 
-          {/* Metadata badges */}
           <div className="ml-auto flex items-center gap-2">
             {duration !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
+              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
+                <Clock className="w-3 h-3" />
                 {formatDuration(duration)}
               </span>
             )}
             {tokens !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                  <line x1="7" y1="7" x2="7.01" y2="7" />
-                </svg>
+              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
+                <Zap className="w-3 h-3" />
                 {formatTokens(tokens)}
               </span>
             )}
             {message.isStreaming && (
-              <span className="text-xs text-[var(--vscode-descriptionForeground)] animate-pulse">
+              <span className="text-xs text-orange-400 animate-pulse font-medium">
                 streaming...
               </span>
             )}
           </div>
         </div>
 
-        {/* Content - only show when not collapsed */}
         {!isCollapsed && (
-          <div className="pl-8 mt-3 text-sm text-[var(--vscode-foreground)] whitespace-pre-wrap break-words">
-            <div className="font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-2 rounded overflow-x-auto">
+          <div className="px-4 pb-4 pt-2 border-t border-white/5 bg-black/10">
+            <div className="font-mono text-xs text-white/70 whitespace-pre-wrap break-words bg-black/30 p-3 rounded-lg border border-white/5">
               {message.content}
             </div>
           </div>
@@ -316,35 +225,55 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     );
   }
 
-  // For non-tool messages, use regular layout
+  // Regular Message (User/Assistant)
   return (
-    <div className={getContainerClasses()}>
-      <div className="flex items-center gap-2 mb-2">
+    <div className={`${getContainerClasses()} ${isUser ? "ml-auto" : ""}`}>
+      <div className="flex items-center gap-3 mb-3 border-b border-white/5 pb-2">
         <span
-          className={`flex items-center justify-center w-6 h-6 rounded-full ${
+          className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-inner ${
             isError
-              ? "bg-[var(--vscode-errorForeground)] text-white"
+              ? "bg-red-500/20 text-red-200"
               : isUser
-                ? "bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)]"
-                : "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
+                ? "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-orange-500/20"
+                : "bg-zinc-700 text-zinc-100"
           }`}
         >
           {getRoleIcon()}
         </span>
-        <span className="font-medium text-sm text-[var(--vscode-foreground)]">
-          {getRoleLabel()}
-        </span>
-        <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-          {formatTimestamp(message.timestamp)}
-        </span>
-        {message.isStreaming && (
-          <span className="text-xs text-[var(--vscode-descriptionForeground)] animate-pulse">
-            streaming...
+
+        <div className="flex flex-col">
+          <span className="font-bold text-sm tracking-wide">
+            {getRoleLabel()}
           </span>
+          <span className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">
+            {formatTimestamp(message.timestamp)}
+          </span>
+        </div>
+
+        {message.isStreaming && (
+          <div className="ml-auto flex items-center gap-2 px-2 py-1 bg-orange-500/10 rounded-full border border-orange-500/20">
+            <div className="flex gap-1">
+              <span
+                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
+            </div>
+            <span className="text-[10px] text-orange-400 font-medium uppercase">
+              Thinking
+            </span>
+          </div>
         )}
       </div>
 
-      <div className="pl-8 text-sm text-[var(--vscode-foreground)] whitespace-pre-wrap break-words">
+      <div className="text-sm leading-relaxed message-content">
         <MessageContent content={message.content} />
       </div>
     </div>
@@ -356,7 +285,6 @@ interface MessageContentProps {
 }
 
 const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
-  // Simple markdown-like rendering for code blocks
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return (
@@ -373,22 +301,32 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
               : codeContent;
 
           return (
-            <div key={index} className="my-2">
+            <div
+              key={index}
+              className="my-4 rounded-xl overflow-hidden border border-white/10 shadow-lg group"
+            >
               {language && (
-                <div className="text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-textCodeBlock-background)] px-3 py-1 rounded-t border-b border-[var(--vscode-panel-border)]">
-                  {language}
+                <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
+                  <span className="text-xs font-medium text-white/60 uppercase tracking-wider">
+                    {language}
+                  </span>
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/20" />
+                  </div>
                 </div>
               )}
-              <pre
-                className={`font-mono text-xs bg-[var(--vscode-textCodeBlock-background)] p-3 overflow-x-auto ${language ? "rounded-b" : "rounded"}`}
-              >
-                <code>{code}</code>
-              </pre>
+              <div className="relative">
+                <pre className="font-mono text-xs bg-black/40 p-4 overflow-x-auto text-white/80 leading-relaxed custom-scrollbar">
+                  <code>{code}</code>
+                </pre>
+                {/* Copy button could go here */}
+              </div>
             </div>
           );
         }
 
-        // Handle inline code
         return (
           <span key={index}>
             {part.split(/(`[^`]+`)/g).map((segment, i) => {
@@ -396,7 +334,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
                 return (
                   <code
                     key={i}
-                    className="px-1 py-0.5 rounded bg-[var(--vscode-textCodeBlock-background)] font-mono text-xs"
+                    className="px-1.5 py-0.5 mx-0.5 rounded-md bg-white/10 text-orange-200 font-mono text-xs border border-white/5"
                   >
                     {segment.slice(1, -1)}
                   </code>

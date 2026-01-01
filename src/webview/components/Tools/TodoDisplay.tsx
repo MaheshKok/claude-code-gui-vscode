@@ -1,4 +1,11 @@
 import React, { useState, useCallback } from "react";
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  ChevronRight,
+  ListTodo,
+} from "lucide-react";
 
 export type TodoStatus = "pending" | "in_progress" | "completed";
 
@@ -12,126 +19,35 @@ export interface TodoItem {
 export interface TodoDisplayProps {
   todos: TodoItem[];
   title?: string;
-  /** Whether to start collapsed (default: false) */
   defaultCollapsed?: boolean;
 }
 
-const getStatusIcon = (status: TodoStatus): React.ReactNode => {
+const getStatusIcon = (status: TodoStatus) => {
   switch (status) {
     case "completed":
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-[var(--vscode-terminal-ansiGreen)]"
-        >
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-          <polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
-      );
+      return <CheckCircle2 className="w-4 h-4 text-green-400" />;
     case "in_progress":
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-[var(--vscode-terminal-ansiYellow)] animate-spin"
-          style={{ animationDuration: "2s" }}
-        >
-          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
-      );
-    case "pending":
+      return <Clock className="w-4 h-4 text-blue-400 animate-spin-slow" />;
     default:
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-[var(--vscode-descriptionForeground)]"
-        >
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-      );
+      return <Circle className="w-4 h-4 text-white/20" />;
   }
 };
 
-const getStatusLabel = (status: TodoStatus): string => {
-  switch (status) {
-    case "completed":
-      return "Completed";
-    case "in_progress":
-      return "In Progress";
-    case "pending":
-    default:
-      return "Pending";
-  }
-};
-
-const getStatusClasses = (status: TodoStatus): string => {
-  switch (status) {
-    case "completed":
-      return "bg-[var(--vscode-terminal-ansiGreen)]/10 border-[var(--vscode-terminal-ansiGreen)]/30";
-    case "in_progress":
-      return "bg-[var(--vscode-terminal-ansiYellow)]/10 border-[var(--vscode-terminal-ansiYellow)]/30";
-    case "pending":
-    default:
-      return "bg-[var(--vscode-editor-inactiveSelectionBackground)] border-[var(--vscode-panel-border)]";
-  }
-};
-
-const getPriorityBadge = (priority?: string): React.ReactNode => {
+const getPriorityBadge = (priority?: string) => {
   if (!priority) return null;
-
   const colors: Record<string, string> = {
-    critical:
-      "bg-[var(--vscode-errorForeground)]/20 text-[var(--vscode-errorForeground)] border-[var(--vscode-errorForeground)]/30",
-    high: "bg-[var(--vscode-terminal-ansiRed)]/20 text-[var(--vscode-terminal-ansiRed)] border-[var(--vscode-terminal-ansiRed)]/30",
-    medium:
-      "bg-[var(--vscode-terminal-ansiYellow)]/20 text-[var(--vscode-terminal-ansiYellow)] border-[var(--vscode-terminal-ansiYellow)]/30",
-    low: "bg-[var(--vscode-terminal-ansiBlue)]/20 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/30",
+    critical: "bg-red-500/20 text-red-200 border-red-500/30",
+    high: "bg-orange-500/20 text-orange-200 border-orange-500/30",
+    medium: "bg-yellow-500/20 text-yellow-200 border-yellow-500/30",
+    low: "bg-blue-500/20 text-blue-200 border-blue-500/30",
   };
-
-  const colorClass = colors[priority] || colors.medium;
-
   return (
     <span
-      className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${colorClass}`}
+      className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${colors[priority] || colors.medium}`}
     >
-      {priority.toUpperCase()}
+      {priority}
     </span>
   );
-};
-
-const getTextClasses = (status: TodoStatus): string => {
-  switch (status) {
-    case "completed":
-      return "text-[var(--vscode-descriptionForeground)]";
-    case "in_progress":
-      return "text-[var(--vscode-foreground)] font-medium";
-    case "pending":
-    default:
-      return "text-[var(--vscode-foreground)]";
-  }
 };
 
 export const TodoDisplay: React.FC<TodoDisplayProps> = ({
@@ -140,13 +56,12 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
   defaultCollapsed = false,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const toggleCollapsed = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
-  }, []);
+  const toggleCollapsed = useCallback(
+    () => setIsCollapsed((prev) => !prev),
+    [],
+  );
 
-  if (!todos || todos.length === 0) {
-    return null;
-  }
+  if (!todos || todos.length === 0) return null;
 
   const stats = {
     total: todos.length,
@@ -158,108 +73,84 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
   const progressPercent = Math.round((stats.completed / stats.total) * 100);
 
   return (
-    <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-background)]">
+    <div className="glass-panel rounded-xl overflow-hidden border border-white/10 bg-black/20">
       {/* Header */}
       <div
-        className="flex items-center justify-between px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)] cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors border-b border-white/5"
         onClick={toggleCollapsed}
       >
         <div className="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-[var(--vscode-symbolIcon-methodForeground)]"
-          >
-            <path d="M9 11l3 3L22 4" />
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-          </svg>
-          <span className="font-medium text-sm text-[var(--vscode-foreground)]">
-            {title}
-          </span>
+          <ChevronRight
+            className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+          />
+          <ListTodo className="w-4 h-4 text-blue-400" />
+          <span className="font-semibold text-sm text-white/90">{title}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
-          <span>
-            {stats.completed}/{stats.total}
-          </span>
-          <span className="text-[var(--vscode-terminal-ansiGreen)]">
-            {progressPercent}%
-          </span>
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5">
+            <span className="text-white/60">
+              {stats.completed}/{stats.total}
+            </span>
+          </div>
+
+          <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-blue-500 transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
         </div>
       </div>
 
       {!isCollapsed && (
-        <>
-          {/* Progress Bar */}
-          <div className="h-1 bg-[var(--vscode-progressBar-background)]/20">
-            <div
-              className="h-full bg-[var(--vscode-terminal-ansiGreen)] transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+        <div className="divide-y divide-white/5">
+          {todos.map((todo, index) => {
+            const isCompleted = todo.status === "completed";
+            const isInProgress = todo.status === "in_progress";
 
-          {/* Todo List */}
-          <div className="divide-y divide-[var(--vscode-panel-border)]">
-            {todos.map((todo, index) => (
+            return (
               <div
                 key={todo.id || index}
-                className={`flex items-start gap-3 px-3 py-2 ${getStatusClasses(todo.status)} border-l-2`}
+                className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                  isInProgress ? "bg-blue-500/5" : "hover:bg-white/5"
+                } ${isCompleted ? "opacity-50" : "opacity-100"}`}
               >
                 <div className="pt-0.5 shrink-0">
                   {getStatusIcon(todo.status)}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm ${getTextClasses(todo.status)}`}>
-                      {todo.content}
-                    </span>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <p
+                    className={`text-sm leading-relaxed ${isCompleted ? "line-through text-white/40" : "text-white/80"}`}
+                  >
+                    {todo.content}
+                  </p>
+                  <div className="flex items-center gap-2">
                     {getPriorityBadge(todo.priority)}
+                    {isInProgress && (
+                      <span className="text-[10px] text-blue-400 font-medium animate-pulse">
+                        In Progress
+                      </span>
+                    )}
                   </div>
-                  <span className="text-[10px] text-[var(--vscode-descriptionForeground)]">
-                    {getStatusLabel(todo.status)}
-                  </span>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
 
           {/* Footer Stats */}
-          <div className="flex items-center gap-4 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-t border-[var(--vscode-panel-border)] text-xs text-[var(--vscode-descriptionForeground)]">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiGreen)]" />
-              <span>{stats.completed} completed</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[var(--vscode-terminal-ansiYellow)]" />
-              <span>{stats.inProgress} in progress</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[var(--vscode-descriptionForeground)]" />
-              <span>{stats.pending} pending</span>
+          <div className="flex items-center justify-between px-4 py-2 bg-white/5 text-[10px] text-white/40 font-medium uppercase tracking-wider">
+            <div className="flex gap-4">
+              <span className={stats.completed > 0 ? "text-green-400" : ""}>
+                {stats.completed} Done
+              </span>
+              <span className={stats.inProgress > 0 ? "text-blue-400" : ""}>
+                {stats.inProgress} Active
+              </span>
+              <span>{stats.pending} Pending</span>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

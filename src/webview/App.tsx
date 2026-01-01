@@ -1164,7 +1164,7 @@ export const App: React.FC = () => {
   const todoStats = todos.length > 0 ? getTodoStats(todos) : null;
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)]">
+    <div className="flex flex-col h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e1e2e] via-[#09090b] to-[#000000] text-white font-sans selection:bg-orange-500/30">
       {/* WSL Alert for Windows users */}
       {showWSLAlert && (
         <WSLAlert

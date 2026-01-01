@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* VSCode theme integration */
+/* VSCode theme integration with modern overrides */
 :root {
   color-scheme: light dark;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(30, 30, 30, 0.6);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --accent-gradient: linear-gradient(135deg, #ed6e1d 0%, #de5513 100%);
+  --accent-glow: 0 0 20px rgba(237, 110, 29, 0.3);
 }
 
 /* Base styles */
@@ -15,11 +20,21 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
-  font-size: var(--vscode-font-size, 13px);
-  font-weight: var(--vscode-font-weight, normal);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--vscode-editor-foreground);
   background-color: var(--vscode-editor-background);
+  /* background-image: radial-gradient(circle at top right, rgba(237, 110, 29, 0.05), transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(66, 133, 244, 0.05), transparent 40%); */
 }
 
 #root {
@@ -29,10 +44,10 @@ body {
   flex-direction: column;
 }
 
-/* Scrollbar styling */
+/* Modern Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -40,295 +55,204 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--vscode-scrollbarSlider-background);
-  border-radius: 5px;
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--vscode-scrollbarSlider-hoverBackground);
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: var(--vscode-scrollbarSlider-activeBackground);
+  background: rgba(128, 128, 128, 0.4);
 }
 
 /* Focus styles */
-*:focus {
-  outline: 1px solid var(--vscode-focusBorder);
-  outline-offset: -1px;
-}
-
-*:focus:not(:focus-visible) {
-  outline: none;
-}
-
 *:focus-visible {
-  outline: 1px solid var(--vscode-focusBorder);
-  outline-offset: -1px;
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
-/* Selection */
-::selection {
-  background-color: var(--vscode-editor-selectionBackground);
-  color: var(--vscode-editor-selectionForeground);
+/* Glassmorphism Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
 }
 
-/* Links */
-a {
-  color: var(--vscode-textLink-foreground);
-  text-decoration: none;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-a:hover {
-  color: var(--vscode-textLink-activeForeground);
-  text-decoration: underline;
-}
-
-/* Buttons - VSCode style */
+/* Components Layer */
 @layer components {
+  /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded transition-colors;
-    background-color: var(--vscode-button-background);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95;
+    background: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
-    border: none;
-    cursor: pointer;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .btn:hover {
-    background-color: var(--vscode-button-hoverBackground);
+    background: var(--vscode-button-hoverBackground);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    box-shadow: var(--accent-glow);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 25px rgba(237, 110, 29, 0.5);
   }
 
   .btn-secondary {
-    background-color: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
-  }
-
-  .btn-secondary:hover {
-    background-color: var(--vscode-button-secondaryHoverBackground);
+    @apply bg-transparent border border-white/10 hover:bg-white/5;
+    color: var(--vscode-foreground);
   }
 
   .btn-icon {
-    @apply p-1.5 rounded;
+    @apply p-2 rounded-full transition-all duration-200 text-opacity-70 hover:text-opacity-100;
+    color: var(--vscode-foreground);
     background: transparent;
-    color: var(--vscode-icon-foreground);
   }
 
   .btn-icon:hover {
-    background-color: var(--vscode-toolbar-hoverBackground);
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
   }
 
-  /* Input styles */
+  /* Inputs */
   .input {
-    @apply w-full px-2 py-1.5 text-sm rounded;
-    background-color: var(--vscode-input-background);
+    @apply w-full px-4 py-2.5 text-sm rounded-lg transition-all duration-200;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border, transparent);
+  }
+
+  .input:focus {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 2px rgba(237, 110, 29, 0.2);
   }
 
   .input::placeholder {
     color: var(--vscode-input-placeholderForeground);
+    opacity: 0.7;
   }
 
-  .input:focus {
-    border-color: var(--vscode-focusBorder);
-  }
-
-  /* Textarea styles */
   .textarea {
-    @apply w-full px-3 py-2 text-sm rounded resize-none;
-    background-color: var(--vscode-input-background);
+    @apply w-full px-4 py-3 text-sm rounded-xl resize-none transition-all duration-200;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border, transparent);
-    font-family: inherit;
-  }
-
-  .textarea::placeholder {
-    color: var(--vscode-input-placeholderForeground);
+    line-height: 1.6;
   }
 
   .textarea:focus {
+    background-color: rgba(0, 0, 0, 0.3);
     border-color: var(--vscode-focusBorder);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(237, 110, 29, 0.2);
   }
 
-  /* Card styles */
+  /* Cards & Panels */
   .card {
-    @apply rounded-lg p-4;
-    background-color: var(--vscode-editorWidget-background);
-    border: 1px solid var(--vscode-editorWidget-border, transparent);
+    @apply rounded-xl p-5 backdrop-blur-md;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
-  /* Badge styles */
-  .badge {
-    @apply inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full;
-    background-color: var(--vscode-badge-background);
-    color: var(--vscode-badge-foreground);
+  .card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Code block styles */
-  .code-block {
-    @apply rounded-md overflow-hidden;
-    background-color: var(--vscode-textCodeBlock-background);
-  }
-
-  .code-block-header {
-    @apply flex items-center justify-between px-3 py-1.5 text-xs;
-    background-color: var(--vscode-editorGroupHeader-tabsBackground);
-    border-bottom: 1px solid
-      var(--vscode-editorGroupHeader-tabsBorder, transparent);
-  }
-
-  .code-block-content {
-    @apply p-3 overflow-x-auto;
-    font-family: var(--vscode-editor-font-family, monospace);
-    font-size: var(--vscode-editor-font-size, 12px);
-    line-height: var(--vscode-editor-line-height, 1.5);
-  }
-
-  /* Message styles */
+  /* Chat Messages */
   .message {
-    @apply p-4 rounded-lg;
+    @apply p-5 rounded-2xl relative mb-4 transition-all duration-300;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
   .message-user {
-    background-color: var(--vscode-editor-selectionBackground);
+    background: linear-gradient(
+      135deg,
+      rgba(237, 110, 29, 0.1) 0%,
+      rgba(222, 85, 19, 0.1) 100%
+    );
+    border: 1px solid rgba(237, 110, 29, 0.2);
     margin-left: auto;
     max-width: 85%;
+    border-bottom-right-radius: 4px;
   }
 
   .message-assistant {
-    background-color: var(--vscode-editorWidget-background);
+    @apply bg-zinc-800/50;
+    /* background: rgba(255, 255, 255, 0.03); */
+    border: 1px solid rgba(255, 255, 255, 0.05);
     max-width: 95%;
+    border-bottom-left-radius: 4px;
+    backdrop-filter: blur(5px);
   }
 
-  /* Thinking block styles */
-  .thinking-block {
-    @apply rounded-md p-3 my-2;
-    background-color: var(--vscode-textBlockQuote-background);
-    border-left: 3px solid var(--vscode-textBlockQuote-border);
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm;
+    background: rgba(237, 110, 29, 0.15);
+    color: #ed6e1d;
+    border: 1px solid rgba(237, 110, 29, 0.2);
   }
 
-  .thinking-header {
-    @apply flex items-center gap-2 text-sm font-medium mb-2;
-    color: var(--vscode-descriptionForeground);
-  }
-
-  /* Tooltip styles */
+  /* Tooltips */
   .tooltip {
-    @apply absolute z-50 px-2 py-1 text-xs rounded shadow-lg;
-    background-color: var(--vscode-editorHoverWidget-background);
-    border: 1px solid var(--vscode-editorHoverWidget-border);
-    color: var(--vscode-editorHoverWidget-foreground);
+    @apply absolute z-50 px-3 py-1.5 text-xs font-medium rounded-lg shadow-xl backdrop-blur-md;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    animation: fade-in 0.2s ease-out;
   }
 
-  /* Loading spinner */
-  .spinner {
-    @apply inline-block w-4 h-4 border-2 rounded-full animate-spin;
-    border-color: var(--vscode-progressBar-background);
-    border-top-color: transparent;
+  /* Toggle Switch */
+  .toggle-switch {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-200 border border-transparent;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .toggle-switch[data-checked="true"] {
+    background-color: #ed6e1d;
+  }
+
+  .toggle-switch::after {
+    content: "";
+    @apply absolute left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200;
+  }
+
+  .toggle-switch[data-checked="true"]::after {
+    transform: translateX(20px);
   }
 }
 
-/* Markdown content styles */
-.markdown-content {
-  line-height: 1.6;
-}
-
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content h4,
-.markdown-content h5,
-.markdown-content h6 {
-  margin-top: 1em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.markdown-content h1 {
-  font-size: 1.5em;
-}
-.markdown-content h2 {
-  font-size: 1.25em;
-}
-.markdown-content h3 {
-  font-size: 1.1em;
-}
-
-.markdown-content p {
-  margin: 0.5em 0;
-}
-
-.markdown-content ul,
-.markdown-content ol {
-  margin: 0.5em 0;
-  padding-left: 1.5em;
-}
-
-.markdown-content li {
-  margin: 0.25em 0;
-}
-
-.markdown-content code {
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: var(--vscode-editor-font-family, monospace);
-  font-size: 0.9em;
-  background-color: var(--vscode-textCodeBlock-background);
-}
-
-.markdown-content pre {
-  margin: 0.5em 0;
-  padding: 0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.markdown-content pre code {
-  display: block;
-  padding: 0.75em 1em;
-  overflow-x: auto;
-  background-color: var(--vscode-textCodeBlock-background);
-}
-
-.markdown-content blockquote {
-  margin: 0.5em 0;
-  padding: 0.5em 1em;
-  border-left: 3px solid var(--vscode-textBlockQuote-border);
-  background-color: var(--vscode-textBlockQuote-background);
-}
-
-.markdown-content table {
-  width: 100%;
-  margin: 0.5em 0;
-  border-collapse: collapse;
-}
-
-.markdown-content th,
-.markdown-content td {
-  padding: 0.5em;
-  border: 1px solid var(--vscode-editorWidget-border);
-  text-align: left;
-}
-
-.markdown-content th {
-  font-weight: 600;
-  background-color: var(--vscode-editorGroupHeader-tabsBackground);
-}
-
-.markdown-content hr {
-  margin: 1em 0;
-  border: none;
-  border-top: 1px solid var(--vscode-editorWidget-border);
-}
-
-/* Animation classes */
-@keyframes message-appear {
+/* Animations */
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -339,157 +263,90 @@ a:hover {
   }
 }
 
-.message-appear {
-  animation: message-appear 0.2s ease-out forwards;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes typing-indicator {
+@keyframes pulse-soft {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 1;
   }
   50% {
-    opacity: 1;
-  }
-}
-
-.typing-dot {
-  animation: typing-indicator 1s ease-in-out infinite;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-/* Modal animations */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 0.7;
   }
 }
 
 .animate-fade-in {
-  animation: fade-in 0.15s ease-out forwards;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.2s ease-out forwards;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Slide-in animations for panels */
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Markdown Styling Enhancements */
+.markdown-content {
+  font-size: 15px;
+  line-height: 1.7;
 }
 
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  color: var(--vscode-editor-foreground);
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  letter-spacing: -0.02em;
 }
 
-.animate-slide-in-left {
-  animation: slide-in-left 0.25s ease-out forwards;
+.markdown-content code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.9em;
+  padding: 0.25em 0.5em;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff9d5c; /* Gentle orange accent */
 }
 
-.animate-slide-in-right {
-  animation: slide-in-right 0.25s ease-out forwards;
+.markdown-content pre {
+  margin: 1.5em 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(5px);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Toggle switch for modals */
-@layer components {
-  .toggle-switch {
-    @apply relative inline-flex h-5 w-9 items-center rounded-full cursor-pointer;
-    background-color: var(--vscode-input-background);
-  }
+.markdown-content blockquote {
+  border-left: 4px solid #ed6e1d;
+  background: linear-gradient(
+    90deg,
+    rgba(237, 110, 29, 0.05) 0%,
+    transparent 100%
+  );
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
 
-  .toggle-switch[data-checked="true"] {
-    background-color: var(--vscode-progressBar-background);
-  }
-
-  .toggle-switch::after {
-    content: "";
-    @apply absolute left-0.5 h-4 w-4 rounded-full bg-white transition-transform;
-  }
-
-  .toggle-switch[data-checked="true"]::after {
-    transform: translateX(16px);
-  }
-
-  /* Range slider styling */
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    border-radius: 4px;
-    background: var(--vscode-input-background);
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--vscode-button-background);
-    cursor: pointer;
-    border: 2px solid var(--vscode-editorWidget-background);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  input[type="range"]::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--vscode-button-background);
-    cursor: pointer;
-    border: 2px solid var(--vscode-editorWidget-background);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  input[type="range"]:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 2px var(--vscode-focusBorder);
-  }
-
-  /* Checkbox styling */
-  input[type="checkbox"] {
-    @apply w-4 h-4 rounded cursor-pointer;
-    accent-color: var(--vscode-checkbox-background);
-  }
-
-  /* Line clamp utilities */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+.markdown-content hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  margin: 2em 0;
 }

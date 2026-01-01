@@ -13,6 +13,18 @@ import {
   formatDuration,
   formatTokenCount,
 } from "../../utils";
+import {
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  PlayCircle,
+  ChevronRight,
+  Search,
+  Bug,
+  Type,
+  RefreshCw,
+} from "lucide-react";
 
 interface TimelineItemMessage {
   kind: "message";
@@ -51,19 +63,36 @@ const statusLabels: Record<string, string> = {
   denied: "Denied",
 };
 
+const StatusIcon = ({
+  status,
+  className,
+}: {
+  status: string;
+  className?: string;
+}) => {
+  switch (status) {
+    case "executing":
+      return (
+        <PlayCircle className={`${className} text-blue-400 animate-pulse`} />
+      );
+    case "completed":
+      return <CheckCircle2 className={`${className} text-green-400`} />;
+    case "failed":
+      return <XCircle className={`${className} text-red-400`} />;
+    case "pending":
+      return <Clock className={`${className} text-white/40`} />;
+    default:
+      return <AlertCircle className={`${className} text-yellow-400`} />;
+  }
+};
+
 const statusClasses: Record<string, string> = {
-  running:
-    "bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40",
-  executing:
-    "bg-[var(--vscode-terminal-ansiBlue)]/15 text-[var(--vscode-terminal-ansiBlue)] border-[var(--vscode-terminal-ansiBlue)]/40",
-  pending:
-    "bg-[var(--vscode-editor-inactiveSelectionBackground)] text-[var(--vscode-descriptionForeground)] border-[var(--vscode-panel-border)]",
-  completed:
-    "bg-[var(--vscode-terminal-ansiGreen)]/15 text-[var(--vscode-terminal-ansiGreen)] border-[var(--vscode-terminal-ansiGreen)]/40",
-  failed:
-    "bg-[var(--vscode-errorForeground)]/15 text-[var(--vscode-errorForeground)] border-[var(--vscode-errorForeground)]/40",
-  denied:
-    "bg-[var(--vscode-terminal-ansiYellow)]/15 text-[var(--vscode-terminal-ansiYellow)] border-[var(--vscode-terminal-ansiYellow)]/40",
+  running: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  executing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  pending: "bg-white/5 text-white/40 border-white/5",
+  completed: "bg-green-500/10 text-green-400 border-green-500/20",
+  failed: "bg-red-500/10 text-red-400 border-red-500/20",
+  denied: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
 };
 
 const formatTimestamp = (date: Date): string => {
@@ -134,10 +163,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     };
 
     const addToolToPlan = (message: Message) => {
-      if (!currentPlan) {
-        return false;
-      }
-
+      if (!currentPlan) return false;
       const stepId = message.toolUseId || message.id;
       const existing = currentPlanSteps.get(stepId);
 
@@ -157,9 +183,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         return true;
       }
 
-      if (message.hidden) {
-        return true;
-      }
+      if (message.hidden) return true;
 
       if (!existing) {
         const step: TimelineItemTool = {
@@ -192,16 +216,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
           timeline.push(step);
         } else {
           const item = timeline[existingIndex];
-          if (item && item.kind === "tool") {
-            item.toolUse = message;
-          }
+          if (item && item.kind === "tool") item.toolUse = message;
         }
         return;
       }
 
-      if (message.hidden) {
-        return;
-      }
+      if (message.hidden) return;
 
       if (existingIndex === undefined) {
         const step: TimelineItemTool = {
@@ -214,9 +234,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         timeline.push(step);
       } else {
         const item = timeline[existingIndex];
-        if (item && item.kind === "tool") {
-          item.toolResult = message;
-        }
+        if (item && item.kind === "tool") item.toolResult = message;
       }
     };
 
@@ -232,47 +250,35 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         };
         return;
       }
-
       if (
         message.role === "tool" &&
         (message.messageType === "tool_use" ||
           message.messageType === "tool_result")
       ) {
-        if (!addToolToPlan(message)) {
-          addOrphanTool(message);
-        }
+        if (!addToolToPlan(message)) addOrphanTool(message);
         return;
       }
-
       flushPlan();
       timeline.push({ kind: "message", message });
     });
-
     flushPlan();
     return timeline;
   }, [messages]);
 
   useEffect(() => {
-    if (bottomRef.current) {
+    if (bottomRef.current)
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
   }, [items, isProcessing]);
 
   const togglePlan = useCallback((id: string, isActive: boolean) => {
     setCollapsedPlans((prev) => {
       const currentCollapsed = isActive ? false : (prev[id] ?? true);
-      return {
-        ...prev,
-        [id]: !currentCollapsed,
-      };
+      return { ...prev, [id]: !currentCollapsed };
     });
   }, []);
 
   const toggleStep = useCallback((id: string) => {
-    setCollapsedSteps((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setCollapsedSteps((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   const stepNumbers = useMemo(() => {
@@ -280,11 +286,11 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     let counter = 0;
     items.forEach((item) => {
       if (item.kind === "tool") {
-        counter += 1;
+        counter++;
         map.set(item.id, counter);
       } else if (item.kind === "plan") {
         item.steps.forEach((step) => {
-          counter += 1;
+          counter++;
           map.set(step.id, counter);
         });
       }
@@ -294,34 +300,49 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 
   if (items.length === 0 && showEmptyState) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
-        <div className="mb-4 text-6xl opacity-20">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center animate-fade-in relative z-10">
+        <div className="mb-8 relative">
+          <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full" />
+          <div className="relative w-24 h-24 flex items-center justify-center rounded-3xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 backdrop-blur-xl shadow-2xl">
+            <div className="text-orange-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </div>
+          </div>
         </div>
-        <h2 className="text-xl font-medium text-[var(--vscode-foreground)] mb-2">
-          Start a conversation
+        <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
+          How can I help?
         </h2>
-        <p className="text-sm text-[var(--vscode-descriptionForeground)] max-w-md">
-          Ask Claude anything about your code, get help with debugging, or
-          request code generation. Use slash commands for quick actions.
+        <p className="text-white/50 max-w-lg mb-10 text-lg leading-relaxed">
+          I can help you analyze code, fix bugs, write tests, or implement new
+          features. Just ask or use a template below.
         </p>
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-          <QuickAction label="Explain code" icon="?" />
-          <QuickAction label="Fix bug" icon="!" />
-          <QuickAction label="Write tests" icon="T" />
-          <QuickAction label="Refactor" icon="R" />
+        <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
+          <QuickAction
+            label="Explain Code"
+            icon={<Search className="w-4 h-4" />}
+          />
+          <QuickAction label="Fix Bugs" icon={<Bug className="w-4 h-4" />} />
+          <QuickAction
+            label="Write Tests"
+            icon={<Type className="w-4 h-4" />}
+          />
+          <QuickAction
+            label="Refactor"
+            icon={<RefreshCw className="w-4 h-4" />}
+          />
         </div>
       </div>
     );
@@ -346,58 +367,44 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     return (
       <div
         key={step.id}
-        className="rounded-md border border-[var(--vscode-panel-border)] bg-[var(--vscode-editorGroupHeader-tabsBackground)]"
+        className="glass-panel rounded-lg overflow-hidden transition-all duration-300 hover:border-white/10"
       >
         <div
-          className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+          className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
           onClick={() => toggleStep(step.id)}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${
-              isCollapsed ? "" : "rotate-90"
-            }`}
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-          <span className="text-[10px] uppercase tracking-wide text-[var(--vscode-descriptionForeground)]">
-            Step {stepNumber ?? "--"}
+          <ChevronRight
+            className={`w-4 h-4 text-white/40 transition-transform duration-200 ${isCollapsed ? "" : "rotate-90"}`}
+          />
+
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/5 text-white/40 border border-white/5">
+            {stepNumber ? `Step ${stepNumber}` : "Step"}
           </span>
-          <span className="font-medium text-sm text-[var(--vscode-foreground)]">
-            {toolName}
-          </span>
-          <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-            {formatTimestamp(step.timestamp)}
-          </span>
-          <div className="ml-auto flex items-center gap-2">
-            {duration !== undefined && (
-              <span className="text-[10px] text-[var(--vscode-descriptionForeground)]">
-                {formatDuration(duration, { abbreviated: true })}
-              </span>
-            )}
-            {tokens !== undefined && (
-              <span className="text-[10px] text-[var(--vscode-descriptionForeground)]">
-                {formatTokenCount(tokens, { includeSuffix: false })}
-              </span>
-            )}
-            <span
-              className={`px-2 py-0.5 rounded-full border text-[10px] ${statusClass}`}
-            >
-              {statusLabel}
+
+          <span className="font-medium text-sm text-white/90">{toolName}</span>
+
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-xs text-white/30 hidden sm:inline-block">
+              {formatTimestamp(step.timestamp)}
             </span>
+
+            <div className="flex items-center gap-2">
+              {duration !== undefined && (
+                <span className="text-xs text-white/40">
+                  {formatDuration(duration, { abbreviated: true })}
+                </span>
+              )}
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}
+              >
+                {statusLabel}
+              </span>
+            </div>
           </div>
         </div>
 
         {!isCollapsed && (
-          <div className="px-3 pb-3 space-y-3 bg-[var(--vscode-editor-background)] border-t border-[var(--vscode-panel-border)]">
+          <div className="px-4 pb-4 space-y-4 bg-black/20 border-t border-white/5 pt-4 animate-slide-up">
             {step.toolUse && step.toolUse.toolName === "TodoWrite" ? (
               <TodoDisplay
                 todos={extractTodosFromInput(step.toolUse.rawInput || {})}
@@ -438,7 +445,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   };
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 py-6 space-y-6 max-w-4xl mx-auto pb-32">
       {items.map((item) => {
         if (item.kind === "message") {
           return (
@@ -456,68 +463,46 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         const completedCount = item.steps.filter(
           (step) => getStepStatus(step) === "completed",
         ).length;
-        const failedCount = item.steps.filter(
-          (step) => getStepStatus(step) === "failed",
-        ).length;
 
         return (
           <div
             key={item.id}
-            className="rounded-lg border border-[var(--vscode-panel-border)] bg-[var(--vscode-sideBarSectionHeader-background)]"
+            className="glass rounded-xl border border-white/10 overflow-hidden shadow-sm"
           >
             <div
-              className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-orange-500/5" : "hover:bg-white/5"}`}
               onClick={() => togglePlan(item.id, isActive)}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`text-[var(--vscode-descriptionForeground)] transition-transform ${
-                  isPlanOpen ? "rotate-90" : ""
-                }`}
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-              <span className="font-medium text-sm text-[var(--vscode-foreground)]">
-                {item.assistant.content}
-              </span>
-              <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-                {formatTimestamp(item.timestamp)}
-              </span>
-              <div className="ml-auto flex items-center gap-2 text-xs text-[var(--vscode-descriptionForeground)]">
-                <span>
-                  {item.steps.length} step{item.steps.length === 1 ? "" : "s"}
-                </span>
-                {completedCount > 0 && <span>{completedCount} completed</span>}
-                {failedCount > 0 && <span>{failedCount} failed</span>}
-                <span
-                  className={`px-2 py-0.5 rounded-full border text-[10px] ${
-                    statusClasses[groupStatus] || statusClasses.pending
-                  }`}
-                >
-                  {statusLabels[groupStatus] || groupStatus}
-                </span>
+              <ChevronRight
+                className={`w-4 h-4 text-white/40 transition-transform duration-200 ${isPlanOpen ? "rotate-90" : ""}`}
+              />
+
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white/90 line-clamp-1">
+                  {item.assistant.content}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1 text-white/40">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>
+                    {completedCount}/{item.steps.length}
+                  </span>
+                </div>
+                <StatusIcon status={groupStatus} className="w-4 h-4" />
               </div>
             </div>
 
             {isPlanOpen && (
-              <div className="border-t border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-background)] p-3 space-y-3">
-                <div className="space-y-2">
-                  {item.steps.length > 0 ? (
-                    item.steps.map((step) => renderToolStep(step))
-                  ) : (
-                    <div className="text-xs text-[var(--vscode-descriptionForeground)]">
-                      No actions recorded yet.
-                    </div>
-                  )}
-                </div>
+              <div className="bg-black/10 border-t border-white/5 p-4 space-y-3">
+                {item.steps.length > 0 ? (
+                  item.steps.map((step) => renderToolStep(step))
+                ) : (
+                  <div className="text-center py-4 text-white/30 text-sm italic">
+                    Reasoning about the next step...
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -525,44 +510,37 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
       })}
 
       {isProcessing && (
-        <div className="flex items-center gap-2 p-4 rounded-lg bg-[var(--vscode-editor-inactiveSelectionBackground)]">
-          <div className="flex gap-1">
-            <span
-              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
-              style={{ animationDelay: "0ms" }}
-            />
-            <span
-              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
-              style={{ animationDelay: "150ms" }}
-            />
-            <span
-              className="w-2 h-2 bg-[var(--vscode-progressBar-background)] rounded-full animate-bounce"
-              style={{ animationDelay: "300ms" }}
-            />
+        <div className="glass rounded-xl p-4 flex items-center gap-4 animate-pulse">
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
           </div>
-          <span className="text-sm text-[var(--vscode-descriptionForeground)]">
+          <span className="text-sm font-medium text-white/60">
             Claude is thinking...
           </span>
         </div>
       )}
 
-      <div ref={bottomRef} />
+      <div ref={bottomRef} className="h-4" />
     </div>
   );
 };
 
 interface QuickActionProps {
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const QuickAction: React.FC<QuickActionProps> = ({ label, icon }) => {
   return (
-    <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-[var(--vscode-input-border)] hover:bg-[var(--vscode-list-hoverBackground)] transition-colors">
-      <span className="w-6 h-6 flex items-center justify-center rounded bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)] text-xs font-bold">
+    <button className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl glass hover:bg-white/10 transition-all duration-200 border border-white/10 group">
+      <div className="p-2 rounded-lg bg-white/5 text-orange-500 group-hover:scale-110 transition-transform duration-200">
         {icon}
+      </div>
+      <span className="font-medium text-white/80 group-hover:text-white">
+        {label}
       </span>
-      {label}
     </button>
   );
 };

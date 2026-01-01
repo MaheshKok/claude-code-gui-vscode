@@ -1,10 +1,19 @@
 import React, { useState, useCallback, useMemo } from "react";
-import {
-  computeLineDiff,
-  computeContextualDiff,
-  formatDiffStats,
-} from "../../utils";
+import { computeLineDiff, computeContextualDiff } from "../../utils";
 import { useVSCode } from "../../hooks/useVSCode";
+import {
+  ChevronRight,
+  Code,
+  Terminal,
+  FileText,
+  Globe,
+  Search,
+  CheckSquare,
+  Edit3,
+  Clock,
+  Zap,
+  FileDiff,
+} from "lucide-react";
 
 export interface ToolInput {
   [key: string]: unknown;
@@ -15,48 +24,40 @@ export interface ToolUseCardProps {
   input: ToolInput;
   isExecuting?: boolean;
   onFilePathClick?: (filePath: string) => void;
-  /** Duration in milliseconds */
   duration?: number;
-  /** Token count for this tool use */
   tokens?: number;
-  /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
-  /** File content before operation (for diff preview) */
   fileContentBefore?: string;
-  /** File content after operation (for diff preview) */
   fileContentAfter?: string;
-  /** Starting line number for diff context */
   startLine?: number;
-  /** Array of starting lines (for MultiEdit) */
   startLines?: number[];
 }
 
-const TOOL_ICONS: Record<string, string> = {
-  Read: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
-  Write: "M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z",
-  Edit: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z",
-  MultiEdit:
-    "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z",
-  Bash: "M4 17l6-6-6-6 M12 19h8",
-  Glob: "M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z",
-  Grep: "M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z",
-  TodoWrite:
-    "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
-  WebFetch:
-    "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z M2 12h20",
-  WebSearch:
-    "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z M21 21l-6-6",
-  Task: "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2 M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",
-  LSP: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5",
-  NotebookEdit:
-    "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z",
-};
-
-const DEFAULT_TOOL_ICON =
-  "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z";
-
-const getToolIcon = (toolName: string): string => {
-  return TOOL_ICONS[toolName] ?? DEFAULT_TOOL_ICON;
+const getToolIcon = (toolName: string) => {
+  switch (toolName) {
+    case "Read":
+      return <FileText className="w-4 h-4" />;
+    case "Write":
+      return <Edit3 className="w-4 h-4" />;
+    case "Edit":
+      return <Edit3 className="w-4 h-4" />;
+    case "MultiEdit":
+      return <Zap className="w-4 h-4" />;
+    case "Bash":
+      return <Terminal className="w-4 h-4" />;
+    case "Glob":
+      return <Search className="w-4 h-4" />;
+    case "Grep":
+      return <Search className="w-4 h-4" />;
+    case "TodoWrite":
+      return <CheckSquare className="w-4 h-4" />;
+    case "WebFetch":
+      return <Globe className="w-4 h-4" />;
+    case "WebSearch":
+      return <Search className="w-4 h-4" />;
+    default:
+      return <Code className="w-4 h-4" />;
+  }
 };
 
 const formatFilePath = (filePath: string): string => {
@@ -92,7 +93,6 @@ const formatValue = (value: unknown, maxLength = 200): string => {
   return String(value);
 };
 
-/** Format duration in human readable format */
 const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, "")}s`;
@@ -101,7 +101,6 @@ const formatDuration = (ms: number): string => {
   return `${minutes}m ${seconds}s`;
 };
 
-/** Format tokens in human readable format */
 const formatTokens = (tokens: number): string => {
   if (tokens < 1000) return `${tokens}`;
   return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K`;
@@ -142,9 +141,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
   }, []);
 
   const diffData = useMemo(() => {
-    if (!fileContentBefore) {
-      return null;
-    }
+    if (!fileContentBefore) return null;
 
     const filePath = typeof input.file_path === "string" ? input.file_path : "";
     let newContent: string | undefined;
@@ -173,9 +170,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     }
 
     const finalContent = fileContentAfter ?? newContent;
-    if (!finalContent) {
-      return null;
-    }
+    if (!finalContent) return null;
 
     return {
       filePath,
@@ -193,13 +188,9 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     const filePath = typeof input.file_path === "string" ? input.file_path : "";
 
     const getStartLine = (needle: string, fallback = 1): number => {
-      if (!fileContentBefore || !needle) {
-        return fallback;
-      }
+      if (!fileContentBefore || !needle) return fallback;
       const position = fileContentBefore.indexOf(needle);
-      if (position === -1) {
-        return fallback;
-      }
+      if (position === -1) return fallback;
       const textBefore = fileContentBefore.slice(0, position);
       return (textBefore.match(/\n/g) || []).length + 1;
     };
@@ -224,9 +215,8 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         if (
           typeof edit.old_string !== "string" ||
           typeof edit.new_string !== "string"
-        ) {
+        )
           return;
-        }
         const fallbackStart =
           startLines?.[index] ?? getStartLine(edit.old_string, 1);
         const diff = computeLineDiff(edit.old_string, edit.new_string, {
@@ -244,19 +234,14 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         contextLines: 3,
         startLine: 1,
       });
-      sections.push({
-        id: `${filePath || toolName}-write`,
-        diff,
-      });
+      sections.push({ id: `${filePath || toolName}-write`, diff });
     }
 
     return sections;
   }, [fileContentBefore, input, startLine, startLines, toolName]);
 
   const handleOpenDiff = useCallback(() => {
-    if (!diffData || !diffData.filePath) {
-      return;
-    }
+    if (!diffData || !diffData.filePath) return;
     postMessage({
       type: "openDiff",
       oldContent: diffData.oldContent,
@@ -270,24 +255,11 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
       const filePath = value as string;
       return (
         <span
-          className="text-[var(--vscode-textLink-foreground)] hover:underline cursor-pointer inline-flex items-center gap-1"
+          className="text-orange-400 hover:text-orange-300 hover:underline cursor-pointer inline-flex items-center gap-1 font-mono break-all"
           onClick={() => handleFileClick(filePath)}
           title={filePath}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14,2 14,8 20,8" />
-          </svg>
+          <FileText className="w-3 h-3" />
           {formatFilePath(filePath)}
         </span>
       );
@@ -297,11 +269,11 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     const isLong = typeof value === "string" && value.length > 200;
 
     return (
-      <span className="text-[var(--vscode-debugTokenExpression-string)]">
+      <span className="text-white/80 font-mono">
         {formattedValue}
         {isLong && !isExpanded && (
           <button
-            className="ml-1 text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
+            className="ml-1 text-xs text-orange-400 hover:underline"
             onClick={toggleExpanded}
           >
             (show more)
@@ -316,101 +288,52 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
   const filePath = typeof input.file_path === "string" ? input.file_path : "";
 
   return (
-    <div className="rounded-md overflow-hidden border border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-inactiveSelectionBackground)]">
-      {/* Header - Clickable for collapse toggle */}
+    <div className="glass-panel rounded-lg overflow-hidden border border-white/5 bg-black/10">
+      {/* Header */}
       <div
-        className="flex items-center gap-2 px-3 py-2 bg-[var(--vscode-sideBarSectionHeader-background)] border-b border-[var(--vscode-panel-border)] cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
+        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors"
         onClick={toggleCollapsed}
       >
-        {/* Collapse/Expand chevron */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
-        >
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-[var(--vscode-symbolIcon-methodForeground)]"
-        >
-          <path d={getToolIcon(toolName)} />
-        </svg>
-        <span className="font-medium text-sm text-[var(--vscode-symbolIcon-methodForeground)]">
-          {toolName}
-        </span>
+        <ChevronRight
+          className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+        />
+
+        <div className="text-orange-400 opacity-80">
+          {getToolIcon(toolName)}
+        </div>
+        <span className="font-medium text-sm text-white/90">{toolName}</span>
 
         {/* Metadata badges */}
         <div className="ml-auto flex items-center gap-2">
           {diffData && diffData.filePath && (
             <button
-              className="text-xs px-2 py-0.5 rounded border border-[var(--vscode-panel-border)] text-[var(--vscode-textLink-foreground)] hover:bg-[var(--vscode-toolbar-hoverBackground)]"
+              className="text-xs px-2 py-0.5 rounded border border-white/10 text-orange-400 hover:bg-white/5 flex items-center gap-1"
               onClick={(event) => {
                 event.stopPropagation();
                 handleOpenDiff();
               }}
               title="Open diff"
             >
+              <FileDiff className="w-3 h-3" />
               Diff
             </button>
           )}
           {duration !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+              <Clock className="w-3 h-3" />
               {formatDuration(duration)}
             </span>
           )}
           {tokens !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
+            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+              <Zap className="w-3 h-3" />
               {formatTokens(tokens)}
             </span>
           )}
           {isExecuting && (
-            <div className="flex items-center gap-1.5">
-              <div className="spinner" />
-              <span className="text-xs text-[var(--vscode-descriptionForeground)]">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 rounded-full">
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" />
+              <span className="text-xs text-orange-400 font-medium">
                 Executing...
               </span>
             </div>
@@ -418,28 +341,35 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         </div>
       </div>
 
-      {/* Input Parameters - Only show when not collapsed */}
+      {/* Input Parameters */}
       {!isCollapsed && hasContent && (
-        <div className="px-3 py-2 font-mono text-xs space-y-1">
-          {inputEntries.map(([key, value]) => (
-            <div key={key} className="flex gap-2">
-              <span className="text-[var(--vscode-debugTokenExpression-name)] shrink-0">
-                {key}:
-              </span>
-              <div className="flex-1 break-all">
-                {renderInputValue(key, value)}
+        <div className="px-4 py-3 border-t border-white/5 bg-black/20">
+          <div className="space-y-1 mb-3 text-xs">
+            {inputEntries.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex gap-2 p-1 rounded hover:bg-white/5"
+              >
+                <span className="text-white/40 font-mono shrink-0 select-none">
+                  {key}:
+                </span>
+                <div className="flex-1 break-all">
+                  {renderInputValue(key, value)}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
           {diffSections.length > 0 && (
-            <div className="mt-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] text-[var(--vscode-descriptionForeground)] uppercase tracking-wide">
+            <div className="rounded-lg border border-white/10 overflow-hidden bg-black/40">
+              <div className="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
+                <div className="text-[10px] text-white/50 uppercase tracking-widest font-semibold flex items-center gap-2">
+                  <FileDiff className="w-3 h-3" />
                   Diff Preview
                 </div>
                 {filePath && (
                   <span
-                    className="text-[10px] text-[var(--vscode-textLink-foreground)] hover:underline cursor-pointer"
+                    className="text-[10px] text-orange-400 hover:underline cursor-pointer font-mono"
                     onClick={() => handleFileClick(filePath)}
                     title={filePath}
                   >
@@ -447,94 +377,81 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
                   </span>
                 )}
               </div>
-              {diffSections.map((section) => {
-                const summary = formatDiffStats(section.diff);
-                return (
-                  <div
-                    key={section.id}
-                    className="rounded border border-[var(--vscode-panel-border)] overflow-hidden"
-                  >
-                    {section.title && (
-                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-b border-[var(--vscode-panel-border)]">
-                        {section.title}
+
+              <div className="divide-y divide-white/5">
+                {diffSections.map((section) => {
+                  return (
+                    <div key={section.id}>
+                      {section.title && (
+                        <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-white/30 bg-white/5">
+                          {section.title}
+                        </div>
+                      )}
+
+                      <div className="font-mono text-xs overflow-x-auto">
+                        <div className="grid grid-cols-[auto_auto_auto_1fr] min-w-full">
+                          {section.diff.lines.map((line, index) => {
+                            const isInsert = line.type === "insert";
+                            const isDelete = line.type === "delete";
+                            const lineClass = isInsert
+                              ? "bg-green-500/10 text-green-200"
+                              : isDelete
+                                ? "bg-red-500/10 text-red-200"
+                                : "text-white/50";
+                            const prefix = isInsert
+                              ? "+"
+                              : isDelete
+                                ? "-"
+                                : " ";
+
+                            return (
+                              <div
+                                key={index}
+                                className={`contents hover:bg-white/5 group`}
+                              >
+                                <div
+                                  className={`px-2 py-0.5 text-right select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                >
+                                  {line.oldLineNumber || ""}
+                                </div>
+                                <div
+                                  className={`px-2 py-0.5 text-right select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                >
+                                  {line.newLineNumber || ""}
+                                </div>
+                                <div
+                                  className={`px-2 py-0.5 text-center select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                >
+                                  {prefix}
+                                </div>
+                                <div
+                                  className={`px-2 py-0.5 whitespace-pre-wrap break-all ${lineClass}`}
+                                >
+                                  {line.content}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    )}
-                    <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 px-2 py-1 text-[10px] uppercase text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)]">
-                      <span>Old</span>
-                      <span>New</span>
-                      <span />
-                      <span>Content</span>
                     </div>
-                    <div className="font-mono text-xs">
-                      {section.diff.lines.map((line, index) => {
-                        const lineClass =
-                          line.type === "insert"
-                            ? "bg-[var(--vscode-diffEditor-insertedLineBackground)]"
-                            : line.type === "delete"
-                              ? "bg-[var(--vscode-diffEditor-removedLineBackground)]"
-                              : "";
-                        const prefix =
-                          line.type === "insert"
-                            ? "+"
-                            : line.type === "delete"
-                              ? "-"
-                              : " ";
-                        const oldNumber = line.oldLineNumber ?? "";
-                        const newNumber = line.newLineNumber ?? "";
-                        return (
-                          <div
-                            key={index}
-                            className={`grid grid-cols-[auto_auto_auto_1fr] gap-x-2 px-2 py-0.5 ${lineClass}`}
-                          >
-                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-right">
-                              {oldNumber}
-                            </span>
-                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-right">
-                              {newNumber}
-                            </span>
-                            <span className="text-[10px] text-[var(--vscode-descriptionForeground)] text-center">
-                              {prefix}
-                            </span>
-                            <span className="whitespace-pre-wrap break-words">
-                              {line.content}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="flex items-center justify-between px-2 py-1 text-[10px] text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-t border-[var(--vscode-panel-border)]">
-                      <span>
-                        {summary
-                          ? `Summary: ${summary}`
-                          : "Summary: No changes"}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Expanded Raw Content - Only show when not collapsed and expanded */}
+      {/* Expanded Raw Content */}
       {!isCollapsed && isExpanded && hasContent && (
-        <div className="border-t border-[var(--vscode-panel-border)]">
-          <div className="px-3 py-1 bg-[var(--vscode-sideBarSectionHeader-background)] flex items-center justify-between">
-            <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-              Raw Input
+        <div className="border-t border-white/5 bg-black/40">
+          <div className="px-3 py-1 flex items-center justify-between border-b border-white/5">
+            <span className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">
+              Raw JSON
             </span>
-            <button
-              className="text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpanded();
-              }}
-            >
-              Collapse
-            </button>
           </div>
-          <pre className="px-3 py-2 text-xs overflow-x-auto bg-[var(--vscode-textCodeBlock-background)]">
+          <pre className="p-3 text-xs overflow-x-auto text-white/60 font-mono custom-scrollbar">
             {JSON.stringify(input, null, 2)}
           </pre>
         </div>

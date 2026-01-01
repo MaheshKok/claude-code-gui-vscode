@@ -1,4 +1,15 @@
 import React, { useState, useCallback } from "react";
+import {
+  ChevronRight,
+  Copy,
+  Check,
+  ChevronUp,
+  ChevronDown,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Zap,
+} from "lucide-react";
 
 export interface ToolResultCardProps {
   content: string;
@@ -6,15 +17,11 @@ export interface ToolResultCardProps {
   toolName?: string;
   maxLines?: number;
   onCopy?: (content: string) => void;
-  /** Duration in milliseconds */
   duration?: number;
-  /** Token count for this tool result */
   tokens?: number;
-  /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
 }
 
-/** Format duration in human readable format */
 const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1).replace(/\.0$/, "")}s`;
@@ -23,7 +30,6 @@ const formatDuration = (ms: number): string => {
   return `${minutes}m ${seconds}s`;
 };
 
-/** Format tokens in human readable format */
 const formatTokens = (tokens: number): string => {
   if (tokens < 1000) return `${tokens}`;
   return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K`;
@@ -76,9 +82,7 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
     try {
       await navigator.clipboard.writeText(content);
       setCopyState("copied");
-      if (onCopy) {
-        onCopy(content);
-      }
+      if (onCopy) onCopy(content);
       setTimeout(() => setCopyState("idle"), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
@@ -89,124 +93,54 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
 
   return (
     <div
-      className={`rounded-md overflow-hidden border ${
-        isError
-          ? "border-[var(--vscode-inputValidation-errorBorder)] bg-[var(--vscode-inputValidation-errorBackground)]"
-          : "border-[var(--vscode-panel-border)] bg-[var(--vscode-textCodeBlock-background)]"
-      }`}
+      className={`glass-panel rounded-lg overflow-hidden border ${isError ? "border-red-500/20" : "border-white/5"}`}
     >
-      {/* Header - Clickable for collapse toggle */}
+      {/* Header */}
       <div
-        className={`flex items-center justify-between px-3 py-1.5 text-xs cursor-pointer hover:bg-[var(--vscode-list-hoverBackground)] transition-colors ${
+        className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors ${
           isError
-            ? "bg-[var(--vscode-inputValidation-errorBackground)]"
-            : "bg-[var(--vscode-editorGroupHeader-tabsBackground)]"
-        } border-b border-[var(--vscode-panel-border)]`}
+            ? "bg-red-500/10 hover:bg-red-500/20"
+            : "bg-white/5 hover:bg-white/10"
+        }`}
         onClick={toggleCollapsed}
       >
         <div className="flex items-center gap-2">
-          {/* Collapse/Expand chevron */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`text-[var(--vscode-descriptionForeground)] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-          {isError ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-[var(--vscode-errorForeground)]"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-[var(--vscode-terminal-ansiGreen)]"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
+          <ChevronRight
+            className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+          />
+
+          <div className={isError ? "text-red-400" : "text-green-400"}>
+            {isError ? (
+              <AlertCircle className="w-4 h-4" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
+          </div>
+
           <span
-            className={`font-medium ${
-              isError
-                ? "text-[var(--vscode-errorForeground)]"
-                : "text-[var(--vscode-descriptionForeground)]"
-            }`}
+            className={`font-medium text-sm ${isError ? "text-red-200" : "text-white/80"}`}
           >
             {isError ? "Error" : "Result"}
             {toolName && ` - ${toolName}`}
           </span>
         </div>
 
-        {/* Metadata badges and actions */}
         <div className="flex items-center gap-2">
           {duration !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+              <Clock className="w-3 h-3" />
               {formatDuration(duration)}
             </span>
           )}
           {tokens !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-[var(--vscode-descriptionForeground)] bg-[var(--vscode-badge-background)] px-1.5 py-0.5 rounded">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
+            <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+              <Zap className="w-3 h-3" />
               {formatTokens(tokens)}
             </span>
           )}
+
           <button
-            className="flex items-center gap-1 px-2 py-0.5 rounded text-[var(--vscode-descriptionForeground)] hover:bg-[var(--vscode-toolbar-hoverBackground)] transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-xs"
             onClick={(e) => {
               e.stopPropagation();
               handleCopy();
@@ -215,40 +149,12 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
           >
             {copyState === "copied" ? (
               <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-[var(--vscode-terminal-ansiGreen)]"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span className="text-[var(--vscode-terminal-ansiGreen)]">
-                  Copied
-                </span>
+                <Check className="w-3 h-3 text-green-400" />
+                <span className="text-green-400">Copied</span>
               </>
             ) : (
               <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
+                <Copy className="w-3 h-3" />
                 <span>Copy</span>
               </>
             )}
@@ -256,66 +162,35 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = ({
         </div>
       </div>
 
-      {/* Content - Only show when not collapsed */}
+      {/* Content */}
       {!isCollapsed && (
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 bg-black/20 text-xs font-mono">
           <pre
-            className={`text-xs font-mono whitespace-pre-wrap break-words ${
-              isError
-                ? "text-[var(--vscode-errorForeground)]"
-                : "text-[var(--vscode-foreground)]"
-            }`}
+            className={`whitespace-pre-wrap break-words ${isError ? "text-red-200" : "text-white/70"}`}
           >
             {displayContent}
           </pre>
 
-          {/* Expand/Collapse Button for long content */}
           {isTruncated && (
-            <div className="mt-2 pt-2 border-t border-[var(--vscode-panel-border)]">
-              <button
-                className="flex items-center gap-1 text-xs text-[var(--vscode-textLink-foreground)] hover:underline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleExpanded();
-                }}
-              >
-                {isExpanded ? (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="18 15 12 9 6 15" />
-                    </svg>
-                    <span>Show less</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                    <span>Show {hiddenCount} more lines</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-orange-400 hover:text-orange-300 hover:underline pt-2 border-t border-white/5 w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpanded();
+              }}
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  Show {hiddenCount} more lines
+                </>
+              )}
+            </button>
           )}
         </div>
       )}
