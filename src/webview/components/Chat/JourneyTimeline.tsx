@@ -1,19 +1,9 @@
-import React, {
-	useMemo,
-	useState,
-	useCallback,
-	useEffect,
-	useRef,
-} from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import type { Message } from "../App";
 import { Message as MessageComponent } from "./Message";
-import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
-import {
-	extractTodosFromInput,
-	formatDuration,
-	formatTokenCount,
-	getToolSummary,
-} from "../../utils";
+import { TodoDisplay, ToolUseCard, ToolResultCard } from "../Tools";
+import { extractTodosFromInput, formatDuration, getToolSummary } from "../../utils";
+import { ToolName } from "../../../shared/constants";
 import {
 	Clock,
 	CheckCircle2,
@@ -25,6 +15,16 @@ import {
 	Bug,
 	Type,
 	RefreshCw,
+	FileText,
+	Edit3,
+	Terminal,
+	Globe,
+	CheckSquare,
+	Code,
+	Zap,
+	Files,
+	ListChecks,
+	BookOpen,
 } from "lucide-react";
 
 interface TimelineItemMessage {
@@ -94,6 +94,45 @@ const statusClasses: Record<string, string> = {
 	completed: "bg-green-500/10 text-green-400 border-green-500/20",
 	failed: "bg-red-500/10 text-red-400 border-red-500/20",
 	denied: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+};
+
+const getToolIcon = (toolName: string) => {
+	switch (toolName) {
+		case ToolName.Read:
+			return <FileText className="w-4 h-4" />;
+		case ToolName.Write:
+		case ToolName.Edit:
+			return <Edit3 className="w-4 h-4" />;
+		case ToolName.MultiEdit:
+			return <Files className="w-4 h-4" />;
+		case ToolName.Bash:
+			return <Terminal className="w-4 h-4" />;
+		case ToolName.Glob:
+		case ToolName.Grep:
+			return <Search className="w-4 h-4" />;
+		case ToolName.Task:
+			return <ListChecks className="w-4 h-4" />;
+		case ToolName.TodoRead:
+		case ToolName.TodoWrite:
+			return <CheckSquare className="w-4 h-4" />;
+		case ToolName.WebFetch:
+			return <Globe className="w-4 h-4" />;
+		case ToolName.WebSearch:
+			return <Search className="w-4 h-4" />;
+		case ToolName.NotebookRead:
+		case ToolName.NotebookEdit:
+			return <BookOpen className="w-4 h-4" />;
+		default:
+			if (toolName.startsWith("mcp__")) {
+				return <Zap className="w-4 h-4" />;
+			}
+			return <Code className="w-4 h-4" />;
+	}
+};
+
+const formatTokens = (tokens: number): string => {
+	if (tokens < 1000) return `${tokens}`;
+	return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K`;
 };
 
 const formatTimestamp = (date: Date): string => {
@@ -356,15 +395,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 		);
 	}
 
-	const renderToolStep = (
-		step: TimelineItemTool,
-		forceExpanded: boolean = false
-	) => {
+	// ToolStep component - proper React component that can use hooks
+	const ToolStep = ({ step, forceExpanded }: { step: TimelineItemTool; forceExpanded?: boolean }) => {
 		const status = getStepStatus(step);
 		const statusLabel = statusLabels[status] || status;
 		const statusClass = statusClasses[status] || statusClasses.pending;
-		const toolName =
-			step.toolUse?.toolName || step.toolResult?.toolName || "Tool";
+		const toolName = step.toolUse?.toolName || step.toolResult?.toolName || "Tool";
 		const rawInput = step.toolUse?.rawInput || step.toolResult?.rawInput || {};
 		const toolSummary = getToolSummary(toolName, rawInput, 35);
 		const duration = step.toolUse?.duration ?? step.toolResult?.duration;
@@ -378,79 +414,96 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 				key={step.id}
 				className="glass-panel rounded-lg overflow-hidden transition-all duration-300 hover:border-white/10"
 			>
+				{/* Flattened Header */}
 				<div
-					className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+					className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-white/5 transition-colors"
 					onClick={() => toggleStep(step.id, status === "executing")}
 				>
 					<ChevronRight
-						className={`w-4 h-4 text-white/40 transition-transform duration-200 ${isCollapsed ? "" : "rotate-90"}`}
+						className={`w-4 h-4 text-white/40 transition-transform duration-200 flex-shrink-0 ${isCollapsed ? "" : "rotate-90"}`}
 					/>
+
+					<div className="text-orange-400 opacity-80 flex-shrink-0">
+						{getToolIcon(toolName)}
+					</div>
 
 					<span className="font-medium text-sm text-white/90">{toolName}</span>
 
 					{toolSummary && (
 						<span
-							className="text-xs text-white/50 truncate max-w-[280px] font-mono"
+							className="text-xs text-white/50 truncate max-w-[180px] font-mono"
 							title={toolSummary}
 						>
 							{toolSummary}
 						</span>
 					)}
 
-					<div className="ml-auto flex items-center gap-3">
-						<span className="text-xs text-white/30 hidden sm:inline-block">
-							{formatTimestamp(step.timestamp)}
-						</span>
-
-						<div className="flex items-center gap-2">
-							{duration !== undefined && (
-								<span className="text-xs text-white/40">
-									{formatDuration(duration, { abbreviated: true })}
-								</span>
-							)}
-							<span
-								className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}
-							>
+					<div className="ml-auto flex items-center gap-2 flex-shrink-0">
+						{duration !== undefined && (
+							<span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+								<Clock className="w-3 h-3" />
+								{formatDuration(duration, { abbreviated: true })}
+							</span>
+						)}
+						{tokens !== undefined && (
+							<span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+								<Zap className="w-3 h-3" />
+								{formatTokens(tokens)}
+							</span>
+						)}
+						{status === "executing" ? (
+							<div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 rounded-full">
+								<span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" />
+								<span className="text-xs text-orange-400 font-medium">Running</span>
+							</div>
+						) : (
+							<span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}>
 								{statusLabel}
 							</span>
-						</div>
+						)}
 					</div>
 				</div>
 
+				{/* Expanded Content - Using original ToolUseCard and ToolResultCard */}
 				{!isCollapsed && (
-					<div className="px-4 pb-4 space-y-4 bg-black/20 border-t border-white/5 pt-4 animate-slide-up">
-						{step.toolUse && step.toolUse.toolName === "TodoWrite" ? (
+					<div className="border-t border-white/5 bg-black/20 animate-slide-up p-3 space-y-3">
+						{/* TodoWrite special handling */}
+						{step.toolUse && toolName === "TodoWrite" ? (
 							<TodoDisplay
 								todos={extractTodosFromInput(step.toolUse.rawInput || {})}
 								title="Todo Update"
 								defaultCollapsed={false}
 							/>
 						) : (
-							step.toolUse && (
-								<ToolUseCard
-									toolName={step.toolUse.toolName || "Tool"}
-									input={step.toolUse.rawInput || {}}
-									isExecuting={status === "executing"}
-									duration={step.toolUse.duration}
-									tokens={step.toolUse.tokens}
-									fileContentBefore={step.toolUse.fileContentBefore}
-									fileContentAfter={step.toolUse.fileContentAfter}
-									startLine={step.toolUse.startLine}
-									startLines={step.toolUse.startLines}
-									defaultCollapsed={true}
-								/>
-							)
-						)}
+							<>
+								{/* Tool Use Card */}
+								{step.toolUse && (
+									<ToolUseCard
+										toolName={toolName}
+										input={rawInput}
+										isExecuting={status === "executing"}
+										duration={step.toolUse.duration}
+										tokens={step.toolUse.tokens}
+										defaultCollapsed={false}
+										fileContentBefore={step.toolUse.fileContentBefore}
+										fileContentAfter={step.toolUse.fileContentAfter}
+										startLine={step.toolUse.startLine}
+										startLines={step.toolUse.startLines}
+									/>
+								)}
 
-						{step.toolResult && (
-							<ToolResultCard
-								content={step.toolResult.content}
-								isError={step.toolResult.isError}
-								toolName={step.toolResult.toolName}
-								duration={step.toolResult.duration}
-								tokens={step.toolResult.tokens}
-								defaultCollapsed={true}
-							/>
+								{/* Tool Result Card */}
+								{step.toolResult && step.toolResult.content && (
+									<ToolResultCard
+										content={step.toolResult.content}
+										isError={step.toolResult.isError}
+										toolName={toolName}
+										duration={step.toolResult.duration}
+										tokens={step.toolResult.tokens}
+										defaultCollapsed={false}
+									/>
+								)}
+							</>
 						)}
 					</div>
 				)}
@@ -468,7 +521,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 				}
 
 				if (item.kind === "tool") {
-					return renderToolStep(item);
+					return <ToolStep key={item.id} step={item} />;
 				}
 
 				const groupStatus = getGroupStatus(item);
@@ -519,7 +572,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 									</div>
 								)}
 								{item.steps.length > 0 ? (
-									item.steps.map((step) => renderToolStep(step))
+									item.steps.map((step) => <ToolStep key={step.id} step={step} />)
 								) : (
 									<div className="text-center py-4 text-white/30 text-sm italic">
 										Reasoning about the next step...
