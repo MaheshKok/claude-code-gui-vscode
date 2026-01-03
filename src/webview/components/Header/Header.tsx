@@ -67,7 +67,9 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onToggleHistory}
             className={`btn-icon ${isHistoryOpen ? "bg-white/10 text-white" : ""}`}
-            title={isHistoryOpen ? TOOLTIPS.CLOSE_HISTORY : TOOLTIPS.OPEN_HISTORY}
+            title={
+              isHistoryOpen ? TOOLTIPS.CLOSE_HISTORY : TOOLTIPS.OPEN_HISTORY
+            }
           >
             {isHistoryOpen ? (
               <X className={ICON_SIZE} />

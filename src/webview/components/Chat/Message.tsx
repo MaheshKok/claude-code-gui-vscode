@@ -15,7 +15,8 @@ import {
   Clock,
   ChevronRight,
   Zap,
-  Cpu,
+  Check,
+  Copy,
 } from "lucide-react";
 
 /** Terminal statuses that indicate tool execution is no longer in progress */
@@ -103,6 +104,32 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     }).format(date);
   };
 
+  const buildUsageSummary = () => {
+    if (isUser || isError || isTool || !message.usage) {
+      return null;
+    }
+    const usage = message.usage;
+    const totalTokens = usage.input_tokens + usage.output_tokens;
+    const cacheCreated = usage.cache_creation_input_tokens || 0;
+    const cacheRead = usage.cache_read_input_tokens || 0;
+
+    if (totalTokens <= 0 && cacheCreated <= 0 && cacheRead <= 0) {
+      return null;
+    }
+
+    const formatCount = (value: number) => value.toLocaleString();
+    const parts = [`📊 Tokens: ${formatCount(totalTokens)}`];
+    if (cacheCreated > 0) {
+      parts.push(`${formatCount(cacheCreated)} cache created`);
+    }
+    if (cacheRead > 0) {
+      parts.push(`${formatCount(cacheRead)} cache read`);
+    }
+    return parts.join(" • ");
+  };
+
+  const usageSummary = buildUsageSummary();
+
   if (isToolUse) {
     const input = message.rawInput || {};
     const todos =
@@ -114,7 +141,7 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       : Boolean(message.isStreaming);
 
     return (
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-4 animate-fade-in">
         <div className="flex items-center gap-2 text-xs text-white/40 px-1">
           <span>{getRoleLabel()}</span>
           <span>{formatTimestamp(message.timestamp)}</span>
@@ -133,13 +160,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             </span>
           )}
           {message.duration !== undefined && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 font-mono">
               <Clock className="w-3 h-3" /> {formatDuration(message.duration)}
             </span>
           )}
         </div>
         {todos.length > 0 ? (
-          <div className="glass-panel rounded-xl overflow-hidden">
+          <div className="glass-panel rounded-xl overflow-hidden shadow-lg transform transition-all hover:scale-[1.01]">
             <TodoDisplay todos={todos} title="Todo Update" />
           </div>
         ) : (
@@ -161,12 +188,14 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   if (isToolResult) {
     return (
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-4 animate-fade-in">
         <div className="flex items-center gap-2 text-xs text-white/40 px-1">
           <span>{getRoleLabel()}</span>
           <span>{formatTimestamp(message.timestamp)}</span>
           {message.duration !== undefined && (
-            <span>{formatDuration(message.duration)}</span>
+            <span className="font-mono">
+              {formatDuration(message.duration)}
+            </span>
           )}
         </div>
         <ToolResultCard
@@ -186,13 +215,15 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     const tokens = message.tokens;
 
     return (
-      <div className={`${getContainerClasses()} !p-0 overflow-hidden group`}>
+      <div
+        className={`${getContainerClasses()} !p-0 overflow-hidden group animate-fade-in border border-white/5 hover:border-white/10 transition-colors`}
+      >
         <div
           className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
           onClick={toggleCollapsed}
         >
           <ChevronRight
-            className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+            className={`w-4 h-4 text-white/40 transition-transform duration-200 ${isCollapsed ? "" : "rotate-90"}`}
           />
 
           <span
@@ -209,13 +240,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
           <div className="ml-auto flex items-center gap-2">
             {duration !== undefined && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
+              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full font-mono">
                 <Clock className="w-3 h-3" />
                 {formatDuration(duration)}
               </span>
             )}
             {tokens !== undefined && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
+              <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full font-mono">
                 <Zap className="w-3 h-3" />
                 {formatTokens(tokens)}
               </span>
@@ -241,7 +272,9 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   // Regular Message (User/Assistant)
   return (
-    <div className={`${getContainerClasses()} ${isUser ? "ml-auto" : ""}`}>
+    <div
+      className={`${getContainerClasses()} ${isUser ? "ml-auto" : ""} animate-fade-in`}
+    >
       <div className="flex items-center gap-3 mb-3 border-b border-white/5 pb-2">
         <span
           className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-inner ${
@@ -290,6 +323,11 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       <div className="text-sm leading-relaxed message-content">
         <MessageContent content={message.content} />
       </div>
+      {usageSummary && (
+        <div className="mt-3 pt-2 border-t border-white/5 text-[11px] text-white/50">
+          {usageSummary}
+        </div>
+      )}
     </div>
   );
 };
@@ -314,31 +352,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
               ? codeContent.slice(firstNewline + 1)
               : codeContent;
 
-          return (
-            <div
-              key={index}
-              className="my-4 rounded-xl overflow-hidden border border-white/10 shadow-lg group"
-            >
-              {language && (
-                <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
-                  <span className="text-xs font-medium text-white/60 uppercase tracking-wider">
-                    {language}
-                  </span>
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/20" />
-                  </div>
-                </div>
-              )}
-              <div className="relative">
-                <pre className="font-mono text-xs bg-black/40 p-4 overflow-x-auto text-white/80 leading-relaxed custom-scrollbar">
-                  <code>{code}</code>
-                </pre>
-                {/* Copy button could go here */}
-              </div>
-            </div>
-          );
+          return <CodeBlock key={index} code={code} language={language} />;
         }
 
         return (
@@ -360,6 +374,59 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
         );
       })}
     </>
+  );
+};
+
+interface CodeBlockProps {
+  code: string;
+  language: string;
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+    }
+  };
+
+  return (
+    <div className="my-4 rounded-xl overflow-hidden border border-white/10 shadow-lg group relative">
+      <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
+        <span className="text-xs font-medium text-white/60 uppercase tracking-wider font-mono">
+          {language || "text"}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-white/10 text-xs text-white/50 hover:text-white transition-colors"
+            title="Copy code"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3 h-3 text-green-400" />
+                <span className="text-green-400">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      <div className="relative">
+        <pre className="font-mono text-xs bg-black/40 p-4 overflow-x-auto text-white/80 leading-relaxed custom-scrollbar">
+          <code>{code}</code>
+        </pre>
+      </div>
+    </div>
   );
 };
 

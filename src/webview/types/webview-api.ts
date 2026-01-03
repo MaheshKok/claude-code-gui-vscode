@@ -150,6 +150,10 @@ export interface ToolUseMessage extends BaseExtensionMessage {
   duration?: number;
   /** Token count for this tool use */
   tokens?: number;
+  /** Cache read tokens for this tool use */
+  cacheReadTokens?: number;
+  /** Cache creation tokens for this tool use */
+  cacheCreationTokens?: number;
 }
 
 /**
@@ -177,6 +181,10 @@ export interface ToolResultMessage extends BaseExtensionMessage {
   duration?: number;
   /** Token count for this tool result */
   tokens?: number;
+  /** Cache read tokens for this tool result */
+  cacheReadTokens?: number;
+  /** Cache creation tokens for this tool result */
+  cacheCreationTokens?: number;
 }
 
 /**

@@ -808,7 +808,9 @@ export function getTokenPricing(model: string): TokenPricing {
  * Get context window size for a model
  */
 export function getContextWindowSize(model: string): number {
-  return CONTEXT_WINDOW_SIZE[model as ClaudeModel] || DEFAULT_CONTEXT_WINDOW_SIZE;
+  return (
+    CONTEXT_WINDOW_SIZE[model as ClaudeModel] || DEFAULT_CONTEXT_WINDOW_SIZE
+  );
 }
 
 /**

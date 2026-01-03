@@ -40,6 +40,8 @@ export class PanelProvider {
     {
       startTime: number;
       tokens?: number;
+      cacheReadTokens?: number;
+      cacheCreationTokens?: number;
       toolName?: string;
       rawInput?: Record<string, unknown>;
       fileContentBefore?: string;
@@ -821,6 +823,8 @@ export class PanelProvider {
       // Track token usage
       const usage = message.message.usage;
       let tokenCount: number | undefined;
+      let cacheReadTokens = 0;
+      let cacheCreationTokens = 0;
       if (usage) {
         const current = {
           input_tokens: usage.input_tokens || 0,
@@ -828,14 +832,15 @@ export class PanelProvider {
           cache_read_input_tokens: usage.cache_read_input_tokens || 0,
           cache_creation_input_tokens: usage.cache_creation_input_tokens || 0,
         };
+        cacheReadTokens = current.cache_read_input_tokens || 0;
+        cacheCreationTokens = current.cache_creation_input_tokens || 0;
 
         tokenCount = current.input_tokens + current.output_tokens;
 
         this._totalTokensInput += current.input_tokens;
         this._totalTokensOutput += current.output_tokens;
-        this._totalCacheReadTokens += current.cache_read_input_tokens || 0;
-        this._totalCacheCreationTokens +=
-          current.cache_creation_input_tokens || 0;
+        this._totalCacheReadTokens += cacheReadTokens;
+        this._totalCacheCreationTokens += cacheCreationTokens;
 
         const total = {
           inputTokens: this._totalTokensInput,
@@ -937,6 +942,8 @@ export class PanelProvider {
           this._toolUseMetrics.set(toolUseId, {
             startTime: Date.now(),
             tokens: tokenCount,
+            cacheReadTokens,
+            cacheCreationTokens,
             toolName: content.name,
             rawInput,
             fileContentBefore,
@@ -951,6 +958,8 @@ export class PanelProvider {
               toolName: content.name,
               toolUseId,
               tokens: tokenCount,
+              cacheReadTokens,
+              cacheCreationTokens,
               fileContentBefore,
               startLine,
               startLines,
@@ -960,6 +969,8 @@ export class PanelProvider {
             rawInput,
             toolInfo,
             tokens: tokenCount,
+            cacheReadTokens,
+            cacheCreationTokens,
             fileContentBefore,
             startLine,
             startLines,
@@ -985,6 +996,8 @@ export class PanelProvider {
             ? Date.now() - toolMetrics.startTime
             : undefined;
           const tokens = toolMetrics?.tokens;
+          const cacheReadTokens = toolMetrics?.cacheReadTokens;
+          const cacheCreationTokens = toolMetrics?.cacheCreationTokens;
           const toolName = toolMetrics?.toolName;
           const rawInput = toolMetrics?.rawInput;
           let fileContentAfter: string | undefined;
@@ -1014,6 +1027,8 @@ export class PanelProvider {
               hidden: false,
               duration,
               tokens,
+              cacheReadTokens,
+              cacheCreationTokens,
               toolName,
               fileContentAfter,
             },
@@ -1024,6 +1039,8 @@ export class PanelProvider {
             hidden: false,
             duration,
             tokens,
+            cacheReadTokens,
+            cacheCreationTokens,
             fileContentAfter,
           });
 

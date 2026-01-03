@@ -31,7 +31,14 @@ import {
 } from "../../shared/constants";
 
 // Re-export enums for backward compatibility
-export { SessionStatus, ThemeMode, SidebarTab, ModalType, Breakpoint, NotificationType };
+export {
+  SessionStatus,
+  ThemeMode,
+  SidebarTab,
+  ModalType,
+  Breakpoint,
+  NotificationType,
+};
 
 // ============================================================================
 // Session State

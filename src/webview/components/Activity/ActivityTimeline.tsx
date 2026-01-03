@@ -197,6 +197,12 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               const duration =
                 step.toolUse?.duration ?? step.toolResult?.duration;
               const tokens = step.toolUse?.tokens ?? step.toolResult?.tokens;
+              const cacheReadTokens =
+                step.toolUse?.cacheReadTokens ??
+                step.toolResult?.cacheReadTokens;
+              const cacheCreationTokens =
+                step.toolUse?.cacheCreationTokens ??
+                step.toolResult?.cacheCreationTokens;
 
               return (
                 <div key={step.id} className="relative pl-6">
@@ -240,6 +246,30 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                             {formatTokenCount(tokens, { includeSuffix: false })}
                           </span>
                         )}
+                        {cacheCreationTokens !== undefined &&
+                          cacheCreationTokens > 0 && (
+                            <span
+                              className="text-[10px] text-[var(--vscode-descriptionForeground)]"
+                              title="Cache created"
+                            >
+                              C{" "}
+                              {formatTokenCount(cacheCreationTokens, {
+                                includeSuffix: false,
+                              })}
+                            </span>
+                          )}
+                        {cacheReadTokens !== undefined &&
+                          cacheReadTokens > 0 && (
+                            <span
+                              className="text-[10px] text-[var(--vscode-descriptionForeground)]"
+                              title="Cache read"
+                            >
+                              R{" "}
+                              {formatTokenCount(cacheReadTokens, {
+                                includeSuffix: false,
+                              })}
+                            </span>
+                          )}
                         <span
                           className={`px-2 py-0.5 rounded-full border text-[10px] ${statusClass}`}
                         >

@@ -46,6 +46,7 @@ import type {
   ChatMessage,
   PermissionRequest,
   PermissionDecision,
+  TokenUsage,
 } from "./types";
 import type { ConversationListItem } from "./types/history";
 import { ThinkingIntensity } from "../shared/constants";
@@ -150,6 +151,7 @@ const buildChatMessages = (
   const chatMessages: ChatMessage[] = [];
   const toolUseIndex = new Map<string, number>();
   let activeAssistantIndex: number | null = null;
+  let pendingUsage: TokenUsage | null = null;
 
   const finalizeAssistant = (forceClose: boolean = true) => {
     if (activeAssistantIndex === null) {
@@ -203,17 +205,68 @@ const buildChatMessages = (
             content: text,
             timestamp,
             isStreaming: !isFinal,
+            usage: pendingUsage ?? undefined,
           });
+          if (pendingUsage) {
+            pendingUsage = null;
+          }
           activeAssistantIndex = chatMessages.length - 1;
         } else {
           const current = chatMessages[activeAssistantIndex];
           if (current && current.type === "assistant") {
             current.content += text;
+            if (!current.usage && pendingUsage) {
+              current.usage = pendingUsage;
+              pendingUsage = null;
+            }
           }
         }
 
         if (isFinal) {
           finalizeAssistant();
+        }
+        break;
+      }
+      case "updateTokens": {
+        const current =
+          typeof message.current === "object" && message.current !== null
+            ? (message.current as Record<string, unknown>)
+            : data && typeof data.current === "object" && data.current !== null
+              ? (data.current as Record<string, unknown>)
+              : null;
+        if (
+          current &&
+          typeof current.input_tokens === "number" &&
+          typeof current.output_tokens === "number"
+        ) {
+          const usage: TokenUsage = {
+            input_tokens: current.input_tokens,
+            output_tokens: current.output_tokens,
+            cache_read_input_tokens:
+              typeof current.cache_read_input_tokens === "number"
+                ? current.cache_read_input_tokens
+                : 0,
+            cache_creation_input_tokens:
+              typeof current.cache_creation_input_tokens === "number"
+                ? current.cache_creation_input_tokens
+                : 0,
+          };
+          pendingUsage = usage;
+          if (activeAssistantIndex !== null) {
+            const currentMessage = chatMessages[activeAssistantIndex];
+            if (currentMessage && currentMessage.type === "assistant") {
+              currentMessage.usage = currentMessage.usage ?? usage;
+              pendingUsage = null;
+            }
+          } else {
+            const lastAssistant = [...chatMessages]
+              .reverse()
+              .find((msg) => msg.type === "assistant");
+            if (lastAssistant && !lastAssistant.usage) {
+              lastAssistant.usage = usage;
+              pendingUsage = null;
+            }
+          }
         }
         break;
       }
@@ -286,6 +339,18 @@ const buildChatMessages = (
             : data && typeof data.tokens === "number"
               ? data.tokens
               : undefined;
+        const cacheReadTokens =
+          typeof message.cacheReadTokens === "number"
+            ? message.cacheReadTokens
+            : data && typeof data.cacheReadTokens === "number"
+              ? data.cacheReadTokens
+              : undefined;
+        const cacheCreationTokens =
+          typeof message.cacheCreationTokens === "number"
+            ? message.cacheCreationTokens
+            : data && typeof data.cacheCreationTokens === "number"
+              ? data.cacheCreationTokens
+              : undefined;
 
         chatMessages.push({
           id: toolUseId,
@@ -298,6 +363,8 @@ const buildChatMessages = (
           timestamp,
           duration,
           tokens,
+          cacheReadTokens,
+          cacheCreationTokens,
           fileContentBefore,
           startLine,
           startLines,
@@ -337,6 +404,18 @@ const buildChatMessages = (
             : data && typeof data.tokens === "number"
               ? data.tokens
               : undefined;
+        const cacheReadTokens =
+          typeof message.cacheReadTokens === "number"
+            ? message.cacheReadTokens
+            : data && typeof data.cacheReadTokens === "number"
+              ? data.cacheReadTokens
+              : undefined;
+        const cacheCreationTokens =
+          typeof message.cacheCreationTokens === "number"
+            ? message.cacheCreationTokens
+            : data && typeof data.cacheCreationTokens === "number"
+              ? data.cacheCreationTokens
+              : undefined;
         const toolName =
           typeof message.toolName === "string"
             ? message.toolName
@@ -358,6 +437,10 @@ const buildChatMessages = (
               existing.status = isError ? "failed" : "completed";
               existing.duration = duration ?? existing.duration;
               existing.tokens = tokens ?? existing.tokens;
+              existing.cacheReadTokens =
+                cacheReadTokens ?? existing.cacheReadTokens;
+              existing.cacheCreationTokens =
+                cacheCreationTokens ?? existing.cacheCreationTokens;
               if (fileContentAfter !== undefined) {
                 existing.fileContentAfter = fileContentAfter;
               }
@@ -383,6 +466,8 @@ const buildChatMessages = (
             toolName,
             duration,
             tokens,
+            cacheReadTokens,
+            cacheCreationTokens,
             fileContentAfter,
           });
         }
@@ -552,6 +637,7 @@ export const App: React.FC = () => {
   const [lastDurationMs, setLastDurationMs] = React.useState<number | null>(
     null,
   );
+  const pendingUsageRef = React.useRef<TokenUsage | null>(null);
 
   const finalizeStreamingMessage = useCallback(() => {
     if (!streamingMessageId) {
@@ -611,14 +697,19 @@ export const App: React.FC = () => {
         } else {
           // Create new assistant message
           const newId = `msg-${Date.now()}`;
+          const pendingUsage = pendingUsageRef.current;
           const newMessage = {
             id: newId,
             type: "assistant" as const,
             content: msg.text,
             timestamp: Date.now(),
             isStreaming: !msg.isFinal,
+            usage: pendingUsage ?? undefined,
           };
           addMessage(newMessage as ChatMessage);
+          if (pendingUsage) {
+            pendingUsageRef.current = null;
+          }
           if (!msg.isFinal) {
             setStreamingMessageId(newId);
           }
@@ -643,6 +734,8 @@ export const App: React.FC = () => {
         toolInfo: string;
         duration?: number;
         tokens?: number;
+        cacheReadTokens?: number;
+        cacheCreationTokens?: number;
         fileContentBefore?: string;
         startLine?: number;
         startLines?: number[];
@@ -665,6 +758,8 @@ export const App: React.FC = () => {
           toolInfo: msg.toolInfo,
           duration: msg.duration,
           tokens: msg.tokens,
+          cacheReadTokens: msg.cacheReadTokens,
+          cacheCreationTokens: msg.cacheCreationTokens,
           fileContentBefore: msg.fileContentBefore,
           startLine: msg.startLine,
           startLines: msg.startLines,
@@ -681,6 +776,8 @@ export const App: React.FC = () => {
         toolName?: string;
         duration?: number;
         tokens?: number;
+        cacheReadTokens?: number;
+        cacheCreationTokens?: number;
         fileContentAfter?: string;
       }) => {
         finalizeStreamingMessage();
@@ -689,6 +786,8 @@ export const App: React.FC = () => {
           status: msg.isError ? "failed" : "completed",
           duration: msg.duration,
           tokens: msg.tokens,
+          cacheReadTokens: msg.cacheReadTokens,
+          cacheCreationTokens: msg.cacheCreationTokens,
           fileContentAfter: msg.fileContentAfter,
         } as Partial<ChatMessage>);
 
@@ -705,6 +804,8 @@ export const App: React.FC = () => {
             hidden: false,
             duration: msg.duration,
             tokens: msg.tokens,
+            cacheReadTokens: msg.cacheReadTokens,
+            cacheCreationTokens: msg.cacheCreationTokens,
             fileContentAfter: msg.fileContentAfter,
           };
           addMessage(resultMessage as ChatMessage);
@@ -721,6 +822,27 @@ export const App: React.FC = () => {
         total: unknown;
       }) => {
         updateTokens(msg.current);
+        pendingUsageRef.current = msg.current;
+
+        if (streamingMessageId) {
+          useChatStore.getState().updateMessage(streamingMessageId, {
+            usage: msg.current,
+          });
+          pendingUsageRef.current = null;
+        } else {
+          const lastAssistant = [...useChatStore.getState().messages]
+            .reverse()
+            .find((message) => message.type === "assistant");
+          if (
+            lastAssistant &&
+            (lastAssistant as { usage?: TokenUsage }).usage === undefined
+          ) {
+            useChatStore.getState().updateMessage(lastAssistant.id, {
+              usage: msg.current,
+            });
+            pendingUsageRef.current = null;
+          }
+        }
       },
 
       updateTotals: (msg: {
@@ -1245,6 +1367,15 @@ export const App: React.FC = () => {
           duration:
             "duration" in m ? (m as { duration?: number }).duration : undefined,
           tokens: "tokens" in m ? (m as { tokens?: number }).tokens : undefined,
+          cacheReadTokens:
+            "cacheReadTokens" in m
+              ? (m as { cacheReadTokens?: number }).cacheReadTokens
+              : undefined,
+          cacheCreationTokens:
+            "cacheCreationTokens" in m
+              ? (m as { cacheCreationTokens?: number }).cacheCreationTokens
+              : undefined,
+          usage: "usage" in m ? (m as { usage?: TokenUsage }).usage : undefined,
         }))}
         isProcessing={isProcessing}
         todos={todos}

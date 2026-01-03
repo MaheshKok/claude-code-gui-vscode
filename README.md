@@ -57,7 +57,7 @@ Before installing Claude Code GUI, ensure you have:
   npm install -g @anthropic-ai/claude-code
   claude auth login
   ```
-- **Node.js**: Version 18.0.0 or higher
+- **Node.js**: Version 22.21.1
 
 ## Installation
 
@@ -191,7 +191,7 @@ Access settings via the gear icon in the chat header or through VS Code settings
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22.21.1
 - npm or yarn
 - VS Code
 

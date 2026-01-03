@@ -144,9 +144,18 @@ export class ClaudeService implements vscode.Disposable {
 
     console.log("Claude command args:", args);
 
-    const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
-    const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
-    const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
+    const wslEnabled = config.get<boolean>(
+      "wsl.enabled",
+      DEFAULT_WSL_CONFIG.ENABLED,
+    );
+    const wslDistro = config.get<string>(
+      "wsl.distro",
+      DEFAULT_WSL_CONFIG.DISTRO,
+    );
+    const nodePath = config.get<string>(
+      "wsl.nodePath",
+      DEFAULT_WSL_CONFIG.NODE_PATH,
+    );
     const claudePath = config.get<string>(
       "wsl.claudePath",
       DEFAULT_WSL_CONFIG.CLAUDE_PATH,
@@ -501,7 +510,10 @@ export class ClaudeService implements vscode.Disposable {
     let description: string | undefined;
     if (request.description) {
       description = request.description;
-    } else if (toolName === ToolName.Bash && typeof input.command === "string") {
+    } else if (
+      toolName === ToolName.Bash &&
+      typeof input.command === "string"
+    ) {
       description = input.command;
     } else if (pattern) {
       description = pattern;
@@ -554,7 +566,10 @@ export class ClaudeService implements vscode.Disposable {
     windowsPath: string,
     config: vscode.WorkspaceConfiguration,
   ): string {
-    const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
+    const wslEnabled = config.get<boolean>(
+      "wsl.enabled",
+      DEFAULT_WSL_CONFIG.ENABLED,
+    );
     if (!wslEnabled || process.platform !== "win32") {
       return windowsPath;
     }

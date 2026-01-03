@@ -6,8 +6,9 @@
 set -e
 
 # Override PATH to use correct Node.js version (bypasses pyenv)
-export PATH="/Users/maheshkokare/.nvm/versions/node/v22.21.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-export NODE_VERSION="22.21.1"
+NODE_VERSION="$(cat .nvmrc)"
+export NODE_VERSION
+export PATH="$HOME/.nvm/versions/node/v${NODE_VERSION}/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 echo "🚀 Starting Claude Code GUI development servers..."
 echo ""

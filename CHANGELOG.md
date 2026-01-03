@@ -114,4 +114,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Requires Claude Code CLI to be installed and authenticated
 - Requires VS Code 1.94.0 or higher
-- Requires Node.js 18.0.0 or higher for development
+- Requires Node.js 22.21.1 for development

@@ -67,7 +67,6 @@ const getToolIconElement = (toolName: string) => {
     case ToolName.NotebookEdit:
       return <BookOpen className="w-4 h-4" />;
     default:
-      // Handle MCP tools with a generic icon
       if (toolName.startsWith("mcp__")) {
         return <Zap className="w-4 h-4" />;
       }
@@ -180,7 +179,10 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
           newContent = newContent.replace(edit.old_string, edit.new_string);
         }
       }
-    } else if (toolName === ToolName.Write && typeof input.content === "string") {
+    } else if (
+      toolName === ToolName.Write &&
+      typeof input.content === "string"
+    ) {
       newContent = input.content;
     }
 
@@ -243,7 +245,10 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
           diff,
         });
       });
-    } else if (toolName === ToolName.Write && typeof input.content === "string") {
+    } else if (
+      toolName === ToolName.Write &&
+      typeof input.content === "string"
+    ) {
       const oldContent = fileContentBefore ?? "";
       const diff = computeContextualDiff(oldContent, input.content, {
         contextLines: 3,
@@ -306,14 +311,14 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
     <div className="glass-panel rounded-lg overflow-hidden border border-white/5 bg-black/10">
       {/* Header */}
       <div
-        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors group"
         onClick={toggleCollapsed}
       >
         <ChevronRight
           className={`w-4 h-4 text-white/40 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
         />
 
-        <div className="text-orange-400 opacity-80">
+        <div className="text-orange-400 opacity-80 group-hover:opacity-100 transition-opacity">
           {getToolIconElement(toolName)}
         </div>
         <span className="font-medium text-sm text-white/90">{toolName}</span>
@@ -322,7 +327,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
         <div className="ml-auto flex items-center gap-2">
           {diffData && diffData.filePath && (
             <button
-              className="text-xs px-2 py-0.5 rounded border border-white/10 text-orange-400 hover:bg-white/5 flex items-center gap-1"
+              className="text-xs px-2 py-0.5 rounded border border-white/10 text-orange-400 hover:bg-white/5 flex items-center gap-1 transition-colors"
               onClick={(event) => {
                 event.stopPropagation();
                 handleOpenDiff();
@@ -334,13 +339,13 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
             </button>
           )}
           {duration !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
               <Clock className="w-3 h-3" />
               {formatDuration(duration)}
             </span>
           )}
           {tokens !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
               <Zap className="w-3 h-3" />
               {formatTokens(tokens)}
             </span>
@@ -376,7 +381,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
           </div>
 
           {diffSections.length > 0 && (
-            <div className="rounded-lg border border-white/10 overflow-hidden bg-black/40">
+            <div className="rounded-lg border border-white/10 overflow-hidden bg-black/40 shadow-inner">
               <div className="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
                 <div className="text-[10px] text-white/50 uppercase tracking-widest font-semibold flex items-center gap-2">
                   <FileDiff className="w-3 h-3" />
@@ -466,7 +471,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = ({
               Raw JSON
             </span>
           </div>
-          <pre className="p-3 text-xs overflow-x-auto text-white/60 font-mono custom-scrollbar">
+          <pre className="p-3 text-xs overflow-x-auto text-white/60 font-mono">
             {JSON.stringify(input, null, 2)}
           </pre>
         </div>

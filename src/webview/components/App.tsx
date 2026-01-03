@@ -8,6 +8,8 @@
  * @deprecated Import directly from '../App' instead
  */
 
+import type { TokenUsage } from "../types";
+
 // Re-export the main App component
 export { App, default } from "../App";
 
@@ -40,6 +42,12 @@ export interface Message {
   duration?: number;
   /** Token count (for tool messages) */
   tokens?: number;
+  /** Cache read tokens (for tool messages) */
+  cacheReadTokens?: number;
+  /** Cache creation tokens (for tool messages) */
+  cacheCreationTokens?: number;
+  /** Token usage for assistant messages */
+  usage?: TokenUsage;
 }
 
 /**

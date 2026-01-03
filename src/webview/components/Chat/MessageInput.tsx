@@ -180,9 +180,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
   return (
-    <div className="glass rounded-2xl shadow-2xl border border-white/10 overflow-visible transition-all duration-300 focus-within:border-white/20 focus-within:shadow-orange-500/5 focus-within:ring-1 focus-within:ring-white/10">
+    <div className="glass rounded-2xl shadow-2xl border border-white/5 overflow-visible transition-all duration-300 focus-within:border-orange-500/30 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.15)] focus-within:ring-1 focus-within:ring-orange-500/20">
       {/* Input Area */}
-      <div className="p-2">
+      <div className="p-3">
         <textarea
           ref={textareaRef}
           value={content}
@@ -192,19 +192,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           placeholder={
             disabled ? "Claude is thinking..." : "How can I help you?"
           }
-          className="w-full bg-transparent border-none focus:ring-0 resize-none text-white text-base placeholder-white/30 min-h-[50px] max-h-[200px] leading-relaxed custom-scrollbar"
+          className="w-full bg-transparent border-none focus:ring-0 resize-none text-white text-base placeholder-white/30 min-h-[50px] max-h-[200px] leading-relaxed selection:bg-orange-500/30 selection:text-white"
           rows={1}
         />
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-black/20 border-t border-white/5 rounded-b-2xl">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between px-3 py-2 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
+        <div className="flex items-center gap-1.5">
           {/* Model Selector */}
           <div className="relative" ref={modelSelectorRef}>
             <button
               onClick={() => setShowModelSelector(!showModelSelector)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 border border-transparent hover:border-white/5"
             >
               <Sparkles className="w-3.5 h-3.5 text-orange-400" />
               <span>{currentModelName}</span>
@@ -212,12 +212,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </button>
 
             {showModelSelector && (
-              <div className="absolute bottom-full left-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-50 min-w-[180px] overflow-hidden">
+              <div className="absolute bottom-full left-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[200px] overflow-hidden animate-slide-up backdrop-blur-xl">
                 {MODELS.map((model) => (
                   <button
                     key={model.id}
                     onClick={() => handleModelSelect(model.id)}
-                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 transition-colors flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 transition-colors flex items-center justify-between group ${
                       currentModel === model.id
                         ? "bg-orange-500/10 text-orange-400 font-medium"
                         : "text-white/80"
@@ -239,17 +239,17 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           <div className="relative" ref={thinkingSelectorRef}>
             <button
               onClick={() => setShowThinkingSelector(!showThinkingSelector)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                 thinkingMode
-                  ? "text-orange-400 bg-orange-500/10"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "text-orange-400 bg-orange-500/10 border-orange-500/20"
+                  : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
               }`}
             >
               <BrainCircuit className="w-3.5 h-3.5" />
               <span>{thinkingMode ? currentThinkingMode.label : "Think"}</span>
             </button>
             {showThinkingSelector && (
-              <div className="absolute bottom-full left-0 mb-2 p-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-50 min-w-[240px]">
+              <div className="absolute bottom-full left-0 mb-2 p-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[240px] animate-slide-up backdrop-blur-xl">
                 <div className="p-2 border-b border-white/5 mb-1">
                   <button
                     onClick={() => {
@@ -265,7 +265,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                       className={`w-9 h-5 rounded-full relative transition-colors ${thinkingMode ? "bg-orange-500" : "bg-white/20"}`}
                     >
                       <div
-                        className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${thinkingMode ? "left-5" : "left-1"}`}
+                        className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all shadow-sm ${thinkingMode ? "left-5" : "left-1"}`}
                       />
                     </div>
                   </button>
@@ -297,10 +297,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
           <button
             onClick={onPlanModeToggle}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
               planMode
-                ? "text-blue-400 bg-blue-500/10"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
+                ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
             }`}
           >
             <FileCode className="w-3.5 h-3.5" />
@@ -309,10 +309,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
           <button
             onClick={onYoloModeToggle}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
               yoloMode
-                ? "text-red-700 bg-red-700/10"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
+                ? "text-red-400 bg-red-700/20 border-red-500/30"
+                : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
@@ -348,8 +348,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           <button
             onClick={handleSubmit}
             disabled={disabled || !content.trim()}
-            className={`flex items-center justify-center p-2 rounded-lg transition-all duration-200 
-                    ${disabled || !content.trim() ? "opacity-50 cursor-not-allowed bg-white/5 text-white/30" : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/20 hover:scale-105 active:scale-95"}
+            className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300
+                    ${
+                      disabled || !content.trim()
+                        ? "opacity-50 cursor-not-allowed bg-white/5 text-white/30"
+                        : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/30 hover:scale-110 active:scale-95 hover:shadow-orange-500/50"
+                    }
                 `}
           >
             <Send className="w-4 h-4" />

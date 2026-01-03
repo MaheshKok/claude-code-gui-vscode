@@ -25,7 +25,14 @@ import {
 } from "../../shared/constants";
 
 // Re-export enums for backward compatibility
-export { MessageType, MessageRole, ToolExecutionStatus, PermissionStatus, SystemMessageSeverity, ErrorAction };
+export {
+  MessageType,
+  MessageRole,
+  ToolExecutionStatus,
+  PermissionStatus,
+  SystemMessageSeverity,
+  ErrorAction,
+};
 
 // ============================================================================
 // Base Message Types
@@ -152,6 +159,10 @@ export interface ToolUseMessage extends BaseMessage {
   duration?: number;
   /** Token count for this tool use */
   tokens?: number;
+  /** Cache read tokens for this tool use */
+  cacheReadTokens?: number;
+  /** Cache creation tokens for this tool use */
+  cacheCreationTokens?: number;
 }
 
 /**
@@ -189,6 +200,10 @@ export interface ToolResultMessage extends BaseMessage {
   duration?: number;
   /** Token count for this tool result */
   tokens?: number;
+  /** Cache read tokens for this tool result */
+  cacheReadTokens?: number;
+  /** Cache creation tokens for this tool result */
+  cacheCreationTokens?: number;
 }
 
 // ============================================================================
