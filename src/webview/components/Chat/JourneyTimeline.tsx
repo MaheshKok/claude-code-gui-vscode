@@ -13,23 +13,25 @@ import {
     Clock,
     CheckCircle2,
     XCircle,
-    AlertCircle,
-    PlayCircle,
-    ChevronRight,
-    Search,
-    Bug,
-    Type,
-    RefreshCw,
-    FileText,
-    Edit3,
-    Terminal,
-    Globe,
-    CheckSquare,
-    Code,
-    Zap,
-    Files,
-    ListChecks,
-    BookOpen,
+	AlertCircle,
+	PlayCircle,
+	ChevronRight,
+	Search,
+	Bug,
+	Type,
+	RefreshCw,
+	FileText,
+	Edit3,
+	Terminal,
+	Globe,
+	CheckSquare,
+	Code,
+	Zap,
+	Files,
+	ListChecks,
+	BookOpen,
+	Copy,
+	Check,
 } from "lucide-react";
 
 interface TimelineItemMessage {
@@ -200,14 +202,20 @@ const getStepStatus = (step: TimelineItemTool): string => {
     return "pending";
 };
 
-const getGroupStatus = (group: TimelinePlanGroup): string => {
-    if (group.assistant.isStreaming) {
-        return "executing";
-    }
-    const hasRunning = group.steps.some((step) => {
-        const status = getStepStatus(step);
-        return status === "executing" || status === "pending";
-    });
+const getGroupStatus = (
+	group: TimelinePlanGroup,
+	isProcessing: boolean
+): string => {
+	if (group.assistant.isStreaming && isProcessing) {
+		return "executing";
+	}
+	if (group.steps.length === 0) {
+		return "completed";
+	}
+	const hasRunning = group.steps.some((step) => {
+		const status = getStepStatus(step);
+		return status === "executing" || status === "pending";
+	});
     if (hasRunning) {
         return "executing";
     }
@@ -215,7 +223,7 @@ const getGroupStatus = (group: TimelinePlanGroup): string => {
     if (hasFailure) {
         return "failed";
     }
-    return group.steps.length > 0 ? "completed" : "pending";
+	return "completed";
 };
 
 const CollapsibleReasoning = ({ content }: { content: string }) => {
@@ -249,6 +257,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 }) => {
     const [collapsedPlans, setCollapsedPlans] = useState<Record<string, boolean>>({});
     const [collapsedSteps, setCollapsedSteps] = useState<Record<string, boolean>>({});
+    const [copiedPlanId, setCopiedPlanId] = useState<string | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const items = useMemo<TimelineItem[]>(() => {
@@ -380,6 +389,20 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             [id]: !(prev[id] ?? !isExecuting),
         }));
     }, []);
+
+    const handleCopyPlan = useCallback(
+        async (event: React.MouseEvent, id: string, content: string) => {
+            event.stopPropagation();
+            try {
+                await navigator.clipboard.writeText(content);
+                setCopiedPlanId(id);
+                setTimeout(() => setCopiedPlanId(null), 2000);
+            } catch (error) {
+                console.error("Failed to copy response:", error);
+            }
+        },
+        [],
+    );
 
     if (items.length === 0 && showEmptyState) {
         return (
@@ -578,7 +601,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                     return <ToolStep key={item.id} step={item} />;
                 }
 
-                const groupStatus = getGroupStatus(item);
+				const groupStatus = getGroupStatus(item, isProcessing);
                 const isActive = groupStatus === "executing";
                 const isPlanOpen =
                     collapsedPlans[item.id] === undefined ? isActive : !collapsedPlans[item.id];
@@ -631,6 +654,31 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                                         {completedCount}/{item.steps.length}
                                     </span>
                                 </div>
+                                {item.assistant.content && (
+                                    <button
+                                        className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] text-white/50 hover:text-white transition-colors"
+                                        onClick={(event) =>
+                                            handleCopyPlan(
+                                                event,
+                                                item.id,
+                                                item.assistant.content,
+                                            )
+                                        }
+                                        title="Copy response"
+                                    >
+                                        {copiedPlanId === item.id ? (
+                                            <>
+                                                <Check className="w-3 h-3 text-green-400" />
+                                                <span className="text-green-400">Copied</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="w-3 h-3" />
+                                                <span>Copy</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                                 <StatusIcon status={groupStatus} className="w-4 h-4" />
                             </div>
                         </div>
