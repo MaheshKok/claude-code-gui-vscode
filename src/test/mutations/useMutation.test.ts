@@ -36,9 +36,11 @@ describe("useMutation", () => {
 
     describe("mutation execution", () => {
         it("should transition to pending state when mutate is called", async () => {
-            const mutationFn = vi.fn().mockImplementation(
-                () => new Promise((resolve) => setTimeout(() => resolve("result"), 100))
-            );
+            const mutationFn = vi
+                .fn()
+                .mockImplementation(
+                    () => new Promise((resolve) => setTimeout(() => resolve("result"), 100)),
+                );
             const { result } = renderHook(() => useMutation({ mutationFn }));
 
             act(() => {
@@ -122,7 +124,7 @@ describe("useMutation", () => {
                 useMutation({
                     mutationFn,
                     onMutate,
-                })
+                }),
             );
 
             await act(async () => {
@@ -144,18 +146,14 @@ describe("useMutation", () => {
                     mutationFn,
                     onMutate,
                     onSuccess,
-                })
+                }),
             );
 
             await act(async () => {
                 await result.current.mutateAsync("test-vars");
             });
 
-            expect(onSuccess).toHaveBeenCalledWith(
-                "result",
-                "test-vars",
-                { previousValue: "old" }
-            );
+            expect(onSuccess).toHaveBeenCalledWith("result", "test-vars", { previousValue: "old" });
         });
 
         it("should call onError with error, variables, and context", async () => {
@@ -169,7 +167,7 @@ describe("useMutation", () => {
                     mutationFn,
                     onMutate,
                     onError,
-                })
+                }),
             );
 
             await act(async () => {
@@ -191,7 +189,7 @@ describe("useMutation", () => {
                 useMutation({
                     mutationFn,
                     onSettled,
-                })
+                }),
             );
 
             await act(async () => {
@@ -210,7 +208,7 @@ describe("useMutation", () => {
                 useMutation({
                     mutationFn,
                     onSettled,
-                })
+                }),
             );
 
             await act(async () => {
@@ -260,7 +258,7 @@ describe("useMutation", () => {
                     mutationFn,
                     retry: 3, // retry 3 times after initial attempt
                     retryDelay: 10, // Use short delay for real timers
-                })
+                }),
             );
 
             await act(async () => {
@@ -287,7 +285,7 @@ describe("useMutation", () => {
                 useMutation({
                     mutationFn,
                     retry: false,
-                })
+                }),
             );
 
             await act(async () => {
@@ -306,10 +304,7 @@ describe("useMutation", () => {
             vi.useRealTimers();
 
             const error = new Error("Failed");
-            const mutationFn = vi
-                .fn()
-                .mockRejectedValueOnce(error)
-                .mockResolvedValue("success");
+            const mutationFn = vi.fn().mockRejectedValueOnce(error).mockResolvedValue("success");
 
             const retryDelay = vi.fn().mockReturnValue(10); // Use short delay
 
@@ -318,7 +313,7 @@ describe("useMutation", () => {
                     mutationFn,
                     retry: 2, // Need retry >= 2 so attemptCount (1) < 2 triggers retry
                     retryDelay,
-                })
+                }),
             );
 
             await act(async () => {
@@ -352,7 +347,7 @@ describe("useOptimisticMutation", () => {
                 getSnapshot,
                 optimisticUpdate,
                 rollback,
-            })
+            }),
         );
 
         await act(async () => {
@@ -380,7 +375,7 @@ describe("useOptimisticMutation", () => {
                 getSnapshot,
                 optimisticUpdate,
                 rollback,
-            })
+            }),
         );
 
         await act(async () => {
@@ -406,7 +401,7 @@ describe("useOptimisticMutation", () => {
                 getSnapshot,
                 optimisticUpdate,
                 rollback,
-            })
+            }),
         );
 
         await act(async () => {
@@ -427,7 +422,7 @@ describe("useOptimisticMutation", () => {
                 optimisticUpdate: vi.fn(),
                 rollback: vi.fn(),
                 onSuccess,
-            })
+            }),
         );
 
         await act(async () => {
@@ -449,7 +444,7 @@ describe("useOptimisticMutation", () => {
                 optimisticUpdate: vi.fn(),
                 rollback: vi.fn(),
                 onError,
-            })
+            }),
         );
 
         await act(async () => {

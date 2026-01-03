@@ -116,10 +116,16 @@ export class SettingsManager {
                 enabled: config.get<boolean>(CONFIG_KEYS.WSL_ENABLED, DEFAULTS.WSL_ENABLED),
                 distro: config.get<string>(CONFIG_KEYS.WSL_DISTRO, DEFAULTS.WSL_DISTRO),
                 nodePath: config.get<string>(CONFIG_KEYS.WSL_NODE_PATH, DEFAULTS.WSL_NODE_PATH),
-                claudePath: config.get<string>(CONFIG_KEYS.WSL_CLAUDE_PATH, DEFAULTS.WSL_CLAUDE_PATH),
+                claudePath: config.get<string>(
+                    CONFIG_KEYS.WSL_CLAUDE_PATH,
+                    DEFAULTS.WSL_CLAUDE_PATH,
+                ),
             },
             selectedModel,
-            thinkingMode: config.get<boolean>(CONFIG_KEYS.THINKING_ENABLED, DEFAULTS.THINKING_ENABLED),
+            thinkingMode: config.get<boolean>(
+                CONFIG_KEYS.THINKING_ENABLED,
+                DEFAULTS.THINKING_ENABLED,
+            ),
             thinkingIntensity: config.get<string>(
                 CONFIG_KEYS.THINKING_INTENSITY,
                 DEFAULTS.THINKING_INTENSITY,

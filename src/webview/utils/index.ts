@@ -246,10 +246,11 @@ export {
     getToolFilePath,
     getToolDescription,
     getToolSummary,
+    getToolOriginInfo,
     isDestructiveOperation,
 } from "./toolInput";
 
-export type { FormattedToolInput, ToolInputFormatOptions } from "./toolInput";
+export type { FormattedToolInput, ToolInputFormatOptions, ToolOriginInfo } from "./toolInput";
 
 // ============================================================================
 // Clipboard

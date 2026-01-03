@@ -8,12 +8,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type {
-    MutationState,
-    MutationOptions,
-    MutationResult,
-    MutationStatus,
-} from "./types";
+import type { MutationState, MutationOptions, MutationResult, MutationStatus } from "./types";
 
 // ============================================================================
 // Initial State
@@ -45,7 +40,7 @@ function getDefaultRetryDelay(attemptIndex: number): number {
 function shouldRetry<TError>(
     retry: MutationOptions<unknown, unknown, TError>["retry"],
     failureCount: number,
-    error: TError
+    error: TError,
 ): boolean {
     if (retry === false || retry === undefined) return false;
     if (retry === true) return failureCount < 3;
@@ -80,7 +75,7 @@ function shouldRetry<TError>(
  * ```
  */
 export function useMutation<TData = unknown, TVariables = void, TError = Error, TContext = unknown>(
-    options: MutationOptions<TData, TVariables, TError, TContext>
+    options: MutationOptions<TData, TVariables, TError, TContext>,
 ): MutationResult<TData, TVariables, TError> {
     const {
         mutationFn,
@@ -112,7 +107,7 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error, 
                 setState((prev) => ({ ...prev, ...updates }));
             }
         },
-        []
+        [],
     );
 
     /**
@@ -141,15 +136,16 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error, 
                     }
 
                     // Calculate retry delay
-                    const delay = typeof retryDelay === "function"
-                        ? retryDelay(attemptCount - 1, lastError)
-                        : retryDelay;
+                    const delay =
+                        typeof retryDelay === "function"
+                            ? retryDelay(attemptCount - 1, lastError)
+                            : retryDelay;
 
                     await new Promise((resolve) => setTimeout(resolve, delay));
                 }
             }
         },
-        [mutationFn, retry, retryDelay, safeSetState]
+        [mutationFn, retry, retryDelay, safeSetState],
     );
 
     /**
@@ -276,7 +272,7 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error, 
                 throw error;
             }
         },
-        [executeMutation, onMutate, onSuccess, onError, onSettled]
+        [executeMutation, onMutate, onSuccess, onError, onSettled],
     );
 
     /**
@@ -288,7 +284,7 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error, 
                 // Error is already handled by onError callback
             });
         },
-        [mutateAsync]
+        [mutateAsync],
     );
 
     /**

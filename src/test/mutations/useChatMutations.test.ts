@@ -82,7 +82,7 @@ describe("useSendMessage", () => {
             expect.objectContaining({
                 type: "sendMessage",
                 message: "Hello, Claude!",
-            })
+            }),
         );
     });
 
@@ -101,7 +101,7 @@ describe("useSendMessage", () => {
             expect.objectContaining({
                 type: "sendMessage",
                 message: "Review this file",
-            })
+            }),
         );
     });
 
@@ -129,10 +129,7 @@ describe("useUpdateMessage", () => {
             });
         });
 
-        expect(mockUpdateMessage).toHaveBeenCalledWith(
-            "msg-123",
-            { content: "Updated content" }
-        );
+        expect(mockUpdateMessage).toHaveBeenCalledWith("msg-123", { content: "Updated content" });
     });
 
     it("should handle partial updates", async () => {
@@ -145,10 +142,7 @@ describe("useUpdateMessage", () => {
             });
         });
 
-        expect(mockUpdateMessage).toHaveBeenCalledWith(
-            "msg-456",
-            { status: "delivered" }
-        );
+        expect(mockUpdateMessage).toHaveBeenCalledWith("msg-456", { status: "delivered" });
     });
 });
 
@@ -225,7 +219,7 @@ describe("useResetChat", () => {
         expect(mockPostMessage).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: "clearConversation",
-            })
+            }),
         );
     });
 });

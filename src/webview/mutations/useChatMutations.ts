@@ -33,7 +33,11 @@ function generateMessageId(): string {
 /**
  * Create a user message object
  */
-function createUserMessage(content: string, attachments?: string[], messageId?: string): ChatMessage {
+function createUserMessage(
+    content: string,
+    attachments?: string[],
+    messageId?: string,
+): ChatMessage {
     return {
         id: messageId ?? generateMessageId(),
         type: "user",
@@ -73,7 +77,7 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
             const userMessage = createUserMessage(
                 variables.content,
                 variables.attachments,
-                messageId
+                messageId,
             );
 
             // Send to extension
@@ -90,7 +94,7 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
             const userMessage = createUserMessage(
                 variables.content,
                 variables.attachments,
-                messageId
+                messageId,
             );
             addMessage(userMessage);
             setProcessing(true);
@@ -115,7 +119,7 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
             ...variables,
             messageId: variables.messageId ?? generateMessageId(),
         }),
-        []
+        [],
     );
 
     const { mutate: baseMutate, mutateAsync: baseMutateAsync } = mutation;
@@ -124,12 +128,12 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
         (variables: SendMessageVariables) => {
             baseMutate(withMessageId(variables));
         },
-        [baseMutate, withMessageId]
+        [baseMutate, withMessageId],
     );
 
     const mutateAsync = useCallback(
         (variables: SendMessageVariables) => baseMutateAsync(withMessageId(variables)),
-        [baseMutateAsync, withMessageId]
+        [baseMutateAsync, withMessageId],
     );
 
     return {

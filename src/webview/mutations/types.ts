@@ -60,14 +60,18 @@ export interface MutationOptions<TData, TVariables, TError = Error, TContext = u
     onSuccess?: (data: TData, variables: TVariables, context: TContext) => void | Promise<void>;
 
     /** Called when mutation fails */
-    onError?: (error: TError, variables: TVariables, context: TContext | undefined) => void | Promise<void>;
+    onError?: (
+        error: TError,
+        variables: TVariables,
+        context: TContext | undefined,
+    ) => void | Promise<void>;
 
     /** Called when mutation settles (success or error) */
     onSettled?: (
         data: TData | undefined,
         error: TError | null,
         variables: TVariables,
-        context: TContext | undefined
+        context: TContext | undefined,
     ) => void | Promise<void>;
 
     /** Number of retry attempts on failure */
@@ -90,7 +94,10 @@ export interface MutationOptions<TData, TVariables, TError = Error, TContext = u
 /**
  * Result returned from useMutation hook
  */
-export interface MutationResult<TData, TVariables, TError = Error> extends MutationState<TData, TError> {
+export interface MutationResult<TData, TVariables, TError = Error> extends MutationState<
+    TData,
+    TError
+> {
     /** Execute the mutation with variables */
     mutate: (variables: TVariables) => void;
 
@@ -123,8 +130,10 @@ export interface OptimisticContext<TSnapshot = unknown> {
 /**
  * Options for optimistic mutations
  */
-export interface OptimisticMutationOptions<TData, TVariables, TSnapshot = unknown>
-    extends Omit<MutationOptions<TData, TVariables, Error, OptimisticContext<TSnapshot>>, "onMutate"> {
+export interface OptimisticMutationOptions<TData, TVariables, TSnapshot = unknown> extends Omit<
+    MutationOptions<TData, TVariables, Error, OptimisticContext<TSnapshot>>,
+    "onMutate"
+> {
     /** Get current state snapshot for rollback */
     getSnapshot: () => TSnapshot;
 

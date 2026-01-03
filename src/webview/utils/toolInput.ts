@@ -823,3 +823,58 @@ export function isDestructiveOperation(toolName: string, input: ToolInput): bool
 
     return true;
 }
+
+export interface ToolOriginInfo {
+    origin: "mcp" | "agent" | "core";
+    label?: string;
+    detail?: string;
+    mcpServer?: string;
+    mcpTool?: string;
+    agentName?: string;
+}
+
+export function getToolOriginInfo(toolName: string, input?: ToolInput): ToolOriginInfo {
+    if (toolName.startsWith("mcp__")) {
+        const parts = toolName.split("__");
+        const mcpServer = parts[1] || undefined;
+        const mcpTool = parts.length > 2 ? parts.slice(2).join("__") : undefined;
+        const detailParts = [mcpServer, mcpTool].filter((part) => Boolean(part)) as string[];
+        return {
+            origin: "mcp",
+            label: "MCP",
+            detail: detailParts.length > 0 ? detailParts.join(" / ") : undefined,
+            mcpServer,
+            mcpTool,
+        };
+    }
+
+    if (toolName === "Task") {
+        const agentKeys = [
+            "agent",
+            "agent_name",
+            "agentName",
+            "subagent",
+            "subagent_name",
+            "subagent_type",
+            "role",
+        ];
+        let agentName: string | undefined;
+        if (input) {
+            for (const key of agentKeys) {
+                const value = input[key];
+                if (typeof value === "string" && value.trim()) {
+                    agentName = value.trim();
+                    break;
+                }
+            }
+        }
+        return {
+            origin: "agent",
+            label: "Agent",
+            detail: agentName,
+            agentName,
+        };
+    }
+
+    return { origin: "core" };
+}

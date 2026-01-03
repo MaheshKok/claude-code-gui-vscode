@@ -11,7 +11,13 @@ import { ChevronRight, CheckCircle2, Copy, Check } from "lucide-react";
 import { StatusIcon } from "./StatusIcon";
 import { CollapsibleReasoning } from "./CollapsibleReasoning";
 import { ToolStep } from "./ToolStep";
-import { getGroupStatus, getStepStatus, calculateStepTotals, formatStepTotalsSummary, formatUsageSummary } from "./utils";
+import {
+    getGroupStatus,
+    getStepStatus,
+    calculateStepTotals,
+    formatStepTotalsSummary,
+    formatUsageSummary,
+} from "./utils";
 import type { PlanGroupProps } from "./types";
 
 /**
@@ -29,17 +35,13 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
 }) => {
     const groupStatus = getGroupStatus(item, isProcessing);
     const isActive = groupStatus === "executing";
-    const completedCount = item.steps.filter(
-        (step) => getStepStatus(step) === "completed",
-    ).length;
+    const completedCount = item.steps.filter((step) => getStepStatus(step) === "completed").length;
     const stepTotals = calculateStepTotals(item.steps);
     const stepTotalsSummary = formatStepTotalsSummary(stepTotals);
     const usageSummary = stepTotalsSummary ?? formatUsageSummary(item.assistant.usage);
 
     return (
-        <div
-            className="glass rounded-xl border border-white/10 overflow-hidden shadow-sm transition-all hover:border-white/20"
-        >
+        <div className="glass rounded-xl border border-white/10 overflow-hidden shadow-sm transition-all hover:border-white/20">
             <div
                 className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-orange-500/5" : "hover:bg-white/5"}`}
                 onClick={() => onTogglePlan(item.id, isPlanOpen)}
@@ -64,9 +66,7 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
                     {item.assistant.content && (
                         <button
                             className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] text-white/50 hover:text-white transition-colors"
-                            onClick={(event) =>
-                                onCopyPlan(event, item.id, item.assistant.content)
-                            }
+                            onClick={(event) => onCopyPlan(event, item.id, item.assistant.content)}
                             title="Copy response"
                         >
                             {copiedPlanId === item.id ? (

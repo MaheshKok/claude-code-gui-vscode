@@ -164,7 +164,12 @@ export class ClaudeMessageProcessor {
 
         // Process content
         for (const content of message.message.content) {
-            await this._processContentItem(content, tokenCount, cacheReadTokens, cacheCreationTokens);
+            await this._processContentItem(
+                content,
+                tokenCount,
+                cacheReadTokens,
+                cacheCreationTokens,
+            );
         }
     }
 
@@ -360,7 +365,12 @@ export class ClaudeMessageProcessor {
         const isFileEditTool =
             toolName === "Edit" || toolName === "MultiEdit" || toolName === "Write";
 
-        if (isFileEditTool && rawInput && typeof rawInput.file_path === "string" && !content.is_error) {
+        if (
+            isFileEditTool &&
+            rawInput &&
+            typeof rawInput.file_path === "string" &&
+            !content.is_error
+        ) {
             try {
                 const fileUri = vscode.Uri.file(rawInput.file_path);
                 const fileData = await vscode.workspace.fs.readFile(fileUri);

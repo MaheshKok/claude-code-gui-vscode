@@ -43,7 +43,8 @@ export interface WSLConversionOptions {
 export function convertToWSLPath(windowsPath: string, options?: WSLConversionOptions): string {
     // Check if WSL is enabled
     const config = vscode.workspace.getConfiguration("claudeCodeGui");
-    const wslEnabled = options?.enabled ?? config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
+    const wslEnabled =
+        options?.enabled ?? config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
 
     // Only convert if WSL is enabled and we're on Windows
     if (!wslEnabled || process.platform !== "win32") {

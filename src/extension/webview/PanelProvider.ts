@@ -54,11 +54,15 @@ export class PanelProvider {
         );
         this._stateManager.selectedModel = savedModel === "default" ? defaultModel : savedModel;
         if (savedModel === "default") {
-            this._context.workspaceState.update("claude.selectedModel", this._stateManager.selectedModel);
+            this._context.workspaceState.update(
+                "claude.selectedModel",
+                this._stateManager.selectedModel,
+            );
         }
 
         // Load cached subscription type
-        this._stateManager.subscriptionType = this._context.globalState.get("claude.subscriptionType");
+        this._stateManager.subscriptionType =
+            this._context.globalState.get("claude.subscriptionType");
 
         // Initialize message processor
         const messagePoster: MessagePoster = {
@@ -66,35 +70,33 @@ export class PanelProvider {
             sendAndSaveMessage: (msg) => this._sendAndSaveMessage(msg),
         };
 
-        this._messageProcessor = new ClaudeMessageProcessor(
-            this._stateManager,
-            messagePoster,
-            {
-                onSessionIdReceived: (sessionId) => {
-                    this._claudeService.setSessionId(sessionId);
-                },
-                onSubscriptionTypeReceived: (subscriptionType) => {
-                    this._stateManager.subscriptionType = subscriptionType;
-                    this._context.globalState.update("claude.subscriptionType", subscriptionType);
-                },
-                onProcessingComplete: (result) => {
-                    const sessionId = result.sessionId || this._claudeService.sessionId;
-                    if (sessionId) {
-                        this._conversationService.saveCurrentConversation({
-                            sessionId,
-                            totalCost: this._stateManager.totalCost,
-                            totalTokens: {
-                                input: this._stateManager.totalTokensInput,
-                                output: this._stateManager.totalTokensOutput,
-                            },
-                        });
-                        console.log("[PanelProvider] Saved conversation with sessionId:", sessionId);
-                    } else {
-                        console.warn("[PanelProvider] Could not save conversation: no sessionId available");
-                    }
-                },
+        this._messageProcessor = new ClaudeMessageProcessor(this._stateManager, messagePoster, {
+            onSessionIdReceived: (sessionId) => {
+                this._claudeService.setSessionId(sessionId);
             },
-        );
+            onSubscriptionTypeReceived: (subscriptionType) => {
+                this._stateManager.subscriptionType = subscriptionType;
+                this._context.globalState.update("claude.subscriptionType", subscriptionType);
+            },
+            onProcessingComplete: (result) => {
+                const sessionId = result.sessionId || this._claudeService.sessionId;
+                if (sessionId) {
+                    this._conversationService.saveCurrentConversation({
+                        sessionId,
+                        totalCost: this._stateManager.totalCost,
+                        totalTokens: {
+                            input: this._stateManager.totalTokensInput,
+                            output: this._stateManager.totalTokensOutput,
+                        },
+                    });
+                    console.log("[PanelProvider] Saved conversation with sessionId:", sessionId);
+                } else {
+                    console.warn(
+                        "[PanelProvider] Could not save conversation: no sessionId available",
+                    );
+                }
+            },
+        });
 
         // Set up Claude service event handlers
         this._setupClaudeServiceHandlers();

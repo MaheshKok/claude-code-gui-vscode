@@ -201,7 +201,11 @@ export function useBatchApprovePermissions(): MutationResult<void, BatchApproveV
             usePermissionStore.setState({ pendingPermissions: previousPermissions });
         },
         onSuccess: (_data, variables) => {
-            console.log("[useBatchApprovePermissions] Approved:", variables.toolIds.length, "permissions");
+            console.log(
+                "[useBatchApprovePermissions] Approved:",
+                variables.toolIds.length,
+                "permissions",
+            );
         },
     });
 }

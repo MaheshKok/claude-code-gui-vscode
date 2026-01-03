@@ -86,10 +86,12 @@ function getToolIconElement(toolName: string, className: string = "w-4 h-4") {
  * <ToolIcon toolName="mcp__my-server__tool" />
  * ```
  */
-export const ToolIcon: React.FC<ToolIconProps> = memo(({ toolName, className = "w-4 h-4", size }) => {
-    const sizeClass = size ? `w-${size} h-${size}` : className;
-    return getToolIconElement(toolName, sizeClass);
-});
+export const ToolIcon: React.FC<ToolIconProps> = memo(
+    ({ toolName, className = "w-4 h-4", size }) => {
+        const sizeClass = size ? `w-${size} h-${size}` : className;
+        return getToolIconElement(toolName, sizeClass);
+    },
+);
 
 ToolIcon.displayName = "ToolIcon";
 

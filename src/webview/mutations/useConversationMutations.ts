@@ -84,7 +84,7 @@ export function useUpdateConversation(): MutationResult<void, UpdateConversation
                 updateConversation(
                     variables.id,
                     variables.messages as ChatMessage[],
-                    variables.title
+                    variables.title,
                 );
                 return;
             }
@@ -197,7 +197,11 @@ export function useLoadConversation(): MutationResult<boolean, LoadConversationV
  * };
  * ```
  */
-export function useImportConversation(): MutationResult<string | null, ImportConversationVariables, Error> {
+export function useImportConversation(): MutationResult<
+    string | null,
+    ImportConversationVariables,
+    Error
+> {
     const importConversation = useConversationStore((state) => state.importConversation);
 
     return useMutation<string | null, ImportConversationVariables, Error>({
@@ -241,7 +245,11 @@ interface ExportConversationVariables {
  * };
  * ```
  */
-export function useExportConversation(): MutationResult<string, ExportConversationVariables, Error> {
+export function useExportConversation(): MutationResult<
+    string,
+    ExportConversationVariables,
+    Error
+> {
     const exportConversation = useConversationStore((state) => state.exportConversation);
 
     return useMutation<string, ExportConversationVariables, Error>({

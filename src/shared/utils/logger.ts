@@ -187,7 +187,10 @@ export const logger = {
     /**
      * Log an info message
      */
-    info: (message: string, options?: { data?: Record<string, unknown>; module?: string }): void => {
+    info: (
+        message: string,
+        options?: { data?: Record<string, unknown>; module?: string },
+    ): void => {
         log(LogLevel.INFO, message, options);
     },
 

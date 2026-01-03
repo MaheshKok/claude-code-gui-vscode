@@ -93,7 +93,8 @@ export class SessionStateManager {
      */
     setState(updates: Partial<SessionState>): void {
         if (updates.totalCost !== undefined) this._totalCost = updates.totalCost;
-        if (updates.totalTokensInput !== undefined) this._totalTokensInput = updates.totalTokensInput;
+        if (updates.totalTokensInput !== undefined)
+            this._totalTokensInput = updates.totalTokensInput;
         if (updates.totalTokensOutput !== undefined)
             this._totalTokensOutput = updates.totalTokensOutput;
         if (updates.totalCacheReadTokens !== undefined)

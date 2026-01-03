@@ -27,7 +27,10 @@ import type {
 // ============================================================================
 
 type UISettingsUpdate = Partial<
-    Pick<SettingsState, "fontSize" | "compactMode" | "showAvatars" | "showTimestamps" | "codeBlockTheme">
+    Pick<
+        SettingsState,
+        "fontSize" | "compactMode" | "showAvatars" | "showTimestamps" | "codeBlockTheme"
+    >
 >;
 
 type ContextSettingsUpdate = Partial<
@@ -111,7 +114,10 @@ export function useUpdateThinking(): MutationResult<void, UpdateThinkingVariable
             if (variables.intensity) {
                 setThinkingIntensity(variables.intensity as ThinkingIntensity);
             }
-            if (variables.showProcess !== undefined && variables.showProcess !== showThinkingProcess) {
+            if (
+                variables.showProcess !== undefined &&
+                variables.showProcess !== showThinkingProcess
+            ) {
                 toggleShowThinkingProcess();
             }
         },

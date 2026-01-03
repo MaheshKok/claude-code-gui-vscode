@@ -37,12 +37,10 @@ export const EmptyState: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
-                How can I help?
-            </h2>
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">How can I help?</h2>
             <p className="text-white/50 max-w-lg mb-10 text-lg leading-relaxed">
-                I can help you analyze code, fix bugs, write tests, or implement new features.
-                Just ask or use a template below.
+                I can help you analyze code, fix bugs, write tests, or implement new features. Just
+                ask or use a template below.
             </p>
             <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
                 <QuickAction label="Explain Code" icon={<Search className="w-4 h-4" />} />

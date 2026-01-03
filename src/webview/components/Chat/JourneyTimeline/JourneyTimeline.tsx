@@ -154,10 +154,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     const [copiedPlanId, setCopiedPlanId] = useState<string | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    const items = useMemo<TimelineItem[]>(
-        () => buildTimelineItems(messages),
-        [messages],
-    );
+    const items = useMemo<TimelineItem[]>(() => buildTimelineItems(messages), [messages]);
 
     useEffect(() => {
         if (bottomRef.current) {

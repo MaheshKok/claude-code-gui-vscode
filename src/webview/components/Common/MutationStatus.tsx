@@ -172,12 +172,7 @@ export function MutationStatus({
     if (inline) {
         return (
             <span className={`inline-flex items-center gap-1 text-sm ${config.color} ${className}`}>
-                {Icon && (
-                    <Icon
-                        size={14}
-                        className={config.animate ? "animate-spin" : ""}
-                    />
-                )}
+                {Icon && <Icon size={14} className={config.animate ? "animate-spin" : ""} />}
                 <span>{message}</span>
             </span>
         );
@@ -297,9 +292,7 @@ export function MutationError({
         >
             <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={18} />
             <div className="flex-1">
-                <p className="text-sm font-medium text-red-800">
-                    {message || "An error occurred"}
-                </p>
+                <p className="text-sm font-medium text-red-800">{message || "An error occurred"}</p>
                 <p className="text-xs text-red-600 mt-1">{error.message}</p>
                 <div className="flex items-center gap-2 mt-3">
                     {onRetry && (
@@ -355,21 +348,17 @@ export function MutationLoader({
  */
 export function withMutationStatus<P extends object>(
     WrappedComponent: React.ComponentType<P>,
-    statusProps: Omit<MutationStatusProps, "status" | "error">
+    statusProps: Omit<MutationStatusProps, "status" | "error">,
 ) {
     return function WithMutationStatus(
-        props: P & { mutationStatus: MutationStatusType; mutationError?: Error | null }
+        props: P & { mutationStatus: MutationStatusType; mutationError?: Error | null },
     ) {
         const { mutationStatus, mutationError, ...restProps } = props;
 
         return (
             <>
                 <WrappedComponent {...(restProps as P)} />
-                <MutationStatus
-                    status={mutationStatus}
-                    error={mutationError}
-                    {...statusProps}
-                />
+                <MutationStatus status={mutationStatus} error={mutationError} {...statusProps} />
             </>
         );
     };

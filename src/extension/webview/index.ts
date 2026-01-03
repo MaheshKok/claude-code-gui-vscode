@@ -18,11 +18,7 @@ export {
 } from "./SessionStateManager";
 
 // Settings management
-export {
-    SettingsManager,
-    getSettingsManager,
-    type WebviewSettings,
-} from "./SettingsManager";
+export { SettingsManager, getSettingsManager, type WebviewSettings } from "./SettingsManager";
 
 // Claude message processing
 export {
