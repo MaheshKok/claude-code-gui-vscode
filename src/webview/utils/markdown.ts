@@ -522,6 +522,27 @@ export function parseMarkdown(markdown: string, options: MarkdownRenderOptions =
 }
 
 /**
+ * Heuristic check for markdown-like content
+ */
+export function looksLikeMarkdown(value: string): boolean {
+    const text = value.trim();
+    if (!text) return false;
+
+    const patterns = [
+        /^#{1,6}\s/m,
+        /```/,
+        /`[^`\n]+`/,
+        /\*\*[^*]+\*\*/,
+        /(^|\n)\s*[-*+]\s+\S+/,
+        /(^|\n)\s*\d+\.\s+\S+/,
+        /\[[^\]]+\]\([^)]+\)/,
+        /(^|\n)\s*>/,
+    ];
+
+    return patterns.some((pattern) => pattern.test(text));
+}
+
+/**
  * Strip markdown formatting from text
  */
 export function stripMarkdown(markdown: string): string {

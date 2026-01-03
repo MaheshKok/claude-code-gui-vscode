@@ -145,6 +145,7 @@ export {
 
     // Main render function
     parseMarkdown,
+    looksLikeMarkdown,
 
     // Utilities
     stripMarkdown,

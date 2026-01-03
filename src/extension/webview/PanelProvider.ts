@@ -487,6 +487,8 @@ export class PanelProvider {
             ) => this._openFileInEditor(filePath, line, column, preview),
             openDiffEditor: (oldContent: string, newContent: string, filePath: string) =>
                 this._openDiffEditor(oldContent, newContent, filePath),
+            openMarkdownPreview: (content: string, title?: string) =>
+                this._openMarkdownPreview(content, title),
             sendConversationList: () => this._sendConversationList(),
             sendPermissions: () => this._sendPermissions(),
             loadMCPServers: () => this._loadMCPServers(),
@@ -610,6 +612,33 @@ export class PanelProvider {
             );
         } catch (error) {
             console.error("Error opening diff editor:", error);
+        }
+    }
+
+    private async _openMarkdownPreview(content: string, title?: string): Promise<void> {
+        try {
+            if (!content) {
+                return;
+            }
+
+            const doc = await vscode.workspace.openTextDocument({
+                content,
+                language: "markdown",
+            });
+
+            await vscode.window.showTextDocument(doc, {
+                viewColumn: vscode.ViewColumn.Beside,
+                preview: true,
+                preserveFocus: true,
+            });
+
+            await vscode.commands.executeCommand("markdown.showPreviewToSide", doc.uri);
+
+            if (title) {
+                console.log("[PanelProvider] Opened markdown preview:", title);
+            }
+        } catch (error) {
+            console.error("Error opening markdown preview:", error);
         }
     }
 

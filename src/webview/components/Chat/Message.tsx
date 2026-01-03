@@ -1,10 +1,16 @@
 import React, { useState, useCallback, memo } from "react";
 import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
 import { CodeBlock } from "../Common";
-import { extractTodosFromInput, formatDuration, formatTokensCompact } from "../../utils";
+import {
+    extractTodosFromInput,
+    formatDuration,
+    formatTokensCompact,
+    looksLikeMarkdown,
+} from "../../utils";
 import type { Message as MessageType } from "../App";
 import { MessageRole, ToolExecutionStatus, ToolName } from "../../../shared/constants";
-import { User, Bot, Terminal, AlertCircle, Clock, ChevronRight, Zap } from "lucide-react";
+import { User, Bot, Terminal, AlertCircle, Clock, ChevronRight, Zap, Eye } from "lucide-react";
+import { useVSCode } from "../../hooks/useVSCode";
 
 /** Terminal statuses that indicate tool execution is no longer in progress */
 const TERMINAL_STATUSES: ToolExecutionStatus[] = [
@@ -15,17 +21,20 @@ const TERMINAL_STATUSES: ToolExecutionStatus[] = [
 
 interface MessageProps {
     message: MessageType;
+    showPreview?: boolean;
 }
 
 /** Format tokens for display - uses formatTokensCompact utility */
 const formatTokens = formatTokensCompact;
 
-export const Message: React.FC<MessageProps> = memo(({ message }) => {
+export const Message: React.FC<MessageProps> = memo(({ message, showPreview = false }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
+    const { postMessage } = useVSCode();
 
     const isUser = message.role === MessageRole.User;
     const isError = message.role === MessageRole.Error;
     const isTool = message.role === MessageRole.Tool;
+    const isAssistant = message.role === MessageRole.Assistant;
     const isToolUse = isTool && message.messageType === "tool_use";
     const isToolResult = isTool && message.messageType === "tool_result";
 
@@ -103,6 +112,16 @@ export const Message: React.FC<MessageProps> = memo(({ message }) => {
     };
 
     const usageSummary = buildUsageSummary();
+    const canPreview = showPreview && isAssistant && looksLikeMarkdown(message.content);
+
+    const handlePreview = useCallback(() => {
+        if (!canPreview) return;
+        postMessage({
+            type: "openMarkdownPreview",
+            content: message.content,
+            title: "Assistant Response",
+        });
+    }, [canPreview, message.content, postMessage]);
 
     if (isToolUse) {
         const input = message.rawInput || {};
@@ -263,27 +282,39 @@ export const Message: React.FC<MessageProps> = memo(({ message }) => {
                     </span>
                 </div>
 
-                {message.isStreaming && (
-                    <div className="ml-auto flex items-center gap-2 px-2 py-1 bg-orange-500/10 rounded-full border border-orange-500/20">
-                        <div className="flex gap-1">
-                            <span
-                                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
-                                style={{ animationDelay: "0ms" }}
-                            />
-                            <span
-                                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
-                                style={{ animationDelay: "150ms" }}
-                            />
-                            <span
-                                className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
-                                style={{ animationDelay: "300ms" }}
-                            />
+                <div className="ml-auto flex items-center gap-2">
+                    {canPreview && (
+                        <button
+                            className="flex items-center gap-1.5 px-2 py-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-xs"
+                            onClick={handlePreview}
+                            title="Open markdown preview"
+                        >
+                            <Eye className="w-3 h-3" />
+                            <span>Preview</span>
+                        </button>
+                    )}
+                    {message.isStreaming && (
+                        <div className="flex items-center gap-2 px-2 py-1 bg-orange-500/10 rounded-full border border-orange-500/20">
+                            <div className="flex gap-1">
+                                <span
+                                    className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                                    style={{ animationDelay: "0ms" }}
+                                />
+                                <span
+                                    className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                                    style={{ animationDelay: "150ms" }}
+                                />
+                                <span
+                                    className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"
+                                    style={{ animationDelay: "300ms" }}
+                                />
+                            </div>
+                            <span className="text-[10px] text-orange-400 font-medium uppercase">
+                                Thinking
+                            </span>
                         </div>
-                        <span className="text-[10px] text-orange-400 font-medium uppercase">
-                            Thinking
-                        </span>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             <div className="text-sm leading-relaxed message-content">

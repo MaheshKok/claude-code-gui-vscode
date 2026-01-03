@@ -62,6 +62,7 @@ export interface MessageHandlerContext {
         preview?: boolean,
     ) => Promise<void>;
     openDiffEditor: (oldContent: string, newContent: string, filePath: string) => Promise<void>;
+    openMarkdownPreview: (content: string, title?: string) => Promise<void>;
     sendConversationList: () => void;
     sendPermissions: () => Promise<void>;
     loadMCPServers: () => Promise<void>;

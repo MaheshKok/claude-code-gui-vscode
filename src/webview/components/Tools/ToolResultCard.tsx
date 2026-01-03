@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, useMemo, memo } from "react";
 import {
     ChevronRight,
     Copy,
@@ -9,8 +9,15 @@ import {
     CheckCircle2,
     Clock,
     Zap,
+    Eye,
 } from "lucide-react";
-import { formatDuration, formatTokensCompact, getToolOriginInfo } from "../../utils";
+import {
+    formatDuration,
+    formatTokensCompact,
+    getToolOriginInfo,
+    looksLikeMarkdown,
+} from "../../utils";
+import { useVSCode } from "../../hooks/useVSCode";
 
 export interface ToolResultCardProps {
     content: string;
@@ -42,6 +49,106 @@ const truncateContent = (
     };
 };
 
+const extractTextFields = (value: unknown, seen: Set<object>): string[] => {
+    if (!value || typeof value !== "object") return [];
+    if (seen.has(value as object)) return [];
+    seen.add(value as object);
+
+    if (Array.isArray(value)) {
+        return value.flatMap((item) => extractTextFields(item, seen));
+    }
+
+    const record = value as Record<string, unknown>;
+    const texts: string[] = [];
+
+    for (const [key, val] of Object.entries(record)) {
+        if (key === "text" && typeof val === "string") {
+            texts.push(val);
+            continue;
+        }
+        texts.push(...extractTextFields(val, seen));
+    }
+
+    return texts;
+};
+
+const getTextFromJsonContent = (content: string): string | null => {
+    const trimmed = content.trim();
+    if (!trimmed) return null;
+    if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return null;
+
+    try {
+        const parsed = JSON.parse(trimmed);
+        const texts = extractTextFields(parsed, new Set<object>())
+            .map((text) => text.trim())
+            .filter(Boolean);
+        if (texts.length === 0) return null;
+        return texts.join("\n\n");
+    } catch {
+        return null;
+    }
+};
+
+const normalizeEscapedNewlines = (value: string): string => {
+    if (!value) return value;
+    if (!value.includes("\\n") && !value.includes("\\t") && !value.includes("\\r")) {
+        return value;
+    }
+    return value
+        .replace(/\\r\\n/g, "\n")
+        .replace(/\\n/g, "\n")
+        .replace(/\\t/g, "\t")
+        .replace(/\\r/g, "\r");
+};
+
+interface ResultContentProps {
+    content: string;
+}
+
+const ResultContent: React.FC<ResultContentProps> = ({ content }) => {
+    const parts = content.split(/(```[\s\S]*?```)/g);
+
+    return (
+        <>
+            {parts.map((part, index) => {
+                if (part.startsWith("```") && part.endsWith("```")) {
+                    const codeContent = part.slice(3, -3);
+                    const firstNewline = codeContent.indexOf("\n");
+                    const code =
+                        firstNewline > 0 ? codeContent.slice(firstNewline + 1) : codeContent;
+
+                    return (
+                        <pre
+                            key={index}
+                            className="my-4 font-mono text-xs bg-black/30 p-3 rounded-lg border border-white/5 text-white/80 whitespace-pre-wrap break-words overflow-x-auto"
+                        >
+                            {code}
+                        </pre>
+                    );
+                }
+
+                return (
+                    <span key={index}>
+                        {part.split(/(`[^`]+`)/g).map((segment, i) => {
+                            if (segment.startsWith("`") && segment.endsWith("`")) {
+                                return (
+                                    <code
+                                        key={i}
+                                        className="px-1.5 py-0.5 mx-0.5 rounded-md bg-white/10 text-orange-200 font-mono text-xs border border-white/5"
+                                    >
+                                        {segment.slice(1, -1)}
+                                    </code>
+                                );
+                            }
+                            return segment;
+                        })}
+                    </span>
+                );
+            })}
+        </>
+    );
+};
+
 export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
     ({
         content,
@@ -56,11 +163,18 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
         const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
         const [isExpanded, setIsExpanded] = useState(false);
         const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+        const { postMessage } = useVSCode();
         const toolOrigin = toolName ? getToolOriginInfo(toolName) : { origin: "core" as const };
         const originLabel = toolOrigin.origin !== "core" ? toolOrigin.label : undefined;
         const originDetail = toolOrigin.detail;
 
-        const { truncated, isTruncated, hiddenCount } = truncateContent(content, maxLines);
+        const extractedText = useMemo(() => getTextFromJsonContent(content), [content]);
+        const renderSource = useMemo(
+            () => normalizeEscapedNewlines(extractedText ?? content),
+            [content, extractedText],
+        );
+        const showPreview = useMemo(() => looksLikeMarkdown(renderSource), [renderSource]);
+        const { truncated, isTruncated, hiddenCount } = truncateContent(renderSource, maxLines);
 
         const toggleCollapsed = useCallback(() => {
             setIsCollapsed((prev) => !prev);
@@ -72,16 +186,25 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
 
         const handleCopy = useCallback(async () => {
             try {
-                await navigator.clipboard.writeText(content);
+                await navigator.clipboard.writeText(renderSource);
                 setCopyState("copied");
-                if (onCopy) onCopy(content);
+                if (onCopy) onCopy(renderSource);
                 setTimeout(() => setCopyState("idle"), 2000);
             } catch (err) {
                 console.error("Failed to copy:", err);
             }
-        }, [content, onCopy]);
+        }, [onCopy, renderSource]);
 
-        const displayContent = isExpanded ? content : truncated;
+        const handlePreview = useCallback(() => {
+            if (!showPreview) return;
+            postMessage({
+                type: "openMarkdownPreview",
+                content: renderSource,
+                title: toolName ? `${toolName} Result` : "Tool Result",
+            });
+        }, [postMessage, renderSource, showPreview, toolName]);
+
+        const displayContent = isExpanded ? renderSource : truncated;
 
         return (
             <div
@@ -143,6 +266,19 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
                                 {formatTokens(tokens)}
                             </span>
                         )}
+                        {showPreview && (
+                            <button
+                                className="flex items-center gap-1.5 px-2 py-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-xs"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePreview();
+                                }}
+                                title="Open markdown preview"
+                            >
+                                <Eye className="w-3 h-3" />
+                                <span>Preview</span>
+                            </button>
+                        )}
 
                         <button
                             className="flex items-center gap-1.5 px-2 py-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-xs"
@@ -169,12 +305,12 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
 
                 {/* Content */}
                 {!isCollapsed && (
-                    <div className="px-3 py-2 bg-black/20 text-xs font-mono">
-                        <pre
-                            className={`whitespace-pre-wrap break-words ${isError ? "text-red-200" : "text-white/70"}`}
+                    <div className="px-3 py-2 bg-black/20">
+                        <div
+                            className={`text-sm leading-relaxed message-content whitespace-pre-wrap break-words ${isError ? "text-red-200" : "text-white/80"}`}
                         >
-                            {displayContent}
-                        </pre>
+                            <ResultContent content={displayContent} />
+                        </div>
 
                         {isTruncated && (
                             <button

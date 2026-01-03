@@ -155,6 +155,14 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const items = useMemo<TimelineItem[]>(() => buildTimelineItems(messages), [messages]);
+    const lastAssistantId = useMemo(() => {
+        for (let i = messages.length - 1; i >= 0; i -= 1) {
+            if (messages[i].role === "assistant") {
+                return messages[i].id;
+            }
+        }
+        return null;
+    }, [messages]);
 
     useEffect(() => {
         if (bottomRef.current) {
@@ -195,7 +203,13 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         <div className="px-4 py-6 space-y-4 max-w-4xl mx-auto pb-4">
             {items.map((item) => {
                 if (item.kind === "message") {
-                    return <MessageComponent key={item.message.id} message={item.message} />;
+                    return (
+                        <MessageComponent
+                            key={item.message.id}
+                            message={item.message}
+                            showPreview={item.message.id === lastAssistantId}
+                        />
+                    );
                 }
 
                 if (item.kind === "tool") {
@@ -220,6 +234,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                         item={item}
                         isProcessing={isProcessing}
                         isPlanOpen={isPlanOpen}
+                        showActions={item.assistant.id === lastAssistantId}
                         copiedPlanId={copiedPlanId}
                         collapsedSteps={collapsedSteps}
                         onTogglePlan={togglePlan}

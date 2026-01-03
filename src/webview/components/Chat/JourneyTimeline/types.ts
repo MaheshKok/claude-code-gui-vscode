@@ -92,6 +92,7 @@ export interface PlanGroupProps {
     item: TimelinePlanGroup;
     isProcessing: boolean;
     isPlanOpen: boolean;
+    showActions: boolean;
     copiedPlanId: string | null;
     collapsedSteps: Record<string, boolean>;
     onTogglePlan: (id: string, isOpen: boolean) => void;

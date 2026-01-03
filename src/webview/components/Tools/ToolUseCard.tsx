@@ -215,8 +215,9 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
                 );
             }
 
-            const formattedValue = formatValue(value);
             const isLong = typeof value === "string" && value.length > 200;
+            const formattedValue =
+                typeof value === "string" && isExpanded ? value : formatValue(value);
 
             return (
                 <span className="text-white/80 font-mono">

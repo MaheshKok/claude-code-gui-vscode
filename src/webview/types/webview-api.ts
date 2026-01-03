@@ -392,6 +392,7 @@ export type WebviewToExtensionMessageType =
     | "permissionResponse"
     | "openFile"
     | "openDiff"
+    | "openMarkdownPreview"
     | "openFolder"
     | "copyToClipboard"
     | "saveSettings"
@@ -422,6 +423,7 @@ export type WebviewToExtensionMessage =
     | PermissionResponseRequest
     | OpenFileRequest
     | OpenDiffRequest
+    | OpenMarkdownPreviewRequest
     | OpenFolderRequest
     | CopyToClipboardRequest
     | SaveSettingsRequest
@@ -517,6 +519,17 @@ export interface OpenDiffRequest extends BaseWebviewMessage {
     newContent: string;
     /** File path for the diff title */
     filePath: string;
+}
+
+/**
+ * Open markdown preview request - opens a markdown preview for content
+ */
+export interface OpenMarkdownPreviewRequest extends BaseWebviewMessage {
+    type: "openMarkdownPreview";
+    /** Markdown content to preview */
+    content: string;
+    /** Optional preview title */
+    title?: string;
 }
 
 /**

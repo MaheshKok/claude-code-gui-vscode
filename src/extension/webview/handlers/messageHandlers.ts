@@ -204,6 +204,18 @@ const handleOpenDiff = async (
     );
 };
 
+const handleOpenMarkdownPreview = async (
+    message: WebviewMessage,
+    context: MessageHandlerContext,
+): Promise<void> => {
+    const content = message.content as string | undefined;
+    if (!content) {
+        return;
+    }
+    const title = typeof message.title === "string" ? message.title : undefined;
+    await context.openMarkdownPreview(content, title);
+};
+
 // ============================================================================
 // Permission Handlers
 // ============================================================================
@@ -423,6 +435,7 @@ export const messageHandlers: MessageHandlerMap = {
     // File handlers
     openFile: handleOpenFile,
     openDiff: handleOpenDiff,
+    openMarkdownPreview: handleOpenMarkdownPreview,
 
     // Permission handlers
     permissionResponse: handlePermissionResponse,

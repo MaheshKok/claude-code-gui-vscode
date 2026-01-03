@@ -6,8 +6,8 @@
  * @module components/Chat/JourneyTimeline/PlanGroup
  */
 
-import React from "react";
-import { ChevronRight, CheckCircle2, Copy, Check } from "lucide-react";
+import React, { useCallback } from "react";
+import { ChevronRight, CheckCircle2, Copy, Check, Eye } from "lucide-react";
 import { StatusIcon } from "./StatusIcon";
 import { CollapsibleReasoning } from "./CollapsibleReasoning";
 import { ToolStep } from "./ToolStep";
@@ -19,6 +19,8 @@ import {
     formatUsageSummary,
 } from "./utils";
 import type { PlanGroupProps } from "./types";
+import { looksLikeMarkdown } from "../../../utils";
+import { useVSCode } from "../../../hooks/useVSCode";
 
 /**
  * Renders a plan group with collapsible content
@@ -27,18 +29,36 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
     item,
     isProcessing,
     isPlanOpen,
+    showActions,
     copiedPlanId,
     collapsedSteps,
     onTogglePlan,
     onToggleStep,
     onCopyPlan,
 }) => {
+    const { postMessage } = useVSCode();
     const groupStatus = getGroupStatus(item, isProcessing);
     const isActive = groupStatus === "executing";
+    const showPreview =
+        showActions && Boolean(item.assistant.content) && looksLikeMarkdown(item.assistant.content);
     const completedCount = item.steps.filter((step) => getStepStatus(step) === "completed").length;
     const stepTotals = calculateStepTotals(item.steps);
     const stepTotalsSummary = formatStepTotalsSummary(stepTotals);
     const usageSummary = stepTotalsSummary ?? formatUsageSummary(item.assistant.usage);
+    const showStepsSection = item.steps.length > 0 || isActive;
+
+    const handlePreview = useCallback(
+        (event: React.MouseEvent) => {
+            event.stopPropagation();
+            if (!item.assistant.content || !showPreview) return;
+            postMessage({
+                type: "openMarkdownPreview",
+                content: item.assistant.content,
+                title: "Assistant Response",
+            });
+        },
+        [item.assistant.content, postMessage, showPreview],
+    );
 
     return (
         <div className="glass rounded-xl border border-white/10 overflow-hidden shadow-sm transition-all hover:border-white/20">
@@ -63,7 +83,17 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
                             {completedCount}/{item.steps.length}
                         </span>
                     </div>
-                    {item.assistant.content && (
+                    {showPreview && (
+                        <button
+                            className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] text-white/50 hover:text-white transition-colors"
+                            onClick={handlePreview}
+                            title="Open markdown preview"
+                        >
+                            <Eye className="w-3 h-3" />
+                            <span>Preview</span>
+                        </button>
+                    )}
+                    {showActions && item.assistant.content && (
                         <button
                             className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] text-white/50 hover:text-white transition-colors"
                             onClick={(event) => onCopyPlan(event, item.id, item.assistant.content)}
@@ -89,7 +119,7 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
             {isPlanOpen && (
                 <div className="bg-black/10 border-t border-white/5 p-4 space-y-3 max-h-[500px] overflow-y-auto">
                     {item.assistant.content && (
-                        <div className="mb-4 pb-4 border-b border-white/5">
+                        <div className={showStepsSection ? "mb-4 pb-4 border-b border-white/5" : "mb-2"}>
                             <CollapsibleReasoning content={item.assistant.content} />
                         </div>
                     )}
@@ -102,11 +132,11 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
                                 onToggleStep={onToggleStep}
                             />
                         ))
-                    ) : (
+                    ) : isActive ? (
                         <div className="text-center py-4 text-white/30 text-sm italic">
                             Reasoning about the next step...
                         </div>
-                    )}
+                    ) : null}
                     {usageSummary && (
                         <div className="pt-2 mt-2 border-t border-white/5 text-[11px] text-white/50">
                             {usageSummary}

@@ -64,10 +64,23 @@ export const MessageList: React.FC<MessageListProps> = ({
         ? "flex-1 overflow-y-auto px-4 py-4 space-y-4"
         : "px-4 py-4 space-y-4";
 
+    const lastAssistantId = (() => {
+        for (let i = messages.length - 1; i >= 0; i -= 1) {
+            if (messages[i].role === "assistant") {
+                return messages[i].id;
+            }
+        }
+        return null;
+    })();
+
     return (
         <div ref={containerRef} className={containerClasses}>
             {messages.map((message) => (
-                <MessageComponent key={message.id} message={message} />
+                <MessageComponent
+                    key={message.id}
+                    message={message}
+                    showPreview={message.id === lastAssistantId}
+                />
             ))}
 
             {isProcessing && (
