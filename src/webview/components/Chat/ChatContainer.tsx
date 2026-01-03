@@ -21,8 +21,6 @@ interface ChatContainerProps {
     onThinkingModeToggle: () => void;
     onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
     onYoloModeToggle: () => void;
-    onFileSelect: () => void;
-    onImageSelect: () => void;
     onSlashCommand: () => void;
     onMcpAction: () => void;
 }
@@ -42,8 +40,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     onThinkingModeToggle,
     onThinkingIntensityChange,
     onYoloModeToggle,
-    onFileSelect,
-    onImageSelect,
     onSlashCommand,
     onMcpAction,
 }) => {
@@ -79,8 +75,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         onThinkingModeToggle={onThinkingModeToggle}
                         onThinkingIntensityChange={onThinkingIntensityChange}
                         onYoloModeToggle={onYoloModeToggle}
-                        onFileSelect={onFileSelect}
-                        onImageSelect={onImageSelect}
                         onSlashCommand={onSlashCommand}
                         onMcpAction={onMcpAction}
                     />

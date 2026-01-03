@@ -704,14 +704,6 @@ export const App: React.FC = () => {
         });
     }, [toggleYoloMode, yoloMode, postMessage]);
 
-    const handleFileSelect = useCallback(() => {
-        openModal("model"); // Placeholder - would open file picker
-    }, [openModal]);
-
-    const handleImageSelect = useCallback(() => {
-        postMessage({ type: "openFile", filePath: "", preview: true });
-    }, [postMessage]);
-
     const handleSlashCommand = useCallback(() => {
         openModal("keyboard-shortcuts");
     }, [openModal]);
@@ -846,8 +838,6 @@ export const App: React.FC = () => {
                 onThinkingModeToggle={handleThinkingModeToggle}
                 onThinkingIntensityChange={handleThinkingIntensityChange}
                 onYoloModeToggle={handleYoloModeToggle}
-                onFileSelect={handleFileSelect}
-                onImageSelect={handleImageSelect}
                 onSlashCommand={handleSlashCommand}
                 onMcpAction={handleMcpAction}
             />

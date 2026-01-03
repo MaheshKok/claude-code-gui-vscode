@@ -1,15 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
     Send,
-    Paperclip,
-    Image,
-    Command,
-    Box,
     BrainCircuit,
     ChevronDown,
     FileCode,
     Sparkles,
     AlertTriangle,
+    Command,
+    Box,
 } from "lucide-react";
 import { ThinkingIntensity } from "../../../shared/constants";
 
@@ -26,8 +24,6 @@ interface MessageInputProps {
     onThinkingModeToggle: () => void;
     onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
     onYoloModeToggle: () => void;
-    onFileSelect: () => void;
-    onImageSelect: () => void;
     onSlashCommand: () => void;
     onMcpAction: () => void;
 }
@@ -96,8 +92,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     onThinkingModeToggle,
     onThinkingIntensityChange,
     onYoloModeToggle,
-    onFileSelect,
-    onImageSelect,
     onSlashCommand,
     onMcpAction,
 }) => {
@@ -336,14 +330,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button className="btn-icon" onClick={onFileSelect} title="Add File (@)">
-                        <Paperclip className="w-4 h-4" />
-                    </button>
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
-                    </button>
-                    <button className="btn-icon" onClick={onImageSelect} title="Add Image">
-                        <Image className="w-4 h-4" />
                     </button>
                     <button className="btn-icon" onClick={onSlashCommand} title="Commands (/)">
                         <Command className="w-4 h-4" />
