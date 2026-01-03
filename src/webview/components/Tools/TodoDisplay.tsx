@@ -87,7 +87,9 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
                             <span className={stats.inProgress > 0 ? "text-blue-400" : ""}>
                                 {stats.inProgress} Active
                             </span>
-                            <span>{stats.pending} Pending</span>
+                            <span className={stats.pending > 0 ? "text-orange-400" : ""}>
+                                {stats.pending} Pending
+                            </span>
                         </div>
                     </div>
 

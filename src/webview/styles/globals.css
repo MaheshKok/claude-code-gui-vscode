@@ -88,8 +88,8 @@ body {
     background: transparent;
 }
 
-/* Focus styles */
-*:focus-visible {
+/* Focus styles - excluded for inputs to allow custom UI */
+*:focus-visible:not(input):not(textarea) {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
     border-radius: 2px;

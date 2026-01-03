@@ -59,10 +59,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 />
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 z-40 p-4 lg:p-6 bg-gradient-to-t from-black via-black/95 to-transparent pt-12 pointer-events-none">
+            <div className="absolute bottom-0 left-0 right-0 z-40 px-4 lg:p-6 bg-gradient-to-t from-black via-black/95 to-transparent pt-12 pointer-events-none">
                 <div className="pointer-events-auto max-w-4xl mx-auto flex flex-col gap-2">
                     {todos.length > 0 && (
-                        <div className="mb-2">
+                        <div className="mb-1 glass rounded-2xl shadow-2xl !border-orange-500/60 overflow-visible transition-all duration-300 focus-within:!border-orange-500 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.25)]">
                             <TodoDisplay todos={todos} title="Tasks" defaultCollapsed={true} />
                         </div>
                     )}

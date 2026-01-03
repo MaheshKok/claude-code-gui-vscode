@@ -179,7 +179,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
     return (
-        <div className="glass rounded-2xl shadow-2xl border border-white/5 overflow-visible transition-all duration-300 focus-within:border-orange-500/30 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.15)] focus-within:ring-1 focus-within:ring-orange-500/20">
+        <div className="glass rounded-2xl shadow-2xl !border-orange-500/60 overflow-visible transition-all duration-300 focus-within:!border-orange-500 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.25)]">
             {/* Input Area */}
             <div className="p-3">
                 <textarea
@@ -189,7 +189,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     onKeyDown={handleKeyDown}
                     disabled={disabled}
                     placeholder={disabled ? "Claude is thinking..." : "How can I help you?"}
-                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-white text-base placeholder-white/30 min-h-[50px] max-h-[200px] leading-relaxed selection:bg-orange-500/30 selection:text-white"
+                    className="w-full bg-transparent border-none !outline-none !focus:ring-0 !focus:outline-none resize-none text-white text-base placeholder-white/30 min-h-[50px] max-h-[200px] leading-relaxed selection:bg-orange-500/30 selection:text-white"
                     rows={1}
                 />
             </div>
