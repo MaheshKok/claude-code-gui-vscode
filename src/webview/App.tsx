@@ -16,7 +16,6 @@ import { StatusBar } from "./components/Status/StatusBar";
 import { ConversationHistory } from "./components/History";
 import { WSLAlert } from "./components/Common";
 import {
-    SettingsModal,
     MCPModal,
     ModelSelectorModal,
     PermissionModal,
@@ -47,7 +46,6 @@ import { MessageType, ToolExecutionStatus } from "../shared/constants";
 import type { ChatMessage, PermissionRequest, PermissionDecision, TokenUsage } from "./types";
 import type { ConversationListItem } from "./types/history";
 import { ThinkingIntensity } from "../shared/constants";
-import type { TodoItem } from "./components/Tools";
 import {
     extractTodosFromInput,
     buildChatMessages,
@@ -636,10 +634,6 @@ export const App: React.FC = () => {
         showSuccess("New Chat", "Started a new conversation");
     }, [resetChat, setActiveConversationId, clearTodos, postMessage, showSuccess]);
 
-    const handleOpenSettings = useCallback(() => {
-        openModal("settings");
-    }, [openModal]);
-
     const handleToggleHistory = useCallback(() => {
         setIsHistoryOpen((prev) => !prev);
     }, []);
@@ -758,7 +752,6 @@ export const App: React.FC = () => {
             <Header
                 session={session}
                 onNewChat={handleNewChat}
-                onOpenSettings={handleOpenSettings}
                 onToggleHistory={handleToggleHistory}
                 isHistoryOpen={isHistoryOpen}
             />
@@ -856,7 +849,6 @@ export const App: React.FC = () => {
             />
 
             {/* Modals */}
-            {activeModal === "settings" && <SettingsModal isOpen={true} onClose={closeModal} />}
 
             {activeModal === "mcp" && <MCPModal isOpen={true} onClose={closeModal} />}
 

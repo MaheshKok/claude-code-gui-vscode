@@ -92,7 +92,6 @@ export const UI_LABELS = {
     NO_RESULTS: "No results found",
 
     // Settings
-    ENABLE_WSL: "Enable WSL Integration",
     ENABLE_YOLO: "Enable Yolo Mode",
     PLAN: "Plan",
     YOLO: "YOLO",

@@ -86,7 +86,6 @@ export type {
 export {
     Modal,
     PermissionModal,
-    SettingsModal,
     MCPModal,
     ModelSelectorModal,
     SlashCommandsModal,
@@ -99,10 +98,6 @@ export type {
     ModalProps,
     PermissionModalProps,
     PermissionRequest,
-    SettingsModalProps,
-    SettingsData,
-    WSLSettings,
-    Permission,
     MCPModalProps,
     MCPServer,
     MCPServerType,

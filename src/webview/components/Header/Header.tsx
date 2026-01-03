@@ -27,7 +27,6 @@ type ButtonClickHandler = (event: React.MouseEvent<HTMLButtonElement>) => void;
 export interface HeaderProps {
     session: SessionInfo | null;
     onNewChat: ButtonClickHandler;
-    onOpenSettings: ButtonClickHandler;
     onToggleHistory: ButtonClickHandler;
     isHistoryOpen?: boolean;
 }
@@ -35,7 +34,6 @@ export interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
     session,
     onNewChat,
-    onOpenSettings,
     onToggleHistory,
     isHistoryOpen = false,
 }): React.JSX.Element => {
@@ -74,10 +72,6 @@ export const Header: React.FC<HeaderProps> = ({
                         ) : (
                             <History className={ICON_SIZE} />
                         )}
-                    </button>
-
-                    <button onClick={onOpenSettings} className="btn-icon" title={TOOLTIPS.SETTINGS}>
-                        <Settings className={ICON_SIZE} />
                     </button>
 
                     <div className="h-6 w-px bg-white/10 mx-1" />

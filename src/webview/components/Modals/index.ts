@@ -7,9 +7,6 @@ export { PermissionModal } from "./PermissionModal";
 export type { PermissionModalProps, PermissionRequest } from "./PermissionModal";
 
 // Settings Modal
-export { SettingsModal } from "./SettingsModal";
-export type { SettingsModalProps, SettingsData, WSLSettings, Permission } from "./SettingsModal";
-
 // MCP Modal
 export { MCPModal } from "./MCPModal";
 export type { MCPModalProps, MCPServer, MCPServerType, PopularServer } from "./MCPModal";
