@@ -31,39 +31,39 @@ src/
 
 ```typescript
 interface BaseClaudeEvent {
-  type: ClaudeEventType;
+    type: ClaudeEventType;
 }
 
 type ClaudeEventType =
-  | "system"
-  | "assistant"
-  | "user"
-  | "result"
-  | "control_request"
-  | "control_response";
+    | "system"
+    | "assistant"
+    | "user"
+    | "result"
+    | "control_request"
+    | "control_response";
 ```
 
 ### System Events
 
 ```typescript
 interface SystemInitEvent {
-  type: "system";
-  subtype: "init";
-  session_id: string;
-  tools: ToolDefinition[];
-  mcp_servers: MCPServerInfo[];
+    type: "system";
+    subtype: "init";
+    session_id: string;
+    tools: ToolDefinition[];
+    mcp_servers: MCPServerInfo[];
 }
 
 interface SystemStatusEvent {
-  type: "system";
-  subtype: "status";
-  status: "compacting" | null;
+    type: "system";
+    subtype: "status";
+    status: "compacting" | null;
 }
 
 interface ToolDefinition {
-  name: string;
-  description?: string;
-  input_schema?: Record<string, unknown>;
+    name: string;
+    description?: string;
+    input_schema?: Record<string, unknown>;
 }
 ```
 
@@ -71,39 +71,36 @@ interface ToolDefinition {
 
 ```typescript
 interface AssistantEvent {
-  type: "assistant";
-  message: AssistantMessage;
+    type: "assistant";
+    message: AssistantMessage;
 }
 
 interface AssistantMessage {
-  id?: string;
-  role: "assistant";
-  content: AssistantContentBlock[];
-  usage?: TokenUsage;
-  model?: string;
-  stop_reason?: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
+    id?: string;
+    role: "assistant";
+    content: AssistantContentBlock[];
+    usage?: TokenUsage;
+    model?: string;
+    stop_reason?: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
 }
 
-type AssistantContentBlock =
-  | TextContentBlock
-  | ThinkingContentBlock
-  | ToolUseContentBlock;
+type AssistantContentBlock = TextContentBlock | ThinkingContentBlock | ToolUseContentBlock;
 
 interface TextContentBlock {
-  type: "text";
-  text: string;
+    type: "text";
+    text: string;
 }
 
 interface ThinkingContentBlock {
-  type: "thinking";
-  thinking: string;
+    type: "thinking";
+    thinking: string;
 }
 
 interface ToolUseContentBlock {
-  type: "tool_use";
-  id: string;
-  name: string;
-  input: ToolInput;
+    type: "tool_use";
+    id: string;
+    name: string;
+    input: ToolInput;
 }
 ```
 
@@ -111,10 +108,10 @@ interface ToolUseContentBlock {
 
 ```typescript
 interface TokenUsage {
-  input_tokens: number;
-  output_tokens: number;
-  cache_read_input_tokens?: number;
-  cache_creation_input_tokens?: number;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read_input_tokens?: number;
+    cache_creation_input_tokens?: number;
 }
 ```
 
@@ -122,42 +119,42 @@ interface TokenUsage {
 
 ```typescript
 interface ReadToolInput {
-  file_path: string;
-  start_line?: number;
-  end_line?: number;
+    file_path: string;
+    start_line?: number;
+    end_line?: number;
 }
 
 interface WriteToolInput {
-  file_path: string;
-  content: string;
+    file_path: string;
+    content: string;
 }
 
 interface EditToolInput {
-  file_path: string;
-  old_string: string;
-  new_string: string;
+    file_path: string;
+    old_string: string;
+    new_string: string;
 }
 
 interface MultiEditToolInput {
-  file_path: string;
-  edits: Array<{ old_string: string; new_string: string }>;
+    file_path: string;
+    edits: Array<{ old_string: string; new_string: string }>;
 }
 
 interface BashToolInput {
-  command: string;
-  cwd?: string;
-  timeout?: number;
+    command: string;
+    cwd?: string;
+    timeout?: number;
 }
 
 interface TodoWriteToolInput {
-  todos: TodoItem[];
+    todos: TodoItem[];
 }
 
 interface TodoItem {
-  id?: string;
-  content: string;
-  status: "pending" | "in_progress" | "completed";
-  priority?: "low" | "medium" | "high";
+    id?: string;
+    content: string;
+    status: "pending" | "in_progress" | "completed";
+    priority?: "low" | "medium" | "high";
 }
 ```
 
@@ -165,20 +162,20 @@ interface TodoItem {
 
 ```typescript
 interface CanUseToolRequest {
-  type: "control_request";
-  subtype: "can_use_tool";
-  request_id: string;
-  tool_name: string;
-  input: ToolInput;
-  tool_use_id: string;
-  permission_suggestions?: PermissionSuggestion[];
-  decision_reason?: string;
-  blocked_path?: string;
+    type: "control_request";
+    subtype: "can_use_tool";
+    request_id: string;
+    tool_name: string;
+    input: ToolInput;
+    tool_use_id: string;
+    permission_suggestions?: PermissionSuggestion[];
+    decision_reason?: string;
+    blocked_path?: string;
 }
 
 interface PermissionSuggestion {
-  type: "allow_once" | "allow_session" | "allow_always" | "deny";
-  description?: string;
+    type: "allow_once" | "allow_session" | "allow_always" | "deny";
+    description?: string;
 }
 
 type PermissionDecision = "allow" | "deny" | "allow_session" | "allow_always";
@@ -188,14 +185,14 @@ type PermissionDecision = "allow" | "deny" | "allow_session" | "allow_always";
 
 ```typescript
 interface ResultEvent {
-  type: "result";
-  subtype: "success" | "error";
-  session_id: string;
-  total_cost_usd: number;
-  duration_ms: number;
-  num_turns: number;
-  is_error: boolean;
-  result: string;
+    type: "result";
+    subtype: "success" | "error";
+    session_id: string;
+    total_cost_usd: number;
+    duration_ms: number;
+    num_turns: number;
+    is_error: boolean;
+    result: string;
 }
 ```
 
@@ -209,47 +206,47 @@ interface ResultEvent {
 
 ```typescript
 type MessageType =
-  | "user"
-  | "assistant"
-  | "tool_use"
-  | "tool_result"
-  | "thinking"
-  | "error"
-  | "system";
+    | "user"
+    | "assistant"
+    | "tool_use"
+    | "tool_result"
+    | "thinking"
+    | "error"
+    | "system";
 
 interface BaseMessage {
-  id: string;
-  type: MessageType;
-  timestamp: number;
-  isStreaming?: boolean;
+    id: string;
+    type: MessageType;
+    timestamp: number;
+    isStreaming?: boolean;
 }
 
 type ChatMessage =
-  | UserMessage
-  | AssistantMessage
-  | ToolUseMessage
-  | ToolResultMessage
-  | ThinkingMessage
-  | ErrorMessage
-  | SystemMessage;
+    | UserMessage
+    | AssistantMessage
+    | ToolUseMessage
+    | ToolResultMessage
+    | ThinkingMessage
+    | ErrorMessage
+    | SystemMessage;
 ```
 
 ### User Messages
 
 ```typescript
 interface UserMessage extends BaseMessage {
-  type: "user";
-  content: string;
-  attachments?: MessageAttachment[];
+    type: "user";
+    content: string;
+    attachments?: MessageAttachment[];
 }
 
 interface MessageAttachment {
-  type: "file" | "image";
-  name: string;
-  path?: string;
-  mimeType?: string;
-  size?: number;
-  content?: string; // base64
+    type: "file" | "image";
+    name: string;
+    path?: string;
+    mimeType?: string;
+    size?: number;
+    content?: string; // base64
 }
 ```
 
@@ -257,11 +254,11 @@ interface MessageAttachment {
 
 ```typescript
 interface AssistantMessage extends BaseMessage {
-  type: "assistant";
-  content: string;
-  usage?: TokenUsage;
-  model?: string;
-  isComplete?: boolean;
+    type: "assistant";
+    content: string;
+    usage?: TokenUsage;
+    model?: string;
+    isComplete?: boolean;
 }
 ```
 
@@ -269,36 +266,30 @@ interface AssistantMessage extends BaseMessage {
 
 ```typescript
 interface ToolUseMessage extends BaseMessage {
-  type: "tool_use";
-  toolUseId: string;
-  toolName: string;
-  rawInput: ToolInput;
-  toolInfo: string;
-  status: ToolExecutionStatus;
-  fileContentBefore?: string;
-  startLine?: number;
-  startLines?: number[]; // MultiEdit
-  duration?: number;
+    type: "tool_use";
+    toolUseId: string;
+    toolName: string;
+    rawInput: ToolInput;
+    toolInfo: string;
+    status: ToolExecutionStatus;
+    fileContentBefore?: string;
+    startLine?: number;
+    startLines?: number[]; // MultiEdit
+    duration?: number;
 }
 
-type ToolExecutionStatus =
-  | "pending"
-  | "approved"
-  | "executing"
-  | "completed"
-  | "failed"
-  | "denied";
+type ToolExecutionStatus = "pending" | "approved" | "executing" | "completed" | "failed" | "denied";
 
 interface ToolResultMessage extends BaseMessage {
-  type: "tool_result";
-  toolUseId: string;
-  toolName?: string;
-  content: string;
-  isError: boolean;
-  hidden: boolean;
-  fileContentAfter?: string;
-  startLine?: number;
-  startLines?: number[];
+    type: "tool_result";
+    toolUseId: string;
+    toolName?: string;
+    content: string;
+    isError: boolean;
+    hidden: boolean;
+    fileContentAfter?: string;
+    startLine?: number;
+    startLines?: number[];
 }
 ```
 
@@ -306,10 +297,10 @@ interface ToolResultMessage extends BaseMessage {
 
 ```typescript
 interface ThinkingMessage extends BaseMessage {
-  type: "thinking";
-  content: string;
-  isExpanded?: boolean;
-  isStreaming?: boolean;
+    type: "thinking";
+    content: string;
+    isExpanded?: boolean;
+    isStreaming?: boolean;
 }
 ```
 
@@ -317,22 +308,17 @@ interface ThinkingMessage extends BaseMessage {
 
 ```typescript
 interface ErrorMessage extends BaseMessage {
-  type: "error";
-  content: string;
-  code?: string;
-  recoverable?: boolean;
-  suggestedAction?:
-    | "retry"
-    | "login"
-    | "install"
-    | "configure"
-    | "contact_support";
+    type: "error";
+    content: string;
+    code?: string;
+    recoverable?: boolean;
+    suggestedAction?: "retry" | "login" | "install" | "configure" | "contact_support";
 }
 
 interface SystemMessage extends BaseMessage {
-  type: "system";
-  content: string;
-  severity: "info" | "warning" | "success";
+    type: "system";
+    content: string;
+    severity: "info" | "warning" | "success";
 }
 ```
 
@@ -340,17 +326,17 @@ interface SystemMessage extends BaseMessage {
 
 ```typescript
 interface PermissionRequest {
-  requestId: string;
-  toolUseId: string;
-  toolName: string;
-  input: ToolInput;
-  description: string;
-  suggestions: PermissionSuggestion[];
-  decisionReason?: string;
-  blockedPath?: string;
-  timestamp: number;
-  status: "pending" | "approved" | "denied" | "expired";
-  decision?: PermissionDecision;
+    requestId: string;
+    toolUseId: string;
+    toolName: string;
+    input: ToolInput;
+    description: string;
+    suggestions: PermissionSuggestion[];
+    decisionReason?: string;
+    blockedPath?: string;
+    timestamp: number;
+    status: "pending" | "approved" | "denied" | "expired";
+    decision?: PermissionDecision;
 }
 ```
 
@@ -364,13 +350,13 @@ interface PermissionRequest {
 
 ```typescript
 interface SessionState {
-  sessionId: string | null;
-  status: "initializing" | "active" | "compacting" | "error" | "closed";
-  tools: ToolDefinition[];
-  mcpServers: MCPServerInfo[];
-  account: AccountInfo | null;
-  createdAt: number | null;
-  lastActivityAt: number | null;
+    sessionId: string | null;
+    status: "initializing" | "active" | "compacting" | "error" | "closed";
+    tools: ToolDefinition[];
+    mcpServers: MCPServerInfo[];
+    account: AccountInfo | null;
+    createdAt: number | null;
+    lastActivityAt: number | null;
 }
 ```
 
@@ -378,23 +364,23 @@ interface SessionState {
 
 ```typescript
 interface TokenTrackingState {
-  current: TokenUsage;
-  cumulative: CumulativeTokenUsage;
-  limits: TokenLimits;
-  isApproachingLimit: boolean;
+    current: TokenUsage;
+    cumulative: CumulativeTokenUsage;
+    limits: TokenLimits;
+    isApproachingLimit: boolean;
 }
 
 interface CumulativeTokenUsage {
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalCacheReadTokens: number;
-  totalCacheCreationTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCacheReadTokens: number;
+    totalCacheCreationTokens: number;
 }
 
 interface TokenLimits {
-  maxContextTokens: number;
-  warningThreshold: number;
-  usagePercentage: number;
+    maxContextTokens: number;
+    warningThreshold: number;
+    usagePercentage: number;
 }
 ```
 
@@ -402,16 +388,16 @@ interface TokenLimits {
 
 ```typescript
 interface CostTrackingState {
-  sessionCostUsd: number;
-  allTimeCostUsd: number;
-  breakdown: CostBreakdown;
-  lastUpdated: number;
+    sessionCostUsd: number;
+    allTimeCostUsd: number;
+    breakdown: CostBreakdown;
+    lastUpdated: number;
 }
 
 interface CostBreakdown {
-  inputCost: number;
-  outputCost: number;
-  cacheCost: number;
+    inputCost: number;
+    outputCost: number;
+    cacheCost: number;
 }
 ```
 
@@ -419,27 +405,27 @@ interface CostBreakdown {
 
 ```typescript
 interface SettingsState {
-  theme: ThemeSettings;
-  editor: EditorSettings;
-  claude: ClaudeSettings;
-  permissions: PermissionSettings;
-  display: DisplaySettings;
-  shortcuts: ShortcutSettings;
+    theme: ThemeSettings;
+    editor: EditorSettings;
+    claude: ClaudeSettings;
+    permissions: PermissionSettings;
+    display: DisplaySettings;
+    shortcuts: ShortcutSettings;
 }
 
 interface PermissionSettings {
-  autoApprove: AutoApproveSettings;
-  denyList: string[];
-  timeoutMs: number;
-  showPrompts: boolean;
+    autoApprove: AutoApproveSettings;
+    denyList: string[];
+    timeoutMs: number;
+    showPrompts: boolean;
 }
 
 interface AutoApproveSettings {
-  enabled: boolean;
-  tools: string[];
-  patterns: string[];
-  readOperations: boolean;
-  projectDirectory: boolean;
+    enabled: boolean;
+    tools: string[];
+    patterns: string[];
+    readOperations: boolean;
+    projectDirectory: boolean;
 }
 ```
 
@@ -447,21 +433,14 @@ interface AutoApproveSettings {
 
 ```typescript
 interface UIState {
-  sidebar: SidebarState;
-  input: InputState;
-  modal: ModalState;
-  notifications: NotificationState;
-  layout: LayoutState;
+    sidebar: SidebarState;
+    input: InputState;
+    modal: ModalState;
+    notifications: NotificationState;
+    layout: LayoutState;
 }
 
-type ModalType =
-  | "permission"
-  | "install"
-  | "login"
-  | "settings"
-  | "confirm"
-  | "error"
-  | "about";
+type ModalType = "permission" | "install" | "login" | "settings" | "confirm" | "error" | "about";
 ```
 
 ---
@@ -474,14 +453,14 @@ type ModalType =
 
 ```typescript
 interface ConversationListItem {
-  id: string;
-  title: string;
-  preview: string;
-  updatedAt: number;
-  messageCount: number;
-  sessionId?: string;
-  totalCost?: number;
-  tags?: string[];
+    id: string;
+    title: string;
+    preview: string;
+    updatedAt: number;
+    messageCount: number;
+    sessionId?: string;
+    totalCost?: number;
+    tags?: string[];
 }
 ```
 
@@ -506,48 +485,48 @@ interface ConversationListItem {
 
 ```typescript
 type ExtensionToWebviewMessageType =
-  | "sessionInfo"
-  | "accountInfo"
-  | "output"
-  | "thinking"
-  | "toolUse"
-  | "toolResult"
-  | "updateTokens"
-  | "updateTotals"
-  | "compacting"
-  | "compactBoundary"
-  | "permissionRequest"
-  | "setProcessing"
-  | "loading"
-  | "clearLoading"
-  | "error"
-  | "showInstallModal"
-  | "showLoginModal"
-  | "settingsUpdate"
-  | "themeUpdate"
-  | "restoreState"
-  | "conversationList"
-  | "conversationDeleted"
-  | "clipboardText"
-  | "permissionsData"
-  | "mcpServers";
+    | "sessionInfo"
+    | "accountInfo"
+    | "output"
+    | "thinking"
+    | "toolUse"
+    | "toolResult"
+    | "updateTokens"
+    | "updateTotals"
+    | "compacting"
+    | "compactBoundary"
+    | "permissionRequest"
+    | "setProcessing"
+    | "loading"
+    | "clearLoading"
+    | "error"
+    | "showInstallModal"
+    | "showLoginModal"
+    | "settingsUpdate"
+    | "themeUpdate"
+    | "restoreState"
+    | "conversationList"
+    | "conversationDeleted"
+    | "clipboardText"
+    | "permissionsData"
+    | "mcpServers";
 
 // Example messages
 interface SessionInfoMessage {
-  type: "sessionInfo";
-  sessionId: string;
-  tools: ToolDefinition[];
-  mcpServers: MCPServerInfo[];
+    type: "sessionInfo";
+    sessionId: string;
+    tools: ToolDefinition[];
+    mcpServers: MCPServerInfo[];
 }
 
 interface PermissionRequestMessage {
-  type: "permissionRequest";
-  requestId: string;
-  toolUseId: string;
-  toolName: string;
-  input: ToolInput;
-  description: string;
-  suggestions: PermissionSuggestion[];
+    type: "permissionRequest";
+    requestId: string;
+    toolUseId: string;
+    toolName: string;
+    input: ToolInput;
+    description: string;
+    suggestions: PermissionSuggestion[];
 }
 ```
 
@@ -556,25 +535,25 @@ interface PermissionRequestMessage {
 ```typescript
 // Conversation summary item from extension
 interface ConversationListItem {
-  filename: string;
-  timestamp: string;
-  preview: string;
-  messageCount: number;
-  sessionId?: string;
-  totalCost?: number;
+    filename: string;
+    timestamp: string;
+    preview: string;
+    messageCount: number;
+    sessionId?: string;
+    totalCost?: number;
 }
 
 // List of saved conversations
 interface ConversationListMessage {
-  type: "conversationList";
-  conversations: ConversationListItem[];
-  data?: ConversationListItem[]; // Alias for conversations
+    type: "conversationList";
+    conversations: ConversationListItem[];
+    data?: ConversationListItem[]; // Alias for conversations
 }
 
 // Confirmation of conversation deletion
 interface ConversationDeletedMessage {
-  type: "conversationDeleted";
-  filename: string;
+    type: "conversationDeleted";
+    filename: string;
 }
 ```
 
@@ -582,48 +561,48 @@ interface ConversationDeletedMessage {
 
 ```typescript
 type WebviewToExtensionMessageType =
-  | "sendMessage"
-  | "stopGeneration"
-  | "permissionResponse"
-  | "openFile"
-  | "openFolder"
-  | "copyToClipboard"
-  | "saveSettings"
-  | "getSettings"
-  | "startSession"
-  | "endSession"
-  | "clearConversation"
-  | "exportConversation"
-  | "login"
-  | "logout"
-  | "installClaude"
-  | "saveState"
-  | "requestState"
-  | "openExternal"
-  | "showInfo"
-  | "showError"
-  | "saveInputText"
-  | "enableYoloMode"
-  | "getClipboardText"
-  | "getConversationList"
-  | "loadConversation"
-  | "deleteConversation";
+    | "sendMessage"
+    | "stopGeneration"
+    | "permissionResponse"
+    | "openFile"
+    | "openFolder"
+    | "copyToClipboard"
+    | "saveSettings"
+    | "getSettings"
+    | "startSession"
+    | "endSession"
+    | "clearConversation"
+    | "exportConversation"
+    | "login"
+    | "logout"
+    | "installClaude"
+    | "saveState"
+    | "requestState"
+    | "openExternal"
+    | "showInfo"
+    | "showError"
+    | "saveInputText"
+    | "enableYoloMode"
+    | "getClipboardText"
+    | "getConversationList"
+    | "loadConversation"
+    | "deleteConversation";
 
 // Example messages
 interface SendMessageRequest {
-  type: "sendMessage";
-  message: string;
-  planMode?: boolean;
-  thinkingMode?: boolean;
-  attachments?: Array<{ type: "file" | "image"; path: string; name: string }>;
+    type: "sendMessage";
+    message: string;
+    planMode?: boolean;
+    thinkingMode?: boolean;
+    attachments?: Array<{ type: "file" | "image"; path: string; name: string }>;
 }
 
 interface PermissionResponseRequest {
-  type: "permissionResponse";
-  requestId: string;
-  decision: PermissionDecision;
-  toolName?: string;
-  input?: unknown;
+    type: "permissionResponse";
+    requestId: string;
+    decision: PermissionDecision;
+    toolName?: string;
+    input?: unknown;
 }
 ```
 
@@ -632,54 +611,54 @@ interface PermissionResponseRequest {
 ```typescript
 // Request list of saved conversations
 interface GetConversationListRequest {
-  type: "getConversationList";
+    type: "getConversationList";
 }
 
 // Load a specific conversation
 interface LoadConversationRequest {
-  type: "loadConversation";
-  filename: string;
+    type: "loadConversation";
+    filename: string;
 }
 
 // Delete a saved conversation
 interface DeleteConversationRequest {
-  type: "deleteConversation";
-  filename: string;
+    type: "deleteConversation";
+    filename: string;
 }
 
 // Open URL in external browser
 interface OpenExternalRequest {
-  type: "openExternal";
-  url: string;
+    type: "openExternal";
+    url: string;
 }
 
 // Show info notification
 interface ShowInfoRequest {
-  type: "showInfo";
-  message: string;
+    type: "showInfo";
+    message: string;
 }
 
 // Show error notification
 interface ShowErrorRequest {
-  type: "showError";
-  message: string;
+    type: "showError";
+    message: string;
 }
 
 // Save draft message text
 interface SaveInputTextRequest {
-  type: "saveInputText";
-  text: string;
+    type: "saveInputText";
+    text: string;
 }
 
 // Enable YOLO mode (auto-approve all)
 interface EnableYoloModeRequest {
-  type: "enableYoloMode";
-  enabled: boolean;
+    type: "enableYoloMode";
+    enabled: boolean;
 }
 
 // Get clipboard contents
 interface GetClipboardTextRequest {
-  type: "getClipboardText";
+    type: "getClipboardText";
 }
 ```
 
@@ -702,15 +681,9 @@ function isCanUseToolRequest(event: ClaudeEvent): event is CanUseToolRequest;
 ### Content Block Guards
 
 ```typescript
-function isTextContentBlock(
-  block: AssistantContentBlock,
-): block is TextContentBlock;
-function isThinkingContentBlock(
-  block: AssistantContentBlock,
-): block is ThinkingContentBlock;
-function isToolUseContentBlock(
-  block: AssistantContentBlock,
-): block is ToolUseContentBlock;
+function isTextContentBlock(block: AssistantContentBlock): block is TextContentBlock;
+function isThinkingContentBlock(block: AssistantContentBlock): block is ThinkingContentBlock;
+function isToolUseContentBlock(block: AssistantContentBlock): block is ToolUseContentBlock;
 ```
 
 ### Chat Message Guards
@@ -719,9 +692,7 @@ function isToolUseContentBlock(
 function isUserMessage(message: ChatMessage): message is UserMessage;
 function isAssistantMessage(message: ChatMessage): message is AssistantMessage;
 function isToolUseMessage(message: ChatMessage): message is ToolUseMessage;
-function isToolResultMessage(
-  message: ChatMessage,
-): message is ToolResultMessage;
+function isToolResultMessage(message: ChatMessage): message is ToolResultMessage;
 function isThinkingMessage(message: ChatMessage): message is ThinkingMessage;
 function isErrorMessage(message: ChatMessage): message is ErrorMessage;
 function isSystemMessage(message: ChatMessage): message is SystemMessage;
@@ -730,20 +701,10 @@ function isSystemMessage(message: ChatMessage): message is SystemMessage;
 ### Message Type Guards
 
 ```typescript
-function isExtensionMessage(
-  message: unknown,
-): message is ExtensionToWebviewMessage;
-function isWebviewMessage(
-  message: unknown,
-): message is WebviewToExtensionMessage;
-function isExtensionMessageOfType<T>(
-  message: ExtensionToWebviewMessage,
-  type: T,
-): boolean;
-function isWebviewMessageOfType<T>(
-  message: WebviewToExtensionMessage,
-  type: T,
-): boolean;
+function isExtensionMessage(message: unknown): message is ExtensionToWebviewMessage;
+function isWebviewMessage(message: unknown): message is WebviewToExtensionMessage;
+function isExtensionMessageOfType<T>(message: ExtensionToWebviewMessage, type: T): boolean;
+function isWebviewMessageOfType<T>(message: WebviewToExtensionMessage, type: T): boolean;
 ```
 
 ---
@@ -753,7 +714,7 @@ function isWebviewMessageOfType<T>(
 ```typescript
 // Deep partial for flexible updates
 type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
 // Make specific keys optional
@@ -768,14 +729,14 @@ type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 ```typescript
 interface VSCodeApi {
-  postMessage(message: WebviewToExtensionMessage): void;
-  getState(): unknown;
-  setState(state: unknown): void;
+    postMessage(message: WebviewToExtensionMessage): void;
+    getState(): unknown;
+    setState(state: unknown): void;
 }
 
 declare function acquireVsCodeApi(): VSCodeApi;
 
 interface Window {
-  vscode?: VSCodeApi;
+    vscode?: VSCodeApi;
 }
 ```

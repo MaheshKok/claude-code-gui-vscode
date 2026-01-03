@@ -1,24 +1,20 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "outDir": "./dist/webview",
-    "noEmit": false,
-    "jsx": "react-jsx",
-    "types": ["node"]
-  },
-  "include": [
-    "src/webview/**/*.ts",
-    "src/webview/**/*.tsx",
-    "src/shared/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/extension/**/*",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
-  ]
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "outDir": "./dist/webview",
+        "noEmit": false,
+        "jsx": "react-jsx",
+        "types": ["node"]
+    },
+    "include": ["src/webview/**/*.ts", "src/webview/**/*.tsx", "src/shared/**/*.ts"],
+    "exclude": [
+        "node_modules",
+        "src/extension/**/*",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
+    ]
 }

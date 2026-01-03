@@ -111,24 +111,24 @@ alias: {
 
 ```typescript
 export default defineConfig({
-  root: "src/webview",
-  plugins: [react()],
-  build: {
-    outDir: "../../dist/webview",
-    emptyOutDir: false,
-    rollupOptions: {
-      output: {
-        entryFileNames: "main.js",
-        assetFileNames: "main[extname]",
-        // Single bundle - no code splitting
-        manualChunks: undefined,
-      },
+    root: "src/webview",
+    plugins: [react()],
+    build: {
+        outDir: "../../dist/webview",
+        emptyOutDir: false,
+        rollupOptions: {
+            output: {
+                entryFileNames: "main.js",
+                assetFileNames: "main[extname]",
+                // Single bundle - no code splitting
+                manualChunks: undefined,
+            },
+        },
+        cssCodeSplit: false, // Inline CSS
+        minify: isProduction ? "terser" : false,
+        sourcemap: !isProduction,
+        target: "es2020",
     },
-    cssCodeSplit: false, // Inline CSS
-    minify: isProduction ? "terser" : false,
-    sourcemap: !isProduction,
-    target: "es2020",
-  },
 });
 ```
 
@@ -171,18 +171,18 @@ resolve: {
 
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true
-  }
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "noEmit": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true
+    }
 }
 ```
 
@@ -190,15 +190,15 @@ resolve: {
 
 ```json
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "outDir": "./dist",
-    "noEmit": false,
-    "types": ["node", "vscode"]
-  },
-  "include": ["src/extension/**/*", "src/shared/**/*"]
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "noEmit": false,
+        "types": ["node", "vscode"]
+    },
+    "include": ["src/extension/**/*", "src/shared/**/*"]
 }
 ```
 
@@ -206,14 +206,14 @@ resolve: {
 
 ```json
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "outDir": "./dist/webview",
-    "noEmit": false
-  },
-  "include": ["src/webview/**/*", "src/shared/**/*"]
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "outDir": "./dist/webview",
+        "noEmit": false
+    },
+    "include": ["src/webview/**/*", "src/shared/**/*"]
 }
 ```
 
@@ -225,19 +225,19 @@ resolve: {
 
 ```javascript
 module.exports = {
-  content: ["./src/webview/**/*.{ts,tsx,html}"],
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        // VS Code theme variables
-        "vscode-editor-bg": "var(--vscode-editor-background)",
-        "vscode-editor-fg": "var(--vscode-editor-foreground)",
-        // ... more
-      },
+    content: ["./src/webview/**/*.{ts,tsx,html}"],
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                // VS Code theme variables
+                "vscode-editor-bg": "var(--vscode-editor-background)",
+                "vscode-editor-fg": "var(--vscode-editor-foreground)",
+                // ... more
+            },
+        },
     },
-  },
-  plugins: [require("@tailwindcss/typography")],
+    plugins: [require("@tailwindcss/typography")],
 };
 ```
 
@@ -245,10 +245,10 @@ module.exports = {
 
 ```javascript
 module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
+    plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+    },
 };
 ```
 
@@ -288,24 +288,24 @@ module.exports = {
 
 ```typescript
 export default defineConfig({
-  test: {
-    environment: "jsdom",
-    setupFiles: ["./src/tests/setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
-    globals: true,
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70,
-      },
+    test: {
+        environment: "jsdom",
+        setupFiles: ["./src/tests/setup.ts"],
+        include: ["src/**/*.{test,spec}.{ts,tsx}"],
+        globals: true,
+        coverage: {
+            provider: "v8",
+            reporter: ["text", "json", "html"],
+            thresholds: {
+                lines: 70,
+                functions: 70,
+                branches: 70,
+                statements: 70,
+            },
+        },
+        testTimeout: 10000,
+        hookTimeout: 10000,
     },
-    testTimeout: 10000,
-    hookTimeout: 10000,
-  },
 });
 ```
 
@@ -426,13 +426,13 @@ npm run package
 ### Debugging
 
 1. **Extension Debugging**
-   - Set breakpoints in `src/extension/`
-   - Press F5 → Select "Run Extension"
-   - Debug in VS Code
+    - Set breakpoints in `src/extension/`
+    - Press F5 → Select "Run Extension"
+    - Debug in VS Code
 
 2. **Webview Debugging**
-   - Open DevTools in webview: `Ctrl+Shift+I`
-   - Or use "Debug Webview" launch config
+    - Open DevTools in webview: `Ctrl+Shift+I`
+    - Or use "Debug Webview" launch config
 
 ---
 

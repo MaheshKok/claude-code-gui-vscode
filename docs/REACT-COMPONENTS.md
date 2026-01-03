@@ -43,8 +43,7 @@ App (Root)
 const [messages, setMessages] = useState<ChatMessage[]>([]);
 const [isProcessing, setIsProcessing] = useState(false);
 const [session, setSession] = useState<SessionInfo | null>(null);
-const [permissionRequest, setPermissionRequest] =
-  useState<PermissionRequest | null>(null);
+const [permissionRequest, setPermissionRequest] = useState<PermissionRequest | null>(null);
 
 // Settings from store
 const selectedModel = useSettingsStore((s) => s.selectedModel);
@@ -58,15 +57,15 @@ const yoloMode = useSettingsStore((s) => s.yoloMode);
 
 ```typescript
 const handlers = {
-  sessionInfo: (msg) => setSession(msg),
-  output: (msg) => appendToMessage(msg.text),
-  thinking: (msg) => addThinkingMessage(msg.content),
-  toolUse: (msg) => addToolUseMessage(msg),
-  toolResult: (msg) => addToolResultMessage(msg),
-  permissionRequest: (msg) => setPermissionRequest(msg),
-  error: (msg) => addErrorMessage(msg),
-  settingsUpdate: (msg) => updateSettings(msg),
-  restoreState: (msg) => restoreState(msg),
+    sessionInfo: (msg) => setSession(msg),
+    output: (msg) => appendToMessage(msg.text),
+    thinking: (msg) => addThinkingMessage(msg.content),
+    toolUse: (msg) => addToolUseMessage(msg),
+    toolResult: (msg) => addToolResultMessage(msg),
+    permissionRequest: (msg) => setPermissionRequest(msg),
+    error: (msg) => addErrorMessage(msg),
+    settingsUpdate: (msg) => updateSettings(msg),
+    restoreState: (msg) => restoreState(msg),
 };
 ```
 
@@ -78,23 +77,23 @@ const handlers = {
 
 ```typescript
 interface ChatContainerProps {
-  messages: Message[];
-  isProcessing: boolean;
-  currentModel: string;
-  planMode: boolean;
-  thinkingMode: boolean;
-  thinkingIntensity: ThinkingIntensity;
-  yoloMode: boolean;
-  onSendMessage: (content: string) => void;
-  onModelChange: (model: string) => void;
-  onPlanModeToggle: () => void;
-  onThinkingModeToggle: () => void;
-  onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
-  onYoloModeToggle: () => void;
-  onFileSelect: () => void;
-  onImageSelect: () => void;
-  onSlashCommand: () => void;
-  onMcpAction: () => void;
+    messages: Message[];
+    isProcessing: boolean;
+    currentModel: string;
+    planMode: boolean;
+    thinkingMode: boolean;
+    thinkingIntensity: ThinkingIntensity;
+    yoloMode: boolean;
+    onSendMessage: (content: string) => void;
+    onModelChange: (model: string) => void;
+    onPlanModeToggle: () => void;
+    onThinkingModeToggle: () => void;
+    onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
+    onYoloModeToggle: () => void;
+    onFileSelect: () => void;
+    onImageSelect: () => void;
+    onSlashCommand: () => void;
+    onMcpAction: () => void;
 }
 ```
 
@@ -106,8 +105,8 @@ interface ChatContainerProps {
 
 ```typescript
 interface MessageListProps {
-  messages: Message[];
-  isProcessing: boolean;
+    messages: Message[];
+    isProcessing: boolean;
 }
 ```
 
@@ -126,18 +125,18 @@ interface MessageListProps {
 
 ```typescript
 interface MessageProps {
-  message: {
-    id: string;
-    role: "user" | "assistant" | "tool" | "error";
-    content: string;
-    timestamp: Date;
-    toolName?: string;
-    isStreaming?: boolean;
-    /** Duration in milliseconds (for tool messages) */
-    duration?: number;
-    /** Token count (for tool messages) */
-    tokens?: number;
-  };
+    message: {
+        id: string;
+        role: "user" | "assistant" | "tool" | "error";
+        content: string;
+        timestamp: Date;
+        toolName?: string;
+        isStreaming?: boolean;
+        /** Duration in milliseconds (for tool messages) */
+        duration?: number;
+        /** Token count (for tool messages) */
+        tokens?: number;
+    };
 }
 ```
 
@@ -172,22 +171,22 @@ interface MessageProps {
 
 ```typescript
 interface MessageInputProps {
-  disabled: boolean;
-  currentModel: string;
-  planMode: boolean;
-  thinkingMode: boolean;
-  thinkingIntensity: ThinkingIntensity;
-  yoloMode: boolean;
-  onSendMessage: (content: string) => void;
-  onModelChange: (model: string) => void;
-  onPlanModeToggle: () => void;
-  onThinkingModeToggle: () => void;
-  onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
-  onYoloModeToggle: () => void;
-  onFileSelect: () => void;
-  onImageSelect: () => void;
-  onSlashCommand: () => void;
-  onMcpAction: () => void;
+    disabled: boolean;
+    currentModel: string;
+    planMode: boolean;
+    thinkingMode: boolean;
+    thinkingIntensity: ThinkingIntensity;
+    yoloMode: boolean;
+    onSendMessage: (content: string) => void;
+    onModelChange: (model: string) => void;
+    onPlanModeToggle: () => void;
+    onThinkingModeToggle: () => void;
+    onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
+    onYoloModeToggle: () => void;
+    onFileSelect: () => void;
+    onImageSelect: () => void;
+    onSlashCommand: () => void;
+    onMcpAction: () => void;
 }
 ```
 
@@ -217,11 +216,11 @@ interface MessageInputProps {
 
 ```typescript
 interface HeaderProps {
-  session: SessionInfo | null;
-  onNewChat: () => void;
-  onOpenSettings: () => void;
-  onToggleHistory: () => void;
-  isHistoryOpen?: boolean;
+    session: SessionInfo | null;
+    onNewChat: () => void;
+    onOpenSettings: () => void;
+    onToggleHistory: () => void;
+    isHistoryOpen?: boolean;
 }
 ```
 
@@ -238,9 +237,9 @@ interface HeaderProps {
 
 ```typescript
 interface StatusBarProps {
-  isConnected: boolean;
-  isProcessing: boolean;
-  onStop: () => void;
+    isConnected: boolean;
+    isProcessing: boolean;
+    onStop: () => void;
 }
 ```
 
@@ -260,16 +259,16 @@ interface StatusBarProps {
 
 ```typescript
 interface ToolUseCardProps {
-  toolName: string;
-  input: { [key: string]: unknown };
-  isExecuting?: boolean;
-  onFilePathClick?: (filePath: string) => void;
-  /** Duration in milliseconds */
-  duration?: number;
-  /** Token count for this tool use */
-  tokens?: number;
-  /** Whether to start collapsed (default: true) */
-  defaultCollapsed?: boolean;
+    toolName: string;
+    input: { [key: string]: unknown };
+    isExecuting?: boolean;
+    onFilePathClick?: (filePath: string) => void;
+    /** Duration in milliseconds */
+    duration?: number;
+    /** Token count for this tool use */
+    tokens?: number;
+    /** Whether to start collapsed (default: true) */
+    defaultCollapsed?: boolean;
 }
 ```
 
@@ -304,17 +303,17 @@ interface ToolUseCardProps {
 
 ```typescript
 interface ToolResultCardProps {
-  content: string;
-  isError?: boolean;
-  toolName?: string;
-  maxLines?: number;
-  onCopy?: (content: string) => void;
-  /** Duration in milliseconds */
-  duration?: number;
-  /** Token count for this tool result */
-  tokens?: number;
-  /** Whether to start collapsed (default: true) */
-  defaultCollapsed?: boolean;
+    content: string;
+    isError?: boolean;
+    toolName?: string;
+    maxLines?: number;
+    onCopy?: (content: string) => void;
+    /** Duration in milliseconds */
+    duration?: number;
+    /** Token count for this tool result */
+    tokens?: number;
+    /** Whether to start collapsed (default: true) */
+    defaultCollapsed?: boolean;
 }
 ```
 
@@ -363,13 +362,13 @@ interface ToolResultCardProps {
 
 ```typescript
 interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  width?: "sm" | "md" | "lg" | "xl";
-  showCloseButton?: boolean;
-  closeOnBackdrop?: boolean;
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+    width?: "sm" | "md" | "lg" | "xl";
+    showCloseButton?: boolean;
+    closeOnBackdrop?: boolean;
 }
 ```
 
@@ -399,10 +398,10 @@ interface ModalProps {
 
 ```typescript
 interface PermissionModalProps {
-  request: PermissionRequest | null;
-  onAllow: (requestId: string) => void;
-  onDeny: (requestId: string, reason?: string) => void;
-  onAlwaysAllow: (requestId: string, pattern: string) => void;
+    request: PermissionRequest | null;
+    onAllow: (requestId: string) => void;
+    onDeny: (requestId: string, reason?: string) => void;
+    onAlwaysAllow: (requestId: string, pattern: string) => void;
 }
 ```
 
@@ -476,20 +475,20 @@ interface PermissionModalProps {
 
 ```typescript
 interface ConversationHistoryProps {
-  /** Whether the panel is visible */
-  isOpen: boolean;
-  /** Callback to close the panel */
-  onClose: () => void;
-  /** Callback when a conversation is loaded */
-  onConversationLoad?: (id: string) => void;
-  /** Conversations to display */
-  conversations: ConversationListItem[];
-  /** Whether conversations are loading */
-  isLoading?: boolean;
-  /** Active conversation id */
-  activeConversationId?: string | null;
-  /** Callback to delete a conversation */
-  onConversationDelete?: (id: string) => void;
+    /** Whether the panel is visible */
+    isOpen: boolean;
+    /** Callback to close the panel */
+    onClose: () => void;
+    /** Callback when a conversation is loaded */
+    onConversationLoad?: (id: string) => void;
+    /** Conversations to display */
+    conversations: ConversationListItem[];
+    /** Whether conversations are loading */
+    isLoading?: boolean;
+    /** Active conversation id */
+    activeConversationId?: string | null;
+    /** Callback to delete a conversation */
+    onConversationDelete?: (id: string) => void;
 }
 ```
 
@@ -515,10 +514,10 @@ interface ConversationHistoryProps {
 ```typescript
 // Uses Lucide icons: Clock, MessageSquare, Trash2, Search, FolderOpen
 interface ConversationSummary {
-  filename: string;
-  timestamp: Date;
-  preview: string;
-  messageCount: number;
+    filename: string;
+    timestamp: Date;
+    preview: string;
+    messageCount: number;
 }
 ```
 
@@ -540,16 +539,16 @@ interface ConversationSummary {
 
 ```typescript
 interface ConversationItemProps {
-  /** Conversation summary data */
-  conversation: ConversationListItem;
-  /** Whether this conversation is currently active */
-  isActive?: boolean;
-  /** Callback when conversation is clicked */
-  onClick: (id: string) => void;
-  /** Callback when delete is confirmed */
-  onDelete: (id: string) => void;
-  /** Optional cost information */
-  cost?: number;
+    /** Conversation summary data */
+    conversation: ConversationListItem;
+    /** Whether this conversation is currently active */
+    isActive?: boolean;
+    /** Callback when conversation is clicked */
+    onClick: (id: string) => void;
+    /** Callback when delete is confirmed */
+    onDelete: (id: string) => void;
+    /** Optional cost information */
+    cost?: number;
 }
 ```
 
@@ -572,10 +571,10 @@ interface ConversationItemProps {
 
 ```typescript
 interface ConversationSearchProps {
-  onSearch: (query: string) => void;
-  placeholder?: string;
-  debounceMs?: number;
-  autoFocus?: boolean;
+    onSearch: (query: string) => void;
+    placeholder?: string;
+    debounceMs?: number;
+    autoFocus?: boolean;
 }
 ```
 

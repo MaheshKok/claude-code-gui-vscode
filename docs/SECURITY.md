@@ -71,7 +71,7 @@ const command = `wsl -d ${distro} bash -ic "claude ..."`;
 
 ```typescript
 if (yoloMode) {
-  args.push("--dangerously-skip-permissions");
+    args.push("--dangerously-skip-permissions");
 }
 ```
 
@@ -97,8 +97,8 @@ if (yoloMode) {
 ```typescript
 // VULNERABLE: No origin check
 window.addEventListener("message", (event) => {
-  const message = event.data as ExtensionToWebviewMessage;
-  // ... process message
+    const message = event.data as ExtensionToWebviewMessage;
+    // ... process message
 });
 ```
 
@@ -108,12 +108,12 @@ window.addEventListener("message", (event) => {
 
 ```typescript
 window.addEventListener("message", (event) => {
-  // Validate origin
-  if (event.origin !== "vscode-webview://") {
-    console.warn("Rejected message from untrusted origin:", event.origin);
-    return;
-  }
-  // ... process message
+    // Validate origin
+    if (event.origin !== "vscode-webview://") {
+        console.warn("Rejected message from untrusted origin:", event.origin);
+        return;
+    }
+    // ... process message
 });
 ```
 
@@ -173,8 +173,8 @@ await vscode.workspace.openTextDocument(filePath);
 
 ```typescript
 function isPathSafe(filePath: string, workspaceRoot: string): boolean {
-  const resolved = path.resolve(filePath);
-  return resolved.startsWith(path.resolve(workspaceRoot));
+    const resolved = path.resolve(filePath);
+    return resolved.startsWith(path.resolve(workspaceRoot));
 }
 ```
 
@@ -287,41 +287,41 @@ function isPathSafe(filePath: string, workspaceRoot: string): boolean {
 ### For Developers
 
 1. **Input Validation**
-   - Validate all paths against workspace root
-   - Sanitize user input before shell execution
-   - Validate message origins in webview
+    - Validate all paths against workspace root
+    - Sanitize user input before shell execution
+    - Validate message origins in webview
 
 2. **Output Encoding**
-   - Use React's default XSS protection
-   - Sanitize any HTML content with DOMPurify
-   - Escape shell metacharacters
+    - Use React's default XSS protection
+    - Sanitize any HTML content with DOMPurify
+    - Escape shell metacharacters
 
 3. **Secure Storage**
-   - Use VS Code's SecretStorage for API keys
-   - Don't store sensitive data in localStorage
-   - Encrypt persisted session data
+    - Use VS Code's SecretStorage for API keys
+    - Don't store sensitive data in localStorage
+    - Encrypt persisted session data
 
 4. **Principle of Least Privilege**
-   - Request minimal permissions
-   - Validate file paths are within workspace
-   - Sandbox child processes where possible
+    - Request minimal permissions
+    - Validate file paths are within workspace
+    - Sandbox child processes where possible
 
 ### For Users
 
 1. **Review Permissions**
-   - Don't enable YOLO mode without understanding risks
-   - Review always-allow patterns periodically
-   - Check MCP server configurations
+    - Don't enable YOLO mode without understanding risks
+    - Review always-allow patterns periodically
+    - Check MCP server configurations
 
 2. **Workspace Security**
-   - Only open trusted workspaces
-   - Be cautious with Claude-suggested commands
-   - Review file changes before committing
+    - Only open trusted workspaces
+    - Be cautious with Claude-suggested commands
+    - Review file changes before committing
 
 3. **Session Management**
-   - Clear conversation history if it contains sensitive data
-   - Don't share exported conversations publicly
-   - Log out when using shared computers
+    - Clear conversation history if it contains sensitive data
+    - Don't share exported conversations publicly
+    - Log out when using shared computers
 
 ---
 

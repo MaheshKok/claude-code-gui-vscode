@@ -18,16 +18,16 @@ This document specifies all features to be implemented in the claude-code-gui VS
 - [ ] Display Claude responses with "Claude" header and AI icon
 - [ ] Support streaming text display (character-by-character or chunk-based)
 - [ ] Render markdown content with proper formatting
-  - Headings, bold, italic, links
-  - Code blocks with syntax highlighting
-  - Lists (ordered and unordered)
-  - Tables
-  - Blockquotes
+    - Headings, bold, italic, links
+    - Code blocks with syntax highlighting
+    - Lists (ordered and unordered)
+    - Tables
+    - Blockquotes
 - [ ] Code blocks with:
-  - Language detection and syntax highlighting
-  - Copy button with clipboard feedback
-  - Language label badge
-  - Line numbers (optional toggle)
+    - Language detection and syntax highlighting
+    - Copy button with clipboard feedback
+    - Language label badge
+    - Line numbers (optional toggle)
 - [ ] Error messages with distinct styling and icon
 - [ ] System messages for status updates
 - [ ] Message timestamps (optional, on hover)
@@ -52,11 +52,11 @@ MessageList.tsx
 
 - [ ] Auto-resizing textarea (min 1 row, max configurable)
 - [ ] Keyboard shortcuts:
-  - Enter to send (configurable)
-  - Shift+Enter for newline
-  - Ctrl+Enter alternative send (configurable)
-  - Up arrow to edit last message
-  - Escape to clear input
+    - Enter to send (configurable)
+    - Shift+Enter for newline
+    - Ctrl+Enter alternative send (configurable)
+    - Up arrow to edit last message
+    - Escape to clear input
 - [ ] Character/word count display (optional)
 - [ ] Paste handling for text and images
 - [ ] Draft auto-save between sessions
@@ -96,10 +96,10 @@ InputContainer.tsx
 
 - [ ] List all saved conversations
 - [ ] Display metadata:
-  - First/last user message preview
-  - Start/end timestamps
-  - Message count
-  - Token usage and cost
+    - First/last user message preview
+    - Start/end timestamps
+    - Message count
+    - Token usage and cost
 - [ ] Search/filter conversations
 - [ ] Load conversation into current view
 - [ ] Delete individual conversations
@@ -141,12 +141,12 @@ ConversationHistoryModal.tsx
 - [ ] Collapsible tool execution card
 - [ ] Tool name with icon (wrench icon)
 - [ ] Tool-specific formatting:
-  - **Bash**: Command with syntax highlighting
-  - **Read**: File path with icon
-  - **Write/Edit**: File path with diff preview
-  - **Glob/Grep**: Search pattern display
-  - **TodoWrite**: Formatted todo list
-  - **WebSearch/WebFetch**: URL display
+    - **Bash**: Command with syntax highlighting
+    - **Read**: File path with icon
+    - **Write/Edit**: File path with diff preview
+    - **Glob/Grep**: Search pattern display
+    - **TodoWrite**: Formatted todo list
+    - **WebSearch/WebFetch**: URL display
 - [ ] Input parameters (expandable for long content)
 - [ ] Execution status indicator (pending, running, complete, error)
 - [ ] Duration timer while executing
@@ -236,9 +236,9 @@ DiffViewer.tsx
 - [ ] Input parameters preview
 - [ ] Decision reason (if provided by Claude)
 - [ ] Action buttons:
-  - Approve (this time)
-  - Always Allow (add to permissions)
-  - Deny
+    - Approve (this time)
+    - Always Allow (add to permissions)
+    - Deny
 - [ ] Timeout indicator (optional)
 - [ ] Suggestion chips from Claude
 
@@ -261,8 +261,8 @@ PermissionRequest.tsx
 - [ ] Group by tool type
 - [ ] Command patterns for Bash
 - [ ] Add new permission:
-  - Tool type selector
-  - Command pattern input (for Bash)
+    - Tool type selector
+    - Command pattern input (for Bash)
 - [ ] Remove individual permissions
 - [ ] Import/export permissions
 - [ ] Scope indicators (global vs project)
@@ -327,17 +327,17 @@ MCPServersModal.tsx
 - [ ] Server name input
 - [ ] Server type selection (stdio, http, sse)
 - [ ] Type-specific configuration:
-  - **stdio**: Command, arguments, environment variables
-  - **http/sse**: URL, headers
+    - **stdio**: Command, arguments, environment variables
+    - **http/sse**: URL, headers
 - [ ] Validation before save
 - [ ] Test connection button
 - [ ] Popular servers quick-add:
-  - Context7
-  - Sequential Thinking
-  - Memory
-  - Puppeteer
-  - Fetch
-  - Filesystem
+    - Context7
+    - Sequential Thinking
+    - Memory
+    - Puppeteer
+    - Fetch
+    - Filesystem
 
 **Components**:
 
@@ -437,9 +437,9 @@ ElapsedTimer.tsx
 - [ ] Current model display in input area
 - [ ] Dropdown/modal selector
 - [ ] Available models:
-  - Opus (most capable)
-  - Sonnet (balanced)
-  - Default (user configured)
+    - Opus (most capable)
+    - Sonnet (balanced)
+    - Default (user configured)
 - [ ] Model description/capabilities
 - [ ] Session-scoped override
 - [ ] Configure default (opens terminal)
@@ -481,10 +481,10 @@ ModeToggle.tsx (shared)
 
 - [ ] Toggle switch in input area
 - [ ] Intensity selector modal:
-  - Think (default)
-  - Think Hard
-  - Think Harder
-  - Ultrathink
+    - Think (default)
+    - Think Hard
+    - Think Harder
+    - Ultrathink
 - [ ] Persisted intensity preference
 - [ ] Thinking block display in messages
 - [ ] Collapsible thinking content
@@ -510,12 +510,12 @@ ThinkingBlock.tsx
 
 - [ ] Searchable command list modal
 - [ ] Command categories:
-  - Session: /clear, /compact, /rewind
-  - Configuration: /config, /model, /permissions
-  - Info: /help, /cost, /usage, /status
-  - Auth: /login, /logout
-  - Tools: /mcp, /agents
-  - Development: /bug, /doctor, /init
+    - Session: /clear, /compact, /rewind
+    - Configuration: /config, /model, /permissions
+    - Info: /help, /cost, /usage, /status
+    - Auth: /login, /logout
+    - Tools: /mcp, /agents
+    - Development: /bug, /doctor, /init
 - [ ] Command descriptions
 - [ ] Opens in VSCode terminal
 - [ ] Quick command input field
@@ -540,14 +540,14 @@ SlashCommandsModal.tsx
 - [ ] Prompt template
 - [ ] Edit/delete custom commands
 - [ ] Built-in snippets:
-  - /performance-analysis
-  - /security-review
-  - /implementation-review
-  - /code-explanation
-  - /bug-fix
-  - /refactor
-  - /test-generation
-  - /documentation
+    - /performance-analysis
+    - /security-review
+    - /implementation-review
+    - /code-explanation
+    - /bug-fix
+    - /refactor
+    - /test-generation
+    - /documentation
 - [ ] Insert into message input
 
 **Components**:
@@ -729,10 +729,10 @@ SettingsModal.tsx
 
 ```css
 :root {
-  --background: var(--vscode-editor-background);
-  --foreground: var(--vscode-editor-foreground);
-  --primary: var(--vscode-button-background);
-  /* ... more mappings */
+    --background: var(--vscode-editor-background);
+    --foreground: var(--vscode-editor-foreground);
+    --primary: var(--vscode-button-background);
+    /* ... more mappings */
 }
 ```
 

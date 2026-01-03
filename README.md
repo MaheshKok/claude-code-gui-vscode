@@ -53,10 +53,10 @@ Before installing Claude Code GUI, ensure you have:
 
 - **VS Code**: Version 1.94.0 or higher
 - **Claude Code CLI**: Installed and authenticated
-  ```bash
-  npm install -g @anthropic-ai/claude-code
-  claude auth login
-  ```
+    ```bash
+    npm install -g @anthropic-ai/claude-code
+    claude auth login
+    ```
 - **Node.js**: Version 22.21.1
 
 ## Installation

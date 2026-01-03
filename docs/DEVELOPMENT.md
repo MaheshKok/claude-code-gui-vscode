@@ -220,13 +220,13 @@ export * from "./MyComponent";
 import { create } from "zustand";
 
 interface MyState {
-  value: string;
-  setValue: (value: string) => void;
+    value: string;
+    setValue: (value: string) => void;
 }
 
 export const useMyStore = create<MyState>((set) => ({
-  value: "",
-  setValue: (value) => set({ value }),
+    value: "",
+    setValue: (value) => set({ value }),
 }));
 ```
 
@@ -246,16 +246,16 @@ export { useMyStore } from "./myStore";
 import { useState, useEffect } from "react";
 
 export function useMyHook(initialValue: string) {
-  const [value, setValue] = useState(initialValue);
+    const [value, setValue] = useState(initialValue);
 
-  useEffect(() => {
-    // Setup logic
-    return () => {
-      // Cleanup logic
-    };
-  }, [initialValue]);
+    useEffect(() => {
+        // Setup logic
+        return () => {
+            // Cleanup logic
+        };
+    }, [initialValue]);
 
-  return { value, setValue };
+    return { value, setValue };
 }
 ```
 
@@ -272,27 +272,24 @@ export { useMyHook } from "./useMyHook";
 
 ```json
 {
-  "contributes": {
-    "commands": [
-      {
-        "command": "claude-flow-chat.myCommand",
-        "title": "My Command",
-        "category": "Claude Flow"
-      }
-    ]
-  }
+    "contributes": {
+        "commands": [
+            {
+                "command": "claude-flow-chat.myCommand",
+                "title": "My Command",
+                "category": "Claude Flow"
+            }
+        ]
+    }
 }
 ```
 
 2. Register the command in extension.ts:
 
 ```typescript
-const myCommand = vscode.commands.registerCommand(
-  "claude-flow-chat.myCommand",
-  () => {
+const myCommand = vscode.commands.registerCommand("claude-flow-chat.myCommand", () => {
     // Command implementation
-  },
-);
+});
 context.subscriptions.push(myCommand);
 ```
 
@@ -305,15 +302,15 @@ context.subscriptions.push(myCommand);
 import * as vscode from "vscode";
 
 export class MyService implements vscode.Disposable {
-  constructor(private readonly context: vscode.ExtensionContext) {}
+    constructor(private readonly context: vscode.ExtensionContext) {}
 
-  public doSomething(): void {
-    // Service logic
-  }
+    public doSomething(): void {
+        // Service logic
+    }
 
-  public dispose(): void {
-    // Cleanup
-  }
+    public dispose(): void {
+        // Cleanup
+    }
 }
 ```
 
@@ -370,14 +367,14 @@ describe('MyComponent', () => {
 import { useMyStore } from "@/webview/stores/myStore";
 
 describe("myStore", () => {
-  beforeEach(() => {
-    useMyStore.getState().setValue("");
-  });
+    beforeEach(() => {
+        useMyStore.getState().setValue("");
+    });
 
-  it("updates value", () => {
-    useMyStore.getState().setValue("test");
-    expect(useMyStore.getState().value).toBe("test");
-  });
+    it("updates value", () => {
+        useMyStore.getState().setValue("test");
+        expect(useMyStore.getState().value).toBe("test");
+    });
 });
 ```
 
@@ -388,9 +385,9 @@ describe("myStore", () => {
 import { myUtilFunction } from "@/webview/utils/myUtil";
 
 describe("myUtilFunction", () => {
-  it("returns expected result", () => {
-    expect(myUtilFunction("input")).toBe("expectedOutput");
-  });
+    it("returns expected result", () => {
+        expect(myUtilFunction("input")).toBe("expectedOutput");
+    });
 });
 ```
 

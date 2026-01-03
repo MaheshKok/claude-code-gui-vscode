@@ -240,81 +240,81 @@ webview/
 ```typescript
 // stores/useChatStore.ts
 interface ChatState {
-  // Session
-  sessionId: string | null;
-  isProcessing: boolean;
+    // Session
+    sessionId: string | null;
+    isProcessing: boolean;
 
-  // Messages
-  messages: Message[];
-  pendingToolExecutions: Map<string, ToolExecution>;
+    // Messages
+    messages: Message[];
+    pendingToolExecutions: Map<string, ToolExecution>;
 
-  // Tokens
-  currentTokens: TokenCount;
-  totalTokens: TokenCount;
-  totalCost: number;
+    // Tokens
+    currentTokens: TokenCount;
+    totalTokens: TokenCount;
+    totalCost: number;
 
-  // Actions
-  addUserMessage: (content: string, attachments?: Attachment[]) => void;
-  appendAssistantContent: (content: string) => void;
-  addToolExecution: (tool: ToolUse) => void;
-  addToolResult: (result: ToolResult) => void;
-  setSession: (sessionId: string) => void;
-  clearMessages: () => void;
-  loadConversation: (messages: Message[]) => void;
+    // Actions
+    addUserMessage: (content: string, attachments?: Attachment[]) => void;
+    appendAssistantContent: (content: string) => void;
+    addToolExecution: (tool: ToolUse) => void;
+    addToolResult: (result: ToolResult) => void;
+    setSession: (sessionId: string) => void;
+    clearMessages: () => void;
+    loadConversation: (messages: Message[]) => void;
 }
 
 // stores/useSettingsStore.ts
 interface SettingsState {
-  // WSL
-  wslEnabled: boolean;
-  wslDistro: string;
-  wslNodePath: string;
-  wslClaudePath: string;
+    // WSL
+    wslEnabled: boolean;
+    wslDistro: string;
+    wslNodePath: string;
+    wslClaudePath: string;
 
-  // Modes
-  selectedModel: "opus" | "sonnet" | "default";
-  planModeEnabled: boolean;
-  thinkingModeEnabled: boolean;
-  thinkingIntensity: ThinkingIntensity;
+    // Modes
+    selectedModel: "opus" | "sonnet" | "default";
+    planModeEnabled: boolean;
+    thinkingModeEnabled: boolean;
+    thinkingIntensity: ThinkingIntensity;
 
-  // Permissions
-  yoloMode: boolean;
-  allowedPermissions: Permission[];
+    // Permissions
+    yoloMode: boolean;
+    allowedPermissions: Permission[];
 
-  // Actions
-  updateSettings: (partial: Partial<SettingsState>) => void;
-  addPermission: (permission: Permission) => void;
-  removePermission: (toolName: string, command?: string) => void;
+    // Actions
+    updateSettings: (partial: Partial<SettingsState>) => void;
+    addPermission: (permission: Permission) => void;
+    removePermission: (toolName: string, command?: string) => void;
 }
 
 // stores/useUIStore.ts
 interface UIState {
-  // Modals
-  activeModal: ModalType | null;
+    // Modals
+    activeModal: ModalType | null;
 
-  // Input
-  draftMessage: string;
-  attachments: Attachment[];
+    // Input
+    draftMessage: string;
+    attachments: Attachment[];
 
-  // Status
-  statusText: string;
-  isWslAlertDismissed: boolean;
+    // Status
+    statusText: string;
+    isWslAlertDismissed: boolean;
 
-  // Actions
-  openModal: (modal: ModalType) => void;
-  closeModal: () => void;
-  setDraftMessage: (text: string) => void;
-  addAttachment: (attachment: Attachment) => void;
+    // Actions
+    openModal: (modal: ModalType) => void;
+    closeModal: () => void;
+    setDraftMessage: (text: string) => void;
+    addAttachment: (attachment: Attachment) => void;
 }
 
 // stores/usePermissionStore.ts
 interface PermissionState {
-  pendingRequests: PermissionRequest[];
+    pendingRequests: PermissionRequest[];
 
-  // Actions
-  addRequest: (request: PermissionRequest) => void;
-  resolveRequest: (id: string, approved: boolean, alwaysAllow: boolean) => void;
-  clearPending: () => void;
+    // Actions
+    addRequest: (request: PermissionRequest) => void;
+    resolveRequest: (id: string, approved: boolean, alwaysAllow: boolean) => void;
+    clearPending: () => void;
 }
 ```
 

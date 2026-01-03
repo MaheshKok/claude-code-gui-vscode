@@ -12,11 +12,11 @@
 // ============================================================================
 
 export {
-  useVSCode,
-  isInVSCode,
-  getVSCode,
-  postMessageToExtension,
-  type UseVSCodeReturn,
+    useVSCode,
+    isInVSCode,
+    getVSCode,
+    postMessageToExtension,
+    type UseVSCodeReturn,
 } from "./useVSCode";
 
 // ============================================================================
@@ -24,12 +24,12 @@ export {
 // ============================================================================
 
 export {
-  useMessages,
-  createMessageHandlers,
-  createStreamingHandler,
-  createBatchedHandler,
-  type UseMessagesOptions,
-  type UseMessagesReturn,
+    useMessages,
+    createMessageHandlers,
+    createStreamingHandler,
+    createBatchedHandler,
+    type UseMessagesOptions,
+    type UseMessagesReturn,
 } from "./useMessages";
 
 // ============================================================================
@@ -37,11 +37,11 @@ export {
 // ============================================================================
 
 export {
-  useAutoScroll,
-  scrollElementToBottom,
-  isElementAtBottom,
-  type UseAutoScrollOptions,
-  type UseAutoScrollReturn,
+    useAutoScroll,
+    scrollElementToBottom,
+    isElementAtBottom,
+    type UseAutoScrollOptions,
+    type UseAutoScrollReturn,
 } from "./useAutoScroll";
 
 // ============================================================================
@@ -49,11 +49,11 @@ export {
 // ============================================================================
 
 export {
-  useAutoResize,
-  calculateTextareaHeight,
-  createMeasureElement,
-  type UseAutoResizeOptions,
-  type UseAutoResizeReturn,
+    useAutoResize,
+    calculateTextareaHeight,
+    createMeasureElement,
+    type UseAutoResizeOptions,
+    type UseAutoResizeReturn,
 } from "./useAutoResize";
 
 // ============================================================================
@@ -61,14 +61,14 @@ export {
 // ============================================================================
 
 export {
-  useKeyboard,
-  useChatKeyboard,
-  formatShortcut,
-  type KeyModifiers,
-  type KeyboardShortcut,
-  type UseKeyboardOptions,
-  type UseKeyboardReturn,
-  type UseChatKeyboardOptions,
+    useKeyboard,
+    useChatKeyboard,
+    formatShortcut,
+    type KeyModifiers,
+    type KeyboardShortcut,
+    type UseKeyboardOptions,
+    type UseKeyboardReturn,
+    type UseChatKeyboardOptions,
 } from "./useKeyboard";
 
 // ============================================================================
@@ -76,14 +76,14 @@ export {
 // ============================================================================
 
 export {
-  useClipboard,
-  copyToClipboard,
-  isClipboardApiAvailable,
-  type ClipboardItemType,
-  type ClipboardContent,
-  type PasteEventData,
-  type UseClipboardOptions,
-  type UseClipboardReturn,
+    useClipboard,
+    copyToClipboard,
+    isClipboardApiAvailable,
+    type ClipboardItemType,
+    type ClipboardContent,
+    type PasteEventData,
+    type UseClipboardOptions,
+    type UseClipboardReturn,
 } from "./useClipboard";
 
 // ============================================================================
@@ -91,13 +91,13 @@ export {
 // ============================================================================
 
 export {
-  useFilePicker,
-  getFileIcon,
-  formatFileSize,
-  type FilePickerItem,
-  type FilePickerCategory,
-  type UseFilePickerOptions,
-  type UseFilePickerReturn,
+    useFilePicker,
+    getFileIcon,
+    formatFileSize,
+    type FilePickerItem,
+    type FilePickerCategory,
+    type UseFilePickerOptions,
+    type UseFilePickerReturn,
 } from "./useFilePicker";
 
 // ============================================================================
@@ -105,14 +105,14 @@ export {
 // ============================================================================
 
 export {
-  usePermissions,
-  getDecisionDisplayName,
-  getDecisionStyleClass,
-  formatPermissionRequest,
-  matchesPattern,
-  type ToolPermissionConfig,
-  type UsePermissionsOptions,
-  type UsePermissionsReturn,
+    usePermissions,
+    getDecisionDisplayName,
+    getDecisionStyleClass,
+    formatPermissionRequest,
+    matchesPattern,
+    type ToolPermissionConfig,
+    type UsePermissionsOptions,
+    type UsePermissionsReturn,
 } from "./usePermissions";
 
 // ============================================================================
@@ -120,12 +120,12 @@ export {
 // ============================================================================
 
 export {
-  useTheme,
-  getAllVSCodeCssVariables,
-  createCssVariables,
-  type ThemeMode,
-  type ThemeKind,
-  type ThemeColors,
-  type UseThemeOptions,
-  type UseThemeReturn,
+    useTheme,
+    getAllVSCodeCssVariables,
+    createCssVariables,
+    type ThemeMode,
+    type ThemeKind,
+    type ThemeColors,
+    type UseThemeOptions,
+    type UseThemeReturn,
 } from "./useTheme";

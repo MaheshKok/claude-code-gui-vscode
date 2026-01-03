@@ -50,12 +50,12 @@ src/webview/hooks/
 
 ```typescript
 interface UseVSCodeReturn {
-  isVSCode: boolean;
-  api: VSCodeApi | null;
-  postMessage(message: WebviewToExtensionMessage): void;
-  getState<T>(): T | undefined;
-  setState<T>(state: T): void;
-  updateState<T>(updates: Partial<T>): void;
+    isVSCode: boolean;
+    api: VSCodeApi | null;
+    postMessage(message: WebviewToExtensionMessage): void;
+    getState<T>(): T | undefined;
+    setState<T>(state: T): void;
+    updateState<T>(updates: Partial<T>): void;
 }
 ```
 
@@ -95,10 +95,10 @@ function MyComponent() {
 
 ```typescript
 interface UseMessagesOptions {
-  enabled?: boolean;
-  handlers?: ExtensionMessageHandlerMap;
-  onMessage?: (msg: ExtensionToWebviewMessage) => void;
-  onUnhandledMessage?: (msg: ExtensionToWebviewMessage) => void;
+    enabled?: boolean;
+    handlers?: ExtensionMessageHandlerMap;
+    onMessage?: (msg: ExtensionToWebviewMessage) => void;
+    onUnhandledMessage?: (msg: ExtensionToWebviewMessage) => void;
 }
 ```
 
@@ -106,9 +106,9 @@ interface UseMessagesOptions {
 
 ```typescript
 interface UseMessagesReturn {
-  addHandler<T>(type: string, handler: (msg: T) => void): () => void;
-  removeHandler(type: string): void;
-  clearHandlers(): void;
+    addHandler<T>(type: string, handler: (msg: T) => void): () => void;
+    removeHandler(type: string): void;
+    clearHandlers(): void;
 }
 ```
 
@@ -136,8 +136,8 @@ function ChatContainer() {
 
 ```typescript
 const { handler, getText, reset } = createStreamingHandler(
-  (chunk, accumulated) => updateUI(accumulated),
-  (finalText) => onComplete(finalText),
+    (chunk, accumulated) => updateUI(accumulated),
+    (finalText) => onComplete(finalText),
 );
 ```
 
@@ -153,14 +153,14 @@ const { handler, getText, reset } = createStreamingHandler(
 
 ```typescript
 interface UseThemeReturn {
-  theme: "light" | "dark";
-  themeKind: ThemeKind;
-  isDark: boolean;
-  isHighContrast: boolean;
-  colors: ThemeColors;
-  getCssVariable(name: string, fallback?: string): string;
-  themeClass(lightClass: string, darkClass: string): string;
-  toggleTheme(): void; // For testing
+    theme: "light" | "dark";
+    themeKind: ThemeKind;
+    isDark: boolean;
+    isHighContrast: boolean;
+    colors: ThemeColors;
+    getCssVariable(name: string, fallback?: string): string;
+    themeClass(lightClass: string, darkClass: string): string;
+    toggleTheme(): void; // For testing
 }
 ```
 
@@ -168,15 +168,15 @@ interface UseThemeReturn {
 
 ```typescript
 colors = {
-  background: "--vscode-editor-background",
-  foreground: "--vscode-editor-foreground",
-  accent: "--vscode-focusBorder",
-  border: "--vscode-widget-border",
-  inputBackground: "--vscode-input-background",
-  buttonBackground: "--vscode-button-background",
-  error: "--vscode-errorForeground",
-  warning: "--vscode-editorWarning-foreground",
-  success: "--vscode-terminal-ansiGreen",
+    background: "--vscode-editor-background",
+    foreground: "--vscode-editor-foreground",
+    accent: "--vscode-focusBorder",
+    border: "--vscode-widget-border",
+    inputBackground: "--vscode-input-background",
+    buttonBackground: "--vscode-button-background",
+    error: "--vscode-errorForeground",
+    warning: "--vscode-editorWarning-foreground",
+    success: "--vscode-terminal-ansiGreen",
 };
 ```
 
@@ -209,19 +209,19 @@ function ThemedComponent() {
 
 ```typescript
 interface UsePermissionsReturn {
-  currentRequest: PermissionRequest | null;
-  pendingRequests: PermissionRequest[];
-  respondToPermission(requestId: string, decision: PermissionDecision): void;
-  approveCurrentRequest(): void;
-  denyCurrentRequest(): void;
-  approveWithSuggestion(suggestion: PermissionSuggestion): void;
-  isToolAllowed(toolName: string): boolean;
-  isToolAutoApproved(toolName: string): boolean;
-  isToolDenied(toolName: string): boolean;
-  getPermissionHistory(): PermissionRequest[];
-  clearPermissionHistory(): void;
-  hasPendingPermissions: boolean;
-  pendingCount: number;
+    currentRequest: PermissionRequest | null;
+    pendingRequests: PermissionRequest[];
+    respondToPermission(requestId: string, decision: PermissionDecision): void;
+    approveCurrentRequest(): void;
+    denyCurrentRequest(): void;
+    approveWithSuggestion(suggestion: PermissionSuggestion): void;
+    isToolAllowed(toolName: string): boolean;
+    isToolAutoApproved(toolName: string): boolean;
+    isToolDenied(toolName: string): boolean;
+    getPermissionHistory(): PermissionRequest[];
+    clearPermissionHistory(): void;
+    hasPendingPermissions: boolean;
+    pendingCount: number;
 }
 ```
 
@@ -261,13 +261,13 @@ function PermissionDialog() {
 
 ```typescript
 interface UseClipboardReturn {
-  copyText(text: string): Promise<boolean>;
-  copyCode(code: string, language?: string): Promise<boolean>;
-  isCopying: boolean;
-  hasCopied: boolean;
-  handlePaste(event: ClipboardEvent): Promise<PasteEventData | null>;
-  readClipboard(): Promise<ClipboardContent | null>;
-  hasClipboardType(type: string): Promise<boolean>;
+    copyText(text: string): Promise<boolean>;
+    copyCode(code: string, language?: string): Promise<boolean>;
+    isCopying: boolean;
+    hasCopied: boolean;
+    handlePaste(event: ClipboardEvent): Promise<PasteEventData | null>;
+    readClipboard(): Promise<ClipboardContent | null>;
+    hasClipboardType(type: string): Promise<boolean>;
 }
 ```
 
@@ -308,26 +308,26 @@ function CodeBlock({ code, language }) {
 
 ```typescript
 interface KeyboardShortcut {
-  key: string;
-  modifiers?: {
-    ctrl?: boolean;
-    alt?: boolean;
-    shift?: boolean;
-    meta?: boolean;
-  };
-  handler: (event: KeyboardEvent) => void;
-  preventDefault?: boolean;
-  stopPropagation?: boolean;
-  description?: string;
-  enabled?: boolean;
+    key: string;
+    modifiers?: {
+        ctrl?: boolean;
+        alt?: boolean;
+        shift?: boolean;
+        meta?: boolean;
+    };
+    handler: (event: KeyboardEvent) => void;
+    preventDefault?: boolean;
+    stopPropagation?: boolean;
+    description?: string;
+    enabled?: boolean;
 }
 
 interface UseKeyboardReturn {
-  addShortcut(shortcut: KeyboardShortcut): () => void;
-  removeShortcut(key: string, modifiers?: KeyModifiers): void;
-  enableShortcut(key: string, modifiers?: KeyModifiers): void;
-  disableShortcut(key: string, modifiers?: KeyModifiers): void;
-  getShortcuts(): KeyboardShortcut[];
+    addShortcut(shortcut: KeyboardShortcut): () => void;
+    removeShortcut(key: string, modifiers?: KeyModifiers): void;
+    enableShortcut(key: string, modifiers?: KeyModifiers): void;
+    disableShortcut(key: string, modifiers?: KeyModifiers): void;
+    getShortcuts(): KeyboardShortcut[];
 }
 ```
 
@@ -335,13 +335,13 @@ interface UseKeyboardReturn {
 
 ```typescript
 function useChatKeyboard(options: UseChatKeyboardOptions) {
-  // Supports:
-  // - Enter: send message
-  // - Shift+Enter / Ctrl+Enter: new line
-  // - Escape: clear input
-  // - @: trigger file picker
-  // - /: trigger slash commands
-  // - Arrow keys: navigate history
+    // Supports:
+    // - Enter: send message
+    // - Shift+Enter / Ctrl+Enter: new line
+    // - Escape: clear input
+    // - @: trigger file picker
+    // - /: trigger slash commands
+    // - Arrow keys: navigate history
 }
 ```
 
@@ -373,14 +373,14 @@ function MessageInput() {
 
 ```typescript
 interface UseAutoScrollReturn<T extends HTMLElement> {
-  containerRef: RefObject<T>;
-  isNearBottom: boolean;
-  isAutoScrollEnabled: boolean;
-  scrollToBottom(options?: ScrollOptions): void;
-  enableAutoScroll(): void;
-  disableAutoScroll(): void;
-  toggleAutoScroll(): void;
-  checkIsAtBottom(): boolean;
+    containerRef: RefObject<T>;
+    isNearBottom: boolean;
+    isAutoScrollEnabled: boolean;
+    scrollToBottom(options?: ScrollOptions): void;
+    enableAutoScroll(): void;
+    disableAutoScroll(): void;
+    toggleAutoScroll(): void;
+    checkIsAtBottom(): boolean;
 }
 ```
 
@@ -423,14 +423,14 @@ function ChatContainer({ messages }) {
 
 ```typescript
 interface UseAutoResizeReturn {
-  textareaRef: RefObject<HTMLTextAreaElement>;
-  value: string;
-  setValue(value: string): void;
-  handleChange(event: ChangeEvent<HTMLTextAreaElement>): void;
-  reset(): void;
-  resize(): void;
-  height: number;
-  isAtMaxHeight: boolean;
+    textareaRef: RefObject<HTMLTextAreaElement>;
+    value: string;
+    setValue(value: string): void;
+    handleChange(event: ChangeEvent<HTMLTextAreaElement>): void;
+    reset(): void;
+    resize(): void;
+    height: number;
+    isAtMaxHeight: boolean;
 }
 ```
 
@@ -438,10 +438,10 @@ interface UseAutoResizeReturn {
 
 ```typescript
 interface UseAutoResizeOptions {
-  maxHeight?: number; // Default: 300
-  minRows?: number; // Default: 1
-  initialValue?: string;
-  onChange?: (value: string) => void;
+    maxHeight?: number; // Default: 300
+    minRows?: number; // Default: 1
+    initialValue?: string;
+    onChange?: (value: string) => void;
 }
 ```
 
@@ -484,28 +484,28 @@ function MessageInput({ onSend }) {
 
 ```typescript
 interface UseFilePickerReturn {
-  isOpen: boolean;
-  files: FilePickerItem[];
-  categories: FilePickerCategory[];
-  selectedFiles: FilePickerItem[];
-  highlightedIndex: number;
-  searchQuery: string;
-  filteredFiles: FilePickerItem[];
-  isLoading: boolean;
+    isOpen: boolean;
+    files: FilePickerItem[];
+    categories: FilePickerCategory[];
+    selectedFiles: FilePickerItem[];
+    highlightedIndex: number;
+    searchQuery: string;
+    filteredFiles: FilePickerItem[];
+    isLoading: boolean;
 
-  open(): void;
-  close(): void;
-  toggle(): void;
-  setSearchQuery(query: string): void;
-  selectFile(file: FilePickerItem): void;
-  deselectFile(file: FilePickerItem): void;
-  toggleFileSelection(file: FilePickerItem): void;
-  clearSelection(): void;
-  highlightPrevious(): void;
-  highlightNext(): void;
-  selectHighlighted(): void;
-  confirmSelection(): void;
-  requestFiles(): void;
+    open(): void;
+    close(): void;
+    toggle(): void;
+    setSearchQuery(query: string): void;
+    selectFile(file: FilePickerItem): void;
+    deselectFile(file: FilePickerItem): void;
+    toggleFileSelection(file: FilePickerItem): void;
+    clearSelection(): void;
+    highlightPrevious(): void;
+    highlightNext(): void;
+    selectHighlighted(): void;
+    confirmSelection(): void;
+    requestFiles(): void;
 }
 ```
 
@@ -513,10 +513,10 @@ interface UseFilePickerReturn {
 
 ```typescript
 interface UseFilePickerOptions {
-  maxSelection?: number;
-  allowedExtensions?: string[];
-  excludePatterns?: string[]; // Default: ['node_modules', '.git', 'dist', 'build']
-  onSelect?: (files: FilePickerItem[]) => void;
+    maxSelection?: number;
+    allowedExtensions?: string[];
+    excludePatterns?: string[]; // Default: ['node_modules', '.git', 'dist', 'build']
+    onSelect?: (files: FilePickerItem[]) => void;
 }
 ```
 
@@ -578,7 +578,7 @@ function MessageInput() {
 
 ```typescript
 const handleSend = useCallback(() => {
-  postMessage({ type: "sendMessage", message: value });
+    postMessage({ type: "sendMessage", message: value });
 }, [postMessage, value]);
 ```
 
@@ -596,8 +596,8 @@ const { messages, isProcessing, tokens } = useChatStore();
 
 ```typescript
 useEffect(() => {
-  const unsubscribe = addHandler("output", handleOutput);
-  return unsubscribe;
+    const unsubscribe = addHandler("output", handleOutput);
+    return unsubscribe;
 }, []);
 ```
 
@@ -609,8 +609,8 @@ const handlerRef = useRef(handler);
 handlerRef.current = handler; // Always up-to-date
 
 useEffect(() => {
-  const listener = (e) => handlerRef.current(e);
-  window.addEventListener("message", listener);
-  return () => window.removeEventListener("message", listener);
+    const listener = (e) => handlerRef.current(e);
+    window.addEventListener("message", listener);
+    return () => window.removeEventListener("message", listener);
 }, []); // No deps = no re-subscription
 ```

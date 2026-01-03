@@ -51,10 +51,10 @@ getMarkdownTextLength(markdown: string): number
 
 ```typescript
 const html = parseMarkdown("# Title\nSome **bold** text with `code`", {
-  escapeHtml: true,
-  renderCodeBlocks: true,
-  renderLinks: true,
-  linkTarget: "_blank",
+    escapeHtml: true,
+    renderCodeBlocks: true,
+    renderLinks: true,
+    linkTarget: "_blank",
 });
 ```
 
@@ -85,29 +85,29 @@ applyDiff(oldContent: string, diff: DiffResult): string
 
 ```typescript
 interface DiffResult {
-  lines: DiffLine[];
-  additions: number;
-  deletions: number;
-  unchanged: number;
-  isIdentical: boolean;
+    lines: DiffLine[];
+    additions: number;
+    deletions: number;
+    unchanged: number;
+    isIdentical: boolean;
 }
 
 interface DiffLine {
-  type: "equal" | "insert" | "delete";
-  content: string;
-  oldLineNumber?: number;
-  newLineNumber?: number;
+    type: "equal" | "insert" | "delete";
+    content: string;
+    oldLineNumber?: number;
+    newLineNumber?: number;
 }
 
 interface DiffOptions {
-  ignoreWhitespace?: boolean;
-  contextLines?: number;
+    ignoreWhitespace?: boolean;
+    contextLines?: number;
 }
 
 interface DiffHtmlOptions {
-  showLineNumbers?: boolean;
-  sideBySide?: boolean;
-  highlightSyntax?: boolean;
+    showLineNumbers?: boolean;
+    sideBySide?: boolean;
+    highlightSyntax?: boolean;
 }
 ```
 
@@ -388,24 +388,24 @@ getToolIcon(toolName: string): string
 
 ```typescript
 TOKEN_PRICING = {
-  "claude-sonnet-4-5-20250929": {
-    input: 3.0, // per million tokens
-    output: 15.0,
-    cacheRead: 0.3,
-    cacheWrite: 3.75,
-  },
-  "claude-opus-4-5-20251101": {
-    input: 15.0,
-    output: 75.0,
-    cacheRead: 1.5,
-    cacheWrite: 18.75,
-  },
-  "claude-haiku-4-5-20251001": {
-    input: 1.0,
-    output: 5.0,
-    cacheRead: 0.1,
-    cacheWrite: 1.25,
-  },
+    "claude-sonnet-4-5-20250929": {
+        input: 3.0, // per million tokens
+        output: 15.0,
+        cacheRead: 0.3,
+        cacheWrite: 3.75,
+    },
+    "claude-opus-4-5-20251101": {
+        input: 15.0,
+        output: 75.0,
+        cacheRead: 1.5,
+        cacheWrite: 18.75,
+    },
+    "claude-haiku-4-5-20251001": {
+        input: 1.0,
+        output: 5.0,
+        cacheRead: 0.1,
+        cacheWrite: 1.25,
+    },
 };
 
 CONTEXT_WINDOW_SIZES: Record<string, number>;
@@ -429,16 +429,16 @@ DEFAULT_SHORTCUTS;
 BREAKPOINTS = { xs: 480, sm: 640, md: 768, lg: 1024, xl: 1280 };
 
 SIDEBAR_CONFIG = {
-  minWidth: 200,
-  maxWidth: 500,
-  defaultWidth: 280,
-  collapsedWidth: 48,
+    minWidth: 200,
+    maxWidth: 500,
+    defaultWidth: 280,
+    collapsedWidth: 48,
 };
 
 INPUT_CONFIG = {
-  minHeight: 40,
-  maxHeight: 300,
-  defaultHeight: 80,
+    minHeight: 40,
+    maxHeight: 300,
+    defaultHeight: 80,
 };
 
 ANIMATION_DURATIONS = { fast: 150, normal: 300, slow: 500 };
@@ -449,18 +449,18 @@ DEBOUNCE_DELAYS = { input: 150, search: 300, resize: 100, autosave: 1000 };
 
 ```typescript
 STATUS_COLORS = {
-  connected: "#22c55e",
-  disconnected: "#ef4444",
-  connecting: "#eab308",
-  error: "#ef4444",
+    connected: "#22c55e",
+    disconnected: "#ef4444",
+    connecting: "#eab308",
+    error: "#ef4444",
 };
 
 TOOL_STATUS_COLORS = {
-  pending: "#eab308",
-  executing: "#3b82f6",
-  completed: "#22c55e",
-  failed: "#ef4444",
-  denied: "#ef4444",
+    pending: "#eab308",
+    executing: "#3b82f6",
+    completed: "#22c55e",
+    failed: "#ef4444",
+    denied: "#ef4444",
 };
 ```
 
@@ -468,10 +468,10 @@ TOOL_STATUS_COLORS = {
 
 ````typescript
 PATTERNS = {
-  filePath: /^[\/\\]?(?:[^\/\\:*?"<>|\n]+[\/\\])*[^\/\\:*?"<>|\n]*$/,
-  glob: /^[\w\-.*?\/\[\]{}]+$/,
-  url: /^https?:\/\/.+/,
-  codeBlock: /```(\w+)?\n([\s\S]*?)```/g,
+    filePath: /^[\/\\]?(?:[^\/\\:*?"<>|\n]+[\/\\])*[^\/\\:*?"<>|\n]*$/,
+    glob: /^[\w\-.*?\/\[\]{}]+$/,
+    url: /^https?:\/\/.+/,
+    codeBlock: /```(\w+)?\n([\s\S]*?)```/g,
 };
 ````
 

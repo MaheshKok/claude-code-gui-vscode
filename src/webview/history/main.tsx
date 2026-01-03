@@ -9,12 +9,12 @@ import "../styles/globals.css";
 // Initialize the React app for history view
 const container = document.getElementById("root");
 if (container) {
-  const root = createRoot(container);
-  root.render(
-    <React.StrictMode>
-      <HistoryView />
-    </React.StrictMode>,
-  );
+    const root = createRoot(container);
+    root.render(
+        <React.StrictMode>
+            <HistoryView />
+        </React.StrictMode>,
+    );
 } else {
-  console.error("Root element not found");
+    console.error("Root element not found");
 }

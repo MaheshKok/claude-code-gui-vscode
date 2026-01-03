@@ -62,13 +62,13 @@ async sendMessage(
 
 ```typescript
 const userMessage = {
-  type: "user",
-  session_id: this._sessionId || "",
-  message: {
-    role: "user",
-    content: [{ type: "text", text: message }],
-  },
-  parent_tool_use_id: null,
+    type: "user",
+    session_id: this._sessionId || "",
+    message: {
+        role: "user",
+        content: [{ type: "text", text: message }],
+    },
+    parent_tool_use_id: null,
 };
 ```
 
@@ -131,32 +131,32 @@ wsl -d Ubuntu bash -ic "claude --output-format stream-json ..."
 
 ```typescript
 interface ConversationMessage {
-  type: string;
-  data?: any;
-  timestamp?: string;
-  [key: string]: unknown;
+    type: string;
+    data?: any;
+    timestamp?: string;
+    [key: string]: unknown;
 }
 
 interface Conversation {
-  sessionId: string;
-  startTime?: string;
-  endTime: string;
-  messageCount: number;
-  totalCost: number;
-  totalTokens: { input: number; output: number };
-  messages: ConversationMessage[];
-  filename: string;
+    sessionId: string;
+    startTime?: string;
+    endTime: string;
+    messageCount: number;
+    totalCost: number;
+    totalTokens: { input: number; output: number };
+    messages: ConversationMessage[];
+    filename: string;
 }
 
 interface ConversationIndexEntry {
-  filename: string;
-  sessionId: string;
-  startTime: string;
-  endTime: string;
-  messageCount: number;
-  totalCost: number;
-  firstUserMessage: string;
-  lastUserMessage: string;
+    filename: string;
+    sessionId: string;
+    startTime: string;
+    endTime: string;
+    messageCount: number;
+    totalCost: number;
+    firstUserMessage: string;
+    lastUserMessage: string;
 }
 ```
 
@@ -289,14 +289,14 @@ async getPermissions(): Promise<Permissions>
 
 ```typescript
 interface MCPServerConfig {
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-  cwd?: string;
+    command: string;
+    args?: string[];
+    env?: Record<string, string>;
+    cwd?: string;
 }
 
 interface MCPConfig {
-  mcpServers: Record<string, MCPServerConfig>;
+    mcpServers: Record<string, MCPServerConfig>;
 }
 ```
 
@@ -466,10 +466,10 @@ async _deleteConversation(filename: string): Promise<void> {
 
 ```typescript
 const intensityPrefixes = {
-  think: "THINK",
-  "think-hard": "THINK HARD",
-  "think-harder": "THINK HARDER",
-  ultrathink: "ULTRATHINK",
+    think: "THINK",
+    "think-hard": "THINK HARD",
+    "think-harder": "THINK HARDER",
+    ultrathink: "ULTRATHINK",
 };
 
 // Message transformation:

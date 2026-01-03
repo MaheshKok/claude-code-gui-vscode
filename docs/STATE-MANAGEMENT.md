@@ -36,35 +36,35 @@ Claude Code GUI uses **Zustand** for state management with 6 specialized stores.
 
 ```typescript
 interface ChatState {
-  messages: ChatMessage[];
-  isProcessing: boolean;
-  currentSessionId: string | null;
-  tokens: {
-    current: TokenUsage;
-    cumulative: CumulativeTokenUsage;
-  };
-  costs: {
-    sessionCostUsd: number;
-    allTimeCostUsd: number;
-    breakdown: CostBreakdown;
-    lastUpdated: number;
-  };
-  requestStartTime: number | null;
-  numTurns: number;
+    messages: ChatMessage[];
+    isProcessing: boolean;
+    currentSessionId: string | null;
+    tokens: {
+        current: TokenUsage;
+        cumulative: CumulativeTokenUsage;
+    };
+    costs: {
+        sessionCostUsd: number;
+        allTimeCostUsd: number;
+        breakdown: CostBreakdown;
+        lastUpdated: number;
+    };
+    requestStartTime: number | null;
+    numTurns: number;
 }
 
 interface TokenUsage {
-  input_tokens: number;
-  output_tokens: number;
-  cache_read_input_tokens: number;
-  cache_creation_input_tokens: number;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read_input_tokens: number;
+    cache_creation_input_tokens: number;
 }
 
 interface CumulativeTokenUsage {
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalCacheReadTokens: number;
-  totalCacheCreationTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCacheReadTokens: number;
+    totalCacheCreationTokens: number;
 }
 ```
 
@@ -127,7 +127,7 @@ hydrateConversation(payload): void
 ```typescript
 // Only persists all-time costs
 partialize: (state) => ({
-  costs: { allTimeCostUsd: state.costs.allTimeCostUsd },
+    costs: { allTimeCostUsd: state.costs.allTimeCostUsd },
 });
 ```
 
@@ -145,55 +145,55 @@ partialize: (state) => ({
 
 ```typescript
 interface SettingsState {
-  // Model & Claude CLI
-  selectedModel: ClaudeModel;
-  claudeExecutable: string;
+    // Model & Claude CLI
+    selectedModel: ClaudeModel;
+    claudeExecutable: string;
 
-  // Thinking/Planning Modes
-  thinkingMode: boolean;
-  thinkingIntensity: ThinkingIntensity; // 'think' | 'think-hard' | 'think-harder' | 'ultrathink'
-  showThinkingProcess: boolean;
-  planMode: boolean;
-  yoloMode: boolean;
+    // Thinking/Planning Modes
+    thinkingMode: boolean;
+    thinkingIntensity: ThinkingIntensity; // 'think' | 'think-hard' | 'think-harder' | 'ultrathink'
+    showThinkingProcess: boolean;
+    planMode: boolean;
+    yoloMode: boolean;
 
-  // WSL Configuration
-  wsl: {
-    enabled: boolean;
-    distro: string;
-    nodePath: string;
-    claudePath: string;
-  };
+    // WSL Configuration
+    wsl: {
+        enabled: boolean;
+        distro: string;
+        nodePath: string;
+        claudePath: string;
+    };
 
-  // UI Preferences
-  fontSize: number;
-  compactMode: boolean;
-  showAvatars: boolean;
-  showTimestamps: boolean;
-  codeBlockTheme:
-    | "auto"
-    | "github-dark"
-    | "github-light"
-    | "monokai"
-    | "dracula"
-    | "one-dark-pro";
+    // UI Preferences
+    fontSize: number;
+    compactMode: boolean;
+    showAvatars: boolean;
+    showTimestamps: boolean;
+    codeBlockTheme:
+        | "auto"
+        | "github-dark"
+        | "github-light"
+        | "monokai"
+        | "dracula"
+        | "one-dark-pro";
 
-  // Context Management
-  includeFileContext: boolean;
-  includeWorkspaceInfo: boolean;
-  maxContextLines: number;
-  maxHistorySize: number;
+    // Context Management
+    includeFileContext: boolean;
+    includeWorkspaceInfo: boolean;
+    maxContextLines: number;
+    maxHistorySize: number;
 
-  // Streaming
-  streamResponses: boolean;
+    // Streaming
+    streamResponses: boolean;
 
-  // Permissions
-  autoApprovePatterns: string[];
+    // Permissions
+    autoApprovePatterns: string[];
 }
 
 type ClaudeModel =
-  | "claude-sonnet-4-5-20250929"
-  | "claude-opus-4-5-20251101"
-  | "claude-haiku-4-5-20251001";
+    | "claude-sonnet-4-5-20250929"
+    | "claude-opus-4-5-20251101"
+    | "claude-haiku-4-5-20251001";
 ```
 
 ### Actions
@@ -248,50 +248,45 @@ selectWSL(state): WSLConfig
 
 ```typescript
 interface UIState {
-  // Modal Management
-  activeModal: ModalType | null;
-  modalProps: Record<string, unknown>;
+    // Modal Management
+    activeModal: ModalType | null;
+    modalProps: Record<string, unknown>;
 
-  // Sidebar
-  sidebarOpen: boolean;
-  sidebarWidth: number; // 200-500px, default 280
+    // Sidebar
+    sidebarOpen: boolean;
+    sidebarWidth: number; // 200-500px, default 280
 
-  // Connection State
-  connectionStatus: ConnectionStatus;
-  connectionError: string | null;
+    // Connection State
+    connectionStatus: ConnectionStatus;
+    connectionError: string | null;
 
-  // Draft & Focus
-  draftMessage: string;
-  inputFocused: boolean;
+    // Draft & Focus
+    draftMessage: string;
+    inputFocused: boolean;
 
-  // Notifications
-  notifications: Notification[];
-  maxVisibleNotifications: number;
+    // Notifications
+    notifications: Notification[];
+    maxVisibleNotifications: number;
 
-  // Display
-  isFullscreen: boolean;
-  breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
+    // Display
+    isFullscreen: boolean;
+    breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 type ModalType =
-  | "settings"
-  | "mcp"
-  | "model"
-  | "permission"
-  | "install"
-  | "login"
-  | "confirm"
-  | "error"
-  | "about"
-  | "export"
-  | "keyboard-shortcuts";
+    | "settings"
+    | "mcp"
+    | "model"
+    | "permission"
+    | "install"
+    | "login"
+    | "confirm"
+    | "error"
+    | "about"
+    | "export"
+    | "keyboard-shortcuts";
 
-type ConnectionStatus =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "error"
-  | "reconnecting";
+type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error" | "reconnecting";
 ```
 
 ### Actions
@@ -342,27 +337,27 @@ setBreakpoint(breakpoint: Breakpoint): void
 
 ```typescript
 interface ConversationState {
-  conversations: ConversationSummary[];
-  currentConversation: Conversation | null;
-  isLoading: boolean;
-  maxConversations: number; // default 100
+    conversations: ConversationSummary[];
+    currentConversation: Conversation | null;
+    isLoading: boolean;
+    maxConversations: number; // default 100
 }
 
 interface ConversationSummary {
-  id: string;
-  title: string;
-  preview: string;
-  createdAt: number;
-  updatedAt: number;
-  messageCount: number;
-  sessionId?: string;
-  tags?: string[];
+    id: string;
+    title: string;
+    preview: string;
+    createdAt: number;
+    updatedAt: number;
+    messageCount: number;
+    sessionId?: string;
+    tags?: string[];
 }
 
 interface Conversation {
-  summary: ConversationSummary;
-  messages: ChatMessage[];
-  thread?: ConversationThread;
+    summary: ConversationSummary;
+    messages: ChatMessage[];
+    thread?: ConversationThread;
 }
 ```
 
@@ -416,30 +411,30 @@ pruneOldConversations(): void  // Keeps maxConversations
 
 ```typescript
 interface PermissionState {
-  pendingPermissions: PermissionRequest[];
-  allowedPermissions: AllowedPermission[];
-  deniedPatterns: string[];
+    pendingPermissions: PermissionRequest[];
+    allowedPermissions: AllowedPermission[];
+    deniedPatterns: string[];
 }
 
 interface AllowedPermission {
-  toolName: string;
-  pattern?: string;
-  scope: "once" | "session" | "always";
-  grantedAt: number;
-  expiresAt?: number; // For session scope (24h)
+    toolName: string;
+    pattern?: string;
+    scope: "once" | "session" | "always";
+    grantedAt: number;
+    expiresAt?: number; // For session scope (24h)
 }
 
 interface PermissionRequest {
-  requestId: string;
-  toolUseId: string;
-  toolName: string;
-  input: ToolInput;
-  description: string;
-  suggestions: PermissionSuggestion[];
-  decisionReason?: string;
-  blockedPath?: string;
-  timestamp: number;
-  status: "pending" | "approved" | "denied" | "expired";
+    requestId: string;
+    toolUseId: string;
+    toolName: string;
+    input: ToolInput;
+    description: string;
+    suggestions: PermissionSuggestion[];
+    decisionReason?: string;
+    blockedPath?: string;
+    timestamp: number;
+    status: "pending" | "approved" | "denied" | "expired";
 }
 ```
 
@@ -448,11 +443,11 @@ interface PermissionRequest {
 ```typescript
 // Glob-style patterns
 const matchesPattern = (path: string, pattern: string): boolean => {
-  // Supports: *, **, ?
-  // Examples:
-  //   "*.ts" → matches any .ts file
-  //   "/src/**/*.ts" → matches any .ts in src tree
-  //   "/src/data/*" → matches files in src/data/
+    // Supports: *, **, ?
+    // Examples:
+    //   "*.ts" → matches any .ts file
+    //   "/src/**/*.ts" → matches any .ts in src tree
+    //   "/src/data/*" → matches files in src/data/
 };
 ```
 
@@ -488,10 +483,8 @@ pendingCount: number
 ```typescript
 // Only persists 'always' scoped permissions
 partialize: (state) => ({
-  allowedPermissions: state.allowedPermissions.filter(
-    (p) => p.scope === "always",
-  ),
-  deniedPatterns: state.deniedPatterns,
+    allowedPermissions: state.allowedPermissions.filter((p) => p.scope === "always"),
+    deniedPatterns: state.deniedPatterns,
 });
 ```
 
@@ -509,37 +502,32 @@ partialize: (state) => ({
 
 ```typescript
 interface MCPState {
-  servers: MCPServerState[];
-  selectedServerId: string | null;
+    servers: MCPServerState[];
+    selectedServerId: string | null;
 }
 
 interface MCPServerConfig {
-  id: string;
-  name: string;
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-  cwd?: string;
-  enabled: boolean;
-  description?: string;
-  icon?: string;
+    id: string;
+    name: string;
+    command: string;
+    args?: string[];
+    env?: Record<string, string>;
+    cwd?: string;
+    enabled: boolean;
+    description?: string;
+    icon?: string;
 }
 
 interface MCPServerState {
-  config: MCPServerConfig;
-  status: MCPServerStatus;
-  error?: string;
-  tools: ToolDefinition[];
-  lastConnected?: number;
-  retryCount: number;
+    config: MCPServerConfig;
+    status: MCPServerStatus;
+    error?: string;
+    tools: ToolDefinition[];
+    lastConnected?: number;
+    retryCount: number;
 }
 
-type MCPServerStatus =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "error"
-  | "disabled";
+type MCPServerStatus = "disconnected" | "connecting" | "connected" | "error" | "disabled";
 ```
 
 ### Actions
@@ -575,12 +563,12 @@ exportServers(): MCPServerConfig[]
 ```typescript
 // Only persists config, resets status/tools on load
 partialize: (state) => ({
-  servers: state.servers.map((server) => ({
-    config: server.config,
-    status: "disconnected",
-    tools: [],
-    retryCount: 0,
-  })),
+    servers: state.servers.map((server) => ({
+        config: server.config,
+        status: "disconnected",
+        tools: [],
+        retryCount: 0,
+    })),
 });
 ```
 
@@ -601,8 +589,8 @@ const thinkingSettings = useSettingsStore(selectThinkingSettings);
 
 // Multiple selections
 const { messages, isProcessing } = useChatStore((state) => ({
-  messages: state.messages,
-  isProcessing: state.isProcessing,
+    messages: state.messages,
+    isProcessing: state.isProcessing,
 }));
 ```
 
@@ -622,14 +610,14 @@ addMessage(newMessage);
 ```typescript
 // Auto-updates on state change
 function Component() {
-  const messages = useChatStore((state) => state.messages);
-  // Re-renders when messages change
+    const messages = useChatStore((state) => state.messages);
+    // Re-renders when messages change
 }
 
 // Manual subscription
 const unsubscribe = useChatStore.subscribe(
-  (state) => state.messages,
-  (messages) => console.log("Messages updated:", messages),
+    (state) => state.messages,
+    (messages) => console.log("Messages updated:", messages),
 );
 ```
 

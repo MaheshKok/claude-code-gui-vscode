@@ -17,136 +17,131 @@ import { create } from "zustand";
  * Modal types that can be displayed
  */
 export type ModalType =
-  | "settings"
-  | "mcp"
-  | "model"
-  | "permission"
-  | "install"
-  | "login"
-  | "confirm"
-  | "error"
-  | "about"
-  | "export"
-  | "keyboard-shortcuts"
-  | null;
+    | "settings"
+    | "mcp"
+    | "model"
+    | "permission"
+    | "install"
+    | "login"
+    | "confirm"
+    | "error"
+    | "about"
+    | "export"
+    | "keyboard-shortcuts"
+    | null;
 
 /**
  * Connection status to the Claude CLI
  */
 export type ConnectionStatus =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "error"
-  | "reconnecting";
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "error"
+    | "reconnecting";
 
 /**
  * Notification item
  */
 export interface Notification {
-  /** Unique notification ID */
-  id: string;
-  /** Notification type */
-  type: "info" | "success" | "warning" | "error";
-  /** Notification title */
-  title: string;
-  /** Optional notification message */
-  message?: string;
-  /** Auto-dismiss timeout in ms (0 = no auto-dismiss) */
-  timeout: number;
-  /** Timestamp when created */
-  createdAt: number;
-  /** Optional action buttons */
-  actions?: NotificationAction[];
+    /** Unique notification ID */
+    id: string;
+    /** Notification type */
+    type: "info" | "success" | "warning" | "error";
+    /** Notification title */
+    title: string;
+    /** Optional notification message */
+    message?: string;
+    /** Auto-dismiss timeout in ms (0 = no auto-dismiss) */
+    timeout: number;
+    /** Timestamp when created */
+    createdAt: number;
+    /** Optional action buttons */
+    actions?: NotificationAction[];
 }
 
 /**
  * Notification action button
  */
 export interface NotificationAction {
-  /** Action label */
-  label: string;
-  /** Action identifier */
-  action: string;
-  /** Whether this is the primary action */
-  primary?: boolean;
+    /** Action label */
+    label: string;
+    /** Action identifier */
+    action: string;
+    /** Whether this is the primary action */
+    primary?: boolean;
 }
 
 /**
  * UI store state
  */
 export interface UIState {
-  /** Currently active modal */
-  activeModal: ModalType;
-  /** Modal props (varies by modal type) */
-  modalProps: Record<string, unknown>;
-  /** Whether sidebar is open */
-  sidebarOpen: boolean;
-  /** Sidebar width in pixels */
-  sidebarWidth: number;
-  /** Connection status to Claude CLI */
-  connectionStatus: ConnectionStatus;
-  /** Connection error message if any */
-  connectionError: string | null;
-  /** Draft message being composed */
-  draftMessage: string;
-  /** Active notifications */
-  notifications: Notification[];
-  /** Maximum visible notifications */
-  maxVisibleNotifications: number;
-  /** Whether the input is focused */
-  inputFocused: boolean;
-  /** Whether in fullscreen mode */
-  isFullscreen: boolean;
-  /** Current layout breakpoint */
-  breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
+    /** Currently active modal */
+    activeModal: ModalType;
+    /** Modal props (varies by modal type) */
+    modalProps: Record<string, unknown>;
+    /** Whether sidebar is open */
+    sidebarOpen: boolean;
+    /** Sidebar width in pixels */
+    sidebarWidth: number;
+    /** Connection status to Claude CLI */
+    connectionStatus: ConnectionStatus;
+    /** Connection error message if any */
+    connectionError: string | null;
+    /** Draft message being composed */
+    draftMessage: string;
+    /** Active notifications */
+    notifications: Notification[];
+    /** Maximum visible notifications */
+    maxVisibleNotifications: number;
+    /** Whether the input is focused */
+    inputFocused: boolean;
+    /** Whether in fullscreen mode */
+    isFullscreen: boolean;
+    /** Current layout breakpoint */
+    breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 /**
  * UI store actions
  */
 export interface UIActions {
-  /** Open a modal */
-  openModal: (
-    type: Exclude<ModalType, null>,
-    props?: Record<string, unknown>,
-  ) => void;
-  /** Close the current modal */
-  closeModal: () => void;
-  /** Toggle sidebar visibility */
-  toggleSidebar: () => void;
-  /** Set sidebar open state */
-  setSidebarOpen: (open: boolean) => void;
-  /** Set sidebar width */
-  setSidebarWidth: (width: number) => void;
-  /** Set connection status */
-  setConnectionStatus: (status: ConnectionStatus, error?: string) => void;
-  /** Set draft message */
-  setDraftMessage: (message: string) => void;
-  /** Clear draft message */
-  clearDraftMessage: () => void;
-  /** Add a notification */
-  addNotification: (
-    notification: Omit<Notification, "id" | "createdAt">,
-  ) => string;
-  /** Remove a notification by ID */
-  removeNotification: (id: string) => void;
-  /** Clear all notifications */
-  clearNotifications: () => void;
-  /** Set input focused state */
-  setInputFocused: (focused: boolean) => void;
-  /** Toggle fullscreen mode */
-  toggleFullscreen: () => void;
-  /** Set breakpoint */
-  setBreakpoint: (breakpoint: UIState["breakpoint"]) => void;
-  /** Show info notification */
-  showInfo: (title: string, message?: string) => void;
-  /** Show success notification */
-  showSuccess: (title: string, message?: string) => void;
-  /** Show warning notification */
-  showWarning: (title: string, message?: string) => void;
-  /** Show error notification */
-  showError: (title: string, message?: string) => void;
+    /** Open a modal */
+    openModal: (type: Exclude<ModalType, null>, props?: Record<string, unknown>) => void;
+    /** Close the current modal */
+    closeModal: () => void;
+    /** Toggle sidebar visibility */
+    toggleSidebar: () => void;
+    /** Set sidebar open state */
+    setSidebarOpen: (open: boolean) => void;
+    /** Set sidebar width */
+    setSidebarWidth: (width: number) => void;
+    /** Set connection status */
+    setConnectionStatus: (status: ConnectionStatus, error?: string) => void;
+    /** Set draft message */
+    setDraftMessage: (message: string) => void;
+    /** Clear draft message */
+    clearDraftMessage: () => void;
+    /** Add a notification */
+    addNotification: (notification: Omit<Notification, "id" | "createdAt">) => string;
+    /** Remove a notification by ID */
+    removeNotification: (id: string) => void;
+    /** Clear all notifications */
+    clearNotifications: () => void;
+    /** Set input focused state */
+    setInputFocused: (focused: boolean) => void;
+    /** Toggle fullscreen mode */
+    toggleFullscreen: () => void;
+    /** Set breakpoint */
+    setBreakpoint: (breakpoint: UIState["breakpoint"]) => void;
+    /** Show info notification */
+    showInfo: (title: string, message?: string) => void;
+    /** Show success notification */
+    showSuccess: (title: string, message?: string) => void;
+    /** Show warning notification */
+    showWarning: (title: string, message?: string) => void;
+    /** Show error notification */
+    showError: (title: string, message?: string) => void;
 }
 
 export type UIStore = UIState & UIActions;
@@ -156,18 +151,18 @@ export type UIStore = UIState & UIActions;
 // ============================================================================
 
 const initialState: UIState = {
-  activeModal: null,
-  modalProps: {},
-  sidebarOpen: true,
-  sidebarWidth: 280,
-  connectionStatus: "disconnected",
-  connectionError: null,
-  draftMessage: "",
-  notifications: [],
-  maxVisibleNotifications: 5,
-  inputFocused: false,
-  isFullscreen: false,
-  breakpoint: "lg",
+    activeModal: null,
+    modalProps: {},
+    sidebarOpen: true,
+    sidebarWidth: 280,
+    connectionStatus: "disconnected",
+    connectionError: null,
+    draftMessage: "",
+    notifications: [],
+    maxVisibleNotifications: 5,
+    inputFocused: false,
+    isFullscreen: false,
+    breakpoint: "lg",
 };
 
 // ============================================================================
@@ -177,8 +172,7 @@ const initialState: UIState = {
 /**
  * Generate a unique ID for notifications
  */
-const generateId = () =>
-  `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () => `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 // ============================================================================
 // Store
@@ -188,115 +182,113 @@ const generateId = () =>
  * UI store for managing interface state
  */
 export const useUIStore = create<UIStore>((set, get) => ({
-  ...initialState,
+    ...initialState,
 
-  openModal: (type, props = {}) =>
-    set({
-      activeModal: type,
-      modalProps: props,
-    }),
+    openModal: (type, props = {}) =>
+        set({
+            activeModal: type,
+            modalProps: props,
+        }),
 
-  closeModal: () =>
-    set({
-      activeModal: null,
-      modalProps: {},
-    }),
+    closeModal: () =>
+        set({
+            activeModal: null,
+            modalProps: {},
+        }),
 
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+    toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+    setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
-  setSidebarWidth: (width) =>
-    set({ sidebarWidth: Math.max(200, Math.min(500, width)) }),
+    setSidebarWidth: (width) => set({ sidebarWidth: Math.max(200, Math.min(500, width)) }),
 
-  setConnectionStatus: (status, error) =>
-    set({
-      connectionStatus: status,
-      connectionError: error || null,
-    }),
+    setConnectionStatus: (status, error) =>
+        set({
+            connectionStatus: status,
+            connectionError: error || null,
+        }),
 
-  setDraftMessage: (message) => set({ draftMessage: message }),
+    setDraftMessage: (message) => set({ draftMessage: message }),
 
-  clearDraftMessage: () => set({ draftMessage: "" }),
+    clearDraftMessage: () => set({ draftMessage: "" }),
 
-  addNotification: (notification) => {
-    const id = generateId();
-    const newNotification: Notification = {
-      ...notification,
-      id,
-      createdAt: Date.now(),
-    };
-
-    set((state) => {
-      const notifications = [...state.notifications, newNotification];
-      // Keep only the most recent notifications
-      if (notifications.length > state.maxVisibleNotifications) {
-        return {
-          notifications: notifications.slice(-state.maxVisibleNotifications),
+    addNotification: (notification) => {
+        const id = generateId();
+        const newNotification: Notification = {
+            ...notification,
+            id,
+            createdAt: Date.now(),
         };
-      }
-      return { notifications };
-    });
 
-    // Auto-dismiss if timeout is set
-    if (notification.timeout > 0) {
-      setTimeout(() => {
-        get().removeNotification(id);
-      }, notification.timeout);
-    }
+        set((state) => {
+            const notifications = [...state.notifications, newNotification];
+            // Keep only the most recent notifications
+            if (notifications.length > state.maxVisibleNotifications) {
+                return {
+                    notifications: notifications.slice(-state.maxVisibleNotifications),
+                };
+            }
+            return { notifications };
+        });
 
-    return id;
-  },
+        // Auto-dismiss if timeout is set
+        if (notification.timeout > 0) {
+            setTimeout(() => {
+                get().removeNotification(id);
+            }, notification.timeout);
+        }
 
-  removeNotification: (id) =>
-    set((state) => ({
-      notifications: state.notifications.filter((n) => n.id !== id),
-    })),
+        return id;
+    },
 
-  clearNotifications: () => set({ notifications: [] }),
+    removeNotification: (id) =>
+        set((state) => ({
+            notifications: state.notifications.filter((n) => n.id !== id),
+        })),
 
-  setInputFocused: (focused) => set({ inputFocused: focused }),
+    clearNotifications: () => set({ notifications: [] }),
 
-  toggleFullscreen: () =>
-    set((state) => ({ isFullscreen: !state.isFullscreen })),
+    setInputFocused: (focused) => set({ inputFocused: focused }),
 
-  setBreakpoint: (breakpoint) => set({ breakpoint }),
+    toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
 
-  showInfo: (title, message) => {
-    get().addNotification({
-      type: "info",
-      title,
-      message,
-      timeout: 5000,
-    });
-  },
+    setBreakpoint: (breakpoint) => set({ breakpoint }),
 
-  showSuccess: (title, message) => {
-    get().addNotification({
-      type: "success",
-      title,
-      message,
-      timeout: 3000,
-    });
-  },
+    showInfo: (title, message) => {
+        get().addNotification({
+            type: "info",
+            title,
+            message,
+            timeout: 5000,
+        });
+    },
 
-  showWarning: (title, message) => {
-    get().addNotification({
-      type: "warning",
-      title,
-      message,
-      timeout: 7000,
-    });
-  },
+    showSuccess: (title, message) => {
+        get().addNotification({
+            type: "success",
+            title,
+            message,
+            timeout: 3000,
+        });
+    },
 
-  showError: (title, message) => {
-    get().addNotification({
-      type: "error",
-      title,
-      message,
-      timeout: 10000,
-    });
-  },
+    showWarning: (title, message) => {
+        get().addNotification({
+            type: "warning",
+            title,
+            message,
+            timeout: 7000,
+        });
+    },
+
+    showError: (title, message) => {
+        get().addNotification({
+            type: "error",
+            title,
+            message,
+            timeout: 10000,
+        });
+    },
 }));
 
 // ============================================================================
@@ -317,16 +309,16 @@ export const selectModalProps = (state: UIStore) => state.modalProps;
  * Select sidebar state
  */
 export const selectSidebarState = (state: UIStore) => ({
-  open: state.sidebarOpen,
-  width: state.sidebarWidth,
+    open: state.sidebarOpen,
+    width: state.sidebarWidth,
 });
 
 /**
  * Select connection status
  */
 export const selectConnectionStatus = (state: UIStore) => ({
-  status: state.connectionStatus,
-  error: state.connectionError,
+    status: state.connectionStatus,
+    error: state.connectionError,
 });
 
 /**
@@ -347,5 +339,4 @@ export const selectIsModalOpen = (state: UIStore) => state.activeModal !== null;
 /**
  * Select whether connected
  */
-export const selectIsConnected = (state: UIStore) =>
-  state.connectionStatus === "connected";
+export const selectIsConnected = (state: UIStore) => state.connectionStatus === "connected";

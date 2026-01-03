@@ -1,10 +1,15 @@
 // Tool Visualization Components
 // Export barrel for easy imports
 
-export { ToolUseCard } from "./ToolUseCard";
-export type { ToolUseCardProps, ToolInput } from "./ToolUseCard";
+import { withErrorBoundary } from "../Common";
+import { ToolUseCard as ToolUseCardBase } from "./ToolUseCard";
+import { ToolResultCard as ToolResultCardBase } from "./ToolResultCard";
 
-export { ToolResultCard } from "./ToolResultCard";
+// Wrap tool components with error boundaries
+export const ToolUseCard = withErrorBoundary(ToolUseCardBase, "ToolUseCard");
+export const ToolResultCard = withErrorBoundary(ToolResultCardBase, "ToolResultCard");
+
+export type { ToolUseCardProps, ToolInput } from "./ToolUseCard";
 export type { ToolResultCardProps } from "./ToolResultCard";
 
 export { DiffViewer } from "./DiffViewer";

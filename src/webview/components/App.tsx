@@ -22,32 +22,32 @@ export { App, default } from "../App";
  * @deprecated Use ChatMessage from '../types' instead
  */
 export interface Message {
-  id: string;
-  role: "user" | "assistant" | "tool" | "error";
-  messageType?: "tool_use" | "tool_result";
-  content: string;
-  timestamp: Date;
-  toolName?: string;
-  toolUseId?: string;
-  rawInput?: Record<string, unknown>;
-  status?: string;
-  isError?: boolean;
-  hidden?: boolean;
-  fileContentBefore?: string;
-  fileContentAfter?: string;
-  startLine?: number;
-  startLines?: number[];
-  isStreaming?: boolean;
-  /** Duration in milliseconds (for tool messages) */
-  duration?: number;
-  /** Token count (for tool messages) */
-  tokens?: number;
-  /** Cache read tokens (for tool messages) */
-  cacheReadTokens?: number;
-  /** Cache creation tokens (for tool messages) */
-  cacheCreationTokens?: number;
-  /** Token usage for assistant messages */
-  usage?: TokenUsage;
+    id: string;
+    role: "user" | "assistant" | "tool" | "error";
+    messageType?: "tool_use" | "tool_result";
+    content: string;
+    timestamp: Date;
+    toolName?: string;
+    toolUseId?: string;
+    rawInput?: Record<string, unknown>;
+    status?: string;
+    isError?: boolean;
+    hidden?: boolean;
+    fileContentBefore?: string;
+    fileContentAfter?: string;
+    startLine?: number;
+    startLines?: number[];
+    isStreaming?: boolean;
+    /** Duration in milliseconds (for tool messages) */
+    duration?: number;
+    /** Token count (for tool messages) */
+    tokens?: number;
+    /** Cache read tokens (for tool messages) */
+    cacheReadTokens?: number;
+    /** Cache creation tokens (for tool messages) */
+    cacheCreationTokens?: number;
+    /** Token usage for assistant messages */
+    usage?: TokenUsage;
 }
 
 /**
@@ -55,10 +55,10 @@ export interface Message {
  * @deprecated Use SessionState from '../types' instead
  */
 export interface SessionInfo {
-  id: string;
-  name: string;
-  startedAt: Date;
-  messageCount: number;
+    id: string;
+    name: string;
+    startedAt: Date;
+    messageCount: number;
 }
 
 /**
@@ -66,11 +66,11 @@ export interface SessionInfo {
  * @deprecated Use individual stores instead
  */
 export interface AppState {
-  messages: Message[];
-  isConnected: boolean;
-  isProcessing: boolean;
-  currentModel: string;
-  planMode: boolean;
-  thinkingMode: boolean;
-  session: SessionInfo | null;
+    messages: Message[];
+    isConnected: boolean;
+    isProcessing: boolean;
+    currentModel: string;
+    planMode: boolean;
+    thinkingMode: boolean;
+    session: SessionInfo | null;
 }

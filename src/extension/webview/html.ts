@@ -4,23 +4,20 @@ import * as vscode from "vscode";
  * Generates the HTML content for the webview
  * This loads the React application bundle
  */
-export function getHtml(
-  webview: vscode.Webview,
-  extensionUri: vscode.Uri,
-): string {
-  // Get URIs for the bundled React app assets
-  const scriptUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, "dist", "webview", "main.js"),
-  );
+export function getHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
+    // Get URIs for the bundled React app assets
+    const scriptUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(extensionUri, "dist", "webview", "main.js"),
+    );
 
-  const styleUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, "dist", "webview", "main.css"),
-  );
+    const styleUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(extensionUri, "dist", "webview", "main.css"),
+    );
 
-  // Generate a nonce for Content Security Policy
-  const nonce = getNonce();
+    // Generate a nonce for Content Security Policy
+    const nonce = getNonce();
 
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -106,11 +103,10 @@ export function getHtml(
  * Generate a random nonce string for CSP
  */
 function getNonce(): string {
-  let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
+    let text = "";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }
