@@ -26,7 +26,7 @@ import {
 // Re-export all shared constants
 // ============================================================================
 export {
-    // Enums
+    // Enums (core)
     MessageType,
     MessageRole,
     MessageStatus,
@@ -45,6 +45,29 @@ export {
     NotificationType,
     SystemMessageSeverity,
     ErrorAction,
+
+    // Enums (additional - from enums.ts)
+    FileSystemItemType,
+    AttachmentStatus,
+    AttachmentType,
+    MCPConnectionType,
+    MCPServerCategory,
+    CopyState,
+    InstallState,
+    LoadingState,
+    ClipboardContentType,
+    ExportFormat,
+    InsertPosition,
+    DiffLineType,
+    SlashCommandType,
+    MentionSuggestionType,
+    MessageGroupType,
+
+    // Display name mappings
+    MCP_CONNECTION_TYPE_LABELS,
+    FILE_SYSTEM_ITEM_TYPE_LABELS,
+    INSTALL_STATE_LABELS,
+    SLASH_COMMAND_TYPE_LABELS,
 
     // Model constants
     MODEL_DISPLAY_NAMES,
@@ -100,6 +123,28 @@ export {
     getContextWindowSize,
     isTerminalStatus,
     isActiveSessionStatus,
+
+    // UI Strings (from ui-strings.ts)
+    MODAL_TITLES,
+    PLACEHOLDERS,
+    UI_LABELS,
+    TOOLTIPS,
+    ERROR_MESSAGES,
+    ARIA_LABELS,
+    LOG_PREFIXES,
+    CONFIRMATION_MESSAGES,
+    SUCCESS_MESSAGES,
+
+    // Limits and configuration (from limits.ts)
+    FILE_LIMITS,
+    SUPPORTED_FILE_TYPES,
+    MESSAGE_LIMITS,
+    NOTIFICATION_CONFIG,
+    RETRY_CONFIG,
+    UI_THRESHOLDS,
+    TOKEN_LIMITS,
+    CACHE_CONFIG,
+    HISTORY_LIMITS,
 } from "../../shared/constants";
 
 // ============================================================================

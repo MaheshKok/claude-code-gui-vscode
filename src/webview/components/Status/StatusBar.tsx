@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { formatCost, formatDuration, formatTokenCount } from "../../utils";
 import { Activity, Wifi, WifiOff, Loader2, Square, Zap, Clock, DollarSign } from "lucide-react";
 
-interface StatusBarProps {
+export interface StatusBarProps {
     isConnected: boolean;
     isProcessing: boolean;
     onStop: () => void;

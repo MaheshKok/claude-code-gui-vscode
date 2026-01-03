@@ -24,7 +24,7 @@ const HEADER_CONSTANTS = {
 
 type ButtonClickHandler = (event: React.MouseEvent<HTMLButtonElement>) => void;
 
-interface HeaderProps {
+export interface HeaderProps {
     session: SessionInfo | null;
     onNewChat: ButtonClickHandler;
     onOpenSettings: ButtonClickHandler;

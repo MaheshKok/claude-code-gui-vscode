@@ -10,7 +10,7 @@ interface ActivityStep {
     timestamp: Date;
 }
 
-interface ActivityTimelineProps {
+export interface ActivityTimelineProps {
     messages: Message[];
     defaultCollapsed?: boolean;
 }

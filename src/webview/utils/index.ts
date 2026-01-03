@@ -52,6 +52,71 @@ export {
     // Language mappings
     EXTENSION_TO_LANGUAGE,
     getLanguageFromPath,
+
+    // Enums (core)
+    MessageType,
+    MessageRole,
+    MessageStatus,
+    ToolExecutionStatus,
+    ToolName,
+    PermissionStatus,
+    PermissionDecision,
+    ClaudeModel,
+    ThinkingIntensity,
+    SessionStatus,
+    ThemeMode,
+    CodeBlockTheme,
+    SidebarTab,
+    ModalType,
+    Breakpoint,
+    NotificationType,
+    SystemMessageSeverity,
+    ErrorAction,
+
+    // Enums (additional)
+    FileSystemItemType,
+    AttachmentStatus,
+    AttachmentType,
+    MCPConnectionType,
+    MCPServerCategory,
+    CopyState,
+    InstallState,
+    LoadingState,
+    ClipboardContentType,
+    ExportFormat,
+    InsertPosition,
+    DiffLineType,
+    SlashCommandType,
+    MentionSuggestionType,
+    MessageGroupType,
+
+    // Display name mappings
+    MCP_CONNECTION_TYPE_LABELS,
+    FILE_SYSTEM_ITEM_TYPE_LABELS,
+    INSTALL_STATE_LABELS,
+    SLASH_COMMAND_TYPE_LABELS,
+
+    // UI Strings
+    MODAL_TITLES,
+    PLACEHOLDERS,
+    UI_LABELS,
+    TOOLTIPS,
+    ERROR_MESSAGES,
+    ARIA_LABELS,
+    LOG_PREFIXES,
+    CONFIRMATION_MESSAGES,
+    SUCCESS_MESSAGES,
+
+    // Limits and configuration
+    FILE_LIMITS,
+    SUPPORTED_FILE_TYPES,
+    MESSAGE_LIMITS,
+    NOTIFICATION_CONFIG,
+    RETRY_CONFIG,
+    UI_THRESHOLDS,
+    TOKEN_LIMITS,
+    CACHE_CONFIG,
+    HISTORY_LIMITS,
 } from "./constants";
 
 export type { MCPServerConfig } from "./constants";
@@ -214,7 +279,7 @@ export {
     parseDataUrl,
 } from "./clipboard";
 
-export type { ClipboardResult, ClipboardImage, ClipboardContentType } from "./clipboard";
+export type { ClipboardResult, ClipboardImage } from "./clipboard";
 
 // ============================================================================
 // Validation

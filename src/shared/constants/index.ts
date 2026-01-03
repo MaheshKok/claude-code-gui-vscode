@@ -9,6 +9,67 @@
  */
 
 // ============================================================================
+// Re-export from modular constant files
+// ============================================================================
+
+// Additional enums for type safety
+export {
+    // File System
+    FileSystemItemType,
+    AttachmentStatus,
+    AttachmentType,
+    // MCP
+    MCPConnectionType,
+    MCPServerCategory,
+    // UI State
+    CopyState,
+    InstallState,
+    LoadingState,
+    // Content Types
+    ClipboardContentType,
+    ExportFormat,
+    InsertPosition,
+    // Diff
+    DiffLineType,
+    // Commands
+    SlashCommandType,
+    MentionSuggestionType,
+    // Message Groups
+    MessageGroupType,
+    // Display name mappings
+    MCP_CONNECTION_TYPE_LABELS,
+    FILE_SYSTEM_ITEM_TYPE_LABELS,
+    INSTALL_STATE_LABELS,
+    SLASH_COMMAND_TYPE_LABELS,
+} from "./enums";
+
+// UI Strings
+export {
+    MODAL_TITLES,
+    PLACEHOLDERS,
+    UI_LABELS,
+    TOOLTIPS,
+    ERROR_MESSAGES,
+    ARIA_LABELS,
+    LOG_PREFIXES,
+    CONFIRMATION_MESSAGES,
+    SUCCESS_MESSAGES,
+} from "./ui-strings";
+
+// Limits and configuration
+export {
+    FILE_LIMITS,
+    SUPPORTED_FILE_TYPES,
+    MESSAGE_LIMITS,
+    NOTIFICATION_CONFIG,
+    RETRY_CONFIG,
+    UI_THRESHOLDS,
+    TOKEN_LIMITS,
+    CACHE_CONFIG,
+    HISTORY_LIMITS,
+} from "./limits";
+
+// ============================================================================
 // Message Enums
 // ============================================================================
 
