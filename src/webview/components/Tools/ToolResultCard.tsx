@@ -10,7 +10,7 @@ import {
     Clock,
     Zap,
 } from "lucide-react";
-import { formatDuration, formatTokensCompact } from "../../utils";
+import { formatDuration, formatTokensCompact, getToolOriginInfo } from "../../utils";
 
 export interface ToolResultCardProps {
     content: string;
@@ -56,6 +56,9 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
         const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
         const [isExpanded, setIsExpanded] = useState(false);
         const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+        const toolOrigin = toolName ? getToolOriginInfo(toolName) : { origin: "core" as const };
+        const originLabel = toolOrigin.origin !== "core" ? toolOrigin.label : undefined;
+        const originDetail = toolOrigin.detail;
 
         const { truncated, isTruncated, hiddenCount } = truncateContent(content, maxLines);
 
@@ -112,6 +115,19 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
                             {isError ? "Error" : "Result"}
                             {toolName && ` - ${toolName}`}
                         </span>
+                        {originLabel && (
+                            <span className="text-[10px] uppercase tracking-wide text-orange-300 bg-orange-500/10 border border-orange-500/20 px-1.5 py-0.5 rounded">
+                                {originLabel}
+                            </span>
+                        )}
+                        {originDetail && (
+                            <span
+                                className="text-xs text-white/40 font-mono truncate max-w-[200px]"
+                                title={originDetail}
+                            >
+                                {originDetail}
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">

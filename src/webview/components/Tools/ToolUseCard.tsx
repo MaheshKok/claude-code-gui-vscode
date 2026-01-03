@@ -4,6 +4,7 @@ import {
     computeContextualDiff,
     formatDuration,
     formatTokensCompact,
+    getToolOriginInfo,
     ToolName,
 } from "../../utils";
 import { useVSCode } from "../../hooks/useVSCode";
@@ -235,6 +236,9 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
         const inputEntries = Object.entries(input);
         const hasContent = inputEntries.length > 0;
         const filePath = typeof input.file_path === "string" ? input.file_path : "";
+        const toolOrigin = getToolOriginInfo(toolName, input);
+        const originLabel = toolOrigin.origin !== "core" ? toolOrigin.label : undefined;
+        const originDetail = toolOrigin.detail;
 
         return (
             <div className="glass-panel rounded-lg overflow-hidden border border-white/5 bg-black/10">
@@ -251,6 +255,16 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
                         {getToolIcon(toolName)}
                     </div>
                     <span className="font-medium text-sm text-white/90">{toolName}</span>
+                    {originLabel && (
+                        <span className="text-[10px] uppercase tracking-wide text-orange-300 bg-orange-500/10 border border-orange-500/20 px-1.5 py-0.5 rounded">
+                            {originLabel}
+                        </span>
+                    )}
+                    {originDetail && (
+                        <span className="text-[10px] tracking-wide text-orange-300 bg-orange-500/10 border border-orange-500/20 px-1.5 py-0.5 rounded">
+                            {originDetail}
+                        </span>
+                    )}
 
                     {/* Metadata badges */}
                     <div className="ml-auto flex items-center gap-2">
