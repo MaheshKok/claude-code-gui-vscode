@@ -294,26 +294,44 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
                     <button
                         onClick={onPlanModeToggle}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                             planMode
                                 ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
                                 : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
                         }`}
                     >
-                        <FileCode className="w-3.5 h-3.5" />
-                        <span>Plan</span>
+                        <div className="flex items-center gap-1.5">
+                            <FileCode className="w-3.5 h-3.5" />
+                            <span>Plan</span>
+                        </div>
+                        <div
+                            className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${planMode ? "bg-blue-500" : "bg-white/20"}`}
+                        >
+                            <div
+                                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${planMode ? "left-3.5" : "left-0.5"}`}
+                            />
+                        </div>
                     </button>
 
                     <button
                         onClick={onYoloModeToggle}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                             yoloMode
                                 ? "text-red-400 bg-red-700/20 border-red-500/30"
                                 : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
                         }`}
                     >
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        <span>YOLO</span>
+                        <div className="flex items-center gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span>YOLO</span>
+                        </div>
+                        <div
+                            className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${yoloMode ? "bg-red-500" : "bg-white/20"}`}
+                        >
+                            <div
+                                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${yoloMode ? "left-3.5" : "left-0.5"}`}
+                            />
+                        </div>
                     </button>
                 </div>
 
