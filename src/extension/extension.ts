@@ -6,33 +6,15 @@ import { ConversationService } from "./services/ConversationService";
 import { PermissionService } from "./services/PermissionService";
 import { MCPService } from "./services/MCPService";
 import { COMMAND_IDS, VIEW_IDS, CONFIG_KEYS } from "../shared/constants";
+import {
+    DiffContentProvider,
+    storeDiffContent,
+    getDiffContent,
+    DIFF_URI_SCHEME,
+} from "./providers/DiffContentProvider";
 
-// Storage for diff content (used by DiffContentProvider)
-const diffContentStore = new Map<string, string>();
-
-/**
- * Custom TextDocumentContentProvider for read-only diff views
- */
-class DiffContentProvider implements vscode.TextDocumentContentProvider {
-    provideTextDocumentContent(uri: vscode.Uri): string {
-        const content = diffContentStore.get(uri.path);
-        return content || "";
-    }
-}
-
-/**
- * Get diff content for a given path
- */
-export function getDiffContent(path: string): string | undefined {
-    return diffContentStore.get(path);
-}
-
-/**
- * Store diff content for a given path
- */
-export function storeDiffContent(path: string, content: string): void {
-    diffContentStore.set(path, content);
-}
+// Re-export for external use (maintains backward compatibility)
+export { storeDiffContent, getDiffContent };
 
 /**
  * Main extension activation point
@@ -95,7 +77,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // Register custom content provider for read-only diff views
     const diffProvider = new DiffContentProvider();
     const diffProviderRegistration = vscode.workspace.registerTextDocumentContentProvider(
-        "claude-diff",
+        DIFF_URI_SCHEME,
         diffProvider,
     );
 

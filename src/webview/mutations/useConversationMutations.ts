@@ -73,29 +73,23 @@ export function useSaveConversation(): MutationResult<string, SaveConversationVa
  */
 export function useUpdateConversation(): MutationResult<void, UpdateConversationVariables, Error> {
     const updateConversation = useConversationStore((state) => state.updateConversation);
+    const updateTitle = useConversationStore((state) => state.updateTitle);
     const conversations = useConversationStore((state) => state.conversations);
 
     return useOptimisticMutation<void, UpdateConversationVariables, ConversationSummary[]>({
-        mutationFn: async (variables) => {
+        mutationFn: async () => {},
+        getSnapshot: () => [...conversations],
+        optimisticUpdate: (variables) => {
             if (variables.messages) {
                 updateConversation(
                     variables.id,
                     variables.messages as ChatMessage[],
                     variables.title
                 );
+                return;
             }
-        },
-        getSnapshot: () => [...conversations],
-        optimisticUpdate: (variables) => {
-            // Optimistic title update
             if (variables.title) {
-                useConversationStore.setState((state) => ({
-                    conversations: state.conversations.map((c) =>
-                        c.id === variables.id
-                            ? { ...c, title: variables.title!, updatedAt: Date.now() }
-                            : c
-                    ),
-                }));
+                updateTitle(variables.id, variables.title);
             }
         },
         rollback: (previousConversations) => {
@@ -125,18 +119,10 @@ export function useDeleteConversation(): MutationResult<void, DeleteConversation
     const conversations = useConversationStore((state) => state.conversations);
 
     return useOptimisticMutation<void, DeleteConversationVariables, ConversationSummary[]>({
-        mutationFn: async (variables) => {
-            deleteConversation(variables.id);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...conversations],
         optimisticUpdate: (variables) => {
-            useConversationStore.setState((state) => ({
-                conversations: state.conversations.filter((c) => c.id !== variables.id),
-                currentConversation:
-                    state.currentConversation?.summary.id === variables.id
-                        ? null
-                        : state.currentConversation,
-            }));
+            deleteConversation(variables.id);
         },
         rollback: (previousConversations) => {
             useConversationStore.setState({ conversations: previousConversations });
@@ -299,9 +285,7 @@ export function useUpdateConversationTitle(): MutationResult<void, UpdateTitleVa
     const conversations = useConversationStore((state) => state.conversations);
 
     return useOptimisticMutation<void, UpdateTitleVariables, ConversationSummary[]>({
-        mutationFn: async (variables) => {
-            updateTitle(variables.id, variables.title);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...conversations],
         optimisticUpdate: (variables) => {
             updateTitle(variables.id, variables.title);
@@ -336,9 +320,7 @@ export function useAddConversationTag(): MutationResult<void, AddTagVariables, E
     const conversations = useConversationStore((state) => state.conversations);
 
     return useOptimisticMutation<void, AddTagVariables, ConversationSummary[]>({
-        mutationFn: async (variables) => {
-            addTag(variables.id, variables.tag);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...conversations],
         optimisticUpdate: (variables) => {
             addTag(variables.id, variables.tag);
@@ -373,9 +355,7 @@ export function useRemoveConversationTag(): MutationResult<void, RemoveTagVariab
     const conversations = useConversationStore((state) => state.conversations);
 
     return useOptimisticMutation<void, RemoveTagVariables, ConversationSummary[]>({
-        mutationFn: async (variables) => {
-            removeTag(variables.id, variables.tag);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...conversations],
         optimisticUpdate: (variables) => {
             removeTag(variables.id, variables.tag);

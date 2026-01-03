@@ -59,11 +59,7 @@ export function useConnectMCPServer(): MutationResult<void, ConnectServerVariabl
     const servers = useMCPStore((state) => state.servers);
 
     return useOptimisticMutation<void, ConnectServerVariables, MCPServer[]>({
-        mutationFn: async (variables) => {
-            // Update to connecting state - actual connection is handled by extension
-            // via session info messages that include MCP server status
-            setServerStatus(variables.serverId, "connecting");
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...servers],
         optimisticUpdate: (variables) => {
             setServerStatus(variables.serverId, "connecting");
@@ -102,10 +98,7 @@ export function useDisconnectMCPServer(): MutationResult<void, DisconnectServerV
     const servers = useMCPStore((state) => state.servers);
 
     return useOptimisticMutation<void, DisconnectServerVariables, MCPServer[]>({
-        mutationFn: async (variables) => {
-            // Update to disconnected state - actual disconnection is handled by extension
-            setServerStatus(variables.serverId, "disconnected");
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...servers],
         optimisticUpdate: (variables) => {
             setServerStatus(variables.serverId, "disconnected");
@@ -140,11 +133,7 @@ export function useRefreshMCPServer(): MutationResult<void, RefreshServerVariabl
     const servers = useMCPStore((state) => state.servers);
 
     return useOptimisticMutation<void, RefreshServerVariables, MCPServer[]>({
-        mutationFn: async (variables) => {
-            // Trigger refresh by cycling through connecting state
-            // Actual refresh is handled by extension via session info messages
-            setServerStatus(variables.serverId, "connecting");
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...servers],
         optimisticUpdate: (variables) => {
             setServerStatus(variables.serverId, "connecting");
@@ -183,10 +172,7 @@ export function useUpdateMCPConfig(): MutationResult<void, UpdateConfigVariables
     const servers = useMCPStore((state) => state.servers);
 
     return useOptimisticMutation<void, UpdateConfigVariables, MCPServer[]>({
-        mutationFn: async (variables) => {
-            // Update local config - MCP server configs are managed locally
-            updateServer(variables.serverId, variables.config);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...servers],
         optimisticUpdate: (variables) => {
             updateServer(variables.serverId, variables.config);

@@ -63,9 +63,6 @@ export function useGrantPermission(): MutationResult<void, GrantPermissionVariab
         mutationFn: async (variables) => {
             const decision = scopeToDecision(variables.scope);
 
-            // Resolve the pending permission
-            resolvePending(variables.toolId, decision);
-
             // Add to allowed permissions if scope permits
             if (variables.scope === "session" || variables.scope === "always") {
                 addAllowed({
@@ -125,8 +122,6 @@ export function useDenyPermission(): MutationResult<void, DenyPermissionVariable
 
     return useOptimisticMutation<void, DenyPermissionVariables, PendingPermission[]>({
         mutationFn: async (variables) => {
-            resolvePending(variables.toolId, "deny");
-
             // Notify extension
             postMessage({
                 type: "permissionResponse",
@@ -176,8 +171,6 @@ export function useBatchApprovePermissions(): MutationResult<void, BatchApproveV
 
             // Approve all in sequence
             for (const toolId of variables.toolIds) {
-                resolvePending(toolId, decision);
-
                 const permission = pendingPermissions.find((p) => p.requestId === toolId);
                 if (permission) {
                     // Add to allowed if scope permits
@@ -234,9 +227,7 @@ export function useClearPermissions(): MutationResult<void, void, Error> {
     const pendingPermissions = usePermissionStore((state) => state.pendingPermissions);
 
     return useOptimisticMutation<void, void, PendingPermission[]>({
-        mutationFn: async () => {
-            clearPending();
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...pendingPermissions],
         optimisticUpdate: () => {
             clearPending();

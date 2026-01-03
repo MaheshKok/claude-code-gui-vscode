@@ -190,6 +190,7 @@ export {
 
     // Token formatting
     formatTokenCount,
+    formatTokensCompact,
     formatTokenUsage,
     formatContextUsage,
 

@@ -8,6 +8,8 @@
  */
 
 import { create } from "zustand";
+import { idGenerators } from "../../shared/utils";
+import { NOTIFICATION_CONFIG } from "../../shared/constants";
 
 // ============================================================================
 // Types
@@ -169,10 +171,8 @@ const initialState: UIState = {
 // Helpers
 // ============================================================================
 
-/**
- * Generate a unique ID for notifications
- */
-const generateId = () => `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+/** Generate a unique ID for notifications - uses shared ID generator */
+const generateNotificationId = idGenerators.notification;
 
 // ============================================================================
 // Store
@@ -213,7 +213,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
     clearDraftMessage: () => set({ draftMessage: "" }),
 
     addNotification: (notification) => {
-        const id = generateId();
+        const id = generateNotificationId();
         const newNotification: Notification = {
             ...notification,
             id,
@@ -259,7 +259,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
             type: "info",
             title,
             message,
-            timeout: 5000,
+            timeout: NOTIFICATION_CONFIG.INFO_TIMEOUT,
         });
     },
 
@@ -268,7 +268,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
             type: "success",
             title,
             message,
-            timeout: 3000,
+            timeout: NOTIFICATION_CONFIG.SUCCESS_TIMEOUT,
         });
     },
 
@@ -277,7 +277,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
             type: "warning",
             title,
             message,
-            timeout: 7000,
+            timeout: NOTIFICATION_CONFIG.WARNING_TIMEOUT,
         });
     },
 
@@ -286,7 +286,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
             type: "error",
             title,
             message,
-            timeout: 10000,
+            timeout: NOTIFICATION_CONFIG.ERROR_TIMEOUT,
         });
     },
 }));

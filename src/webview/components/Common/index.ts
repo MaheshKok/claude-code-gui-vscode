@@ -14,3 +14,5 @@ export { StatusBadge } from "./StatusBadge";
 export type { StatusBadgeProps, StatusVariant } from "./StatusBadge";
 export { CollapsibleSection } from "./CollapsibleSection";
 export type { CollapsibleSectionProps } from "./CollapsibleSection";
+export { ToolIcon, getToolIcon } from "./ToolIcon";
+export type { ToolIconProps } from "./ToolIcon";

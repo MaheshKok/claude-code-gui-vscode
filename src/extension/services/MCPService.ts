@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import { convertToWSLPath as convertToWSLPathUtil } from "../utils";
 
 /**
  * MCP server configuration
@@ -200,23 +201,10 @@ export class MCPService implements vscode.Disposable {
 
     /**
      * Convert a Windows path to WSL path if needed
+     * @deprecated Use convertToWSLPath from ../utils instead
      */
     public convertToWSLPath(windowsPath: string): string {
-        const config = vscode.workspace.getConfiguration("claudeCodeGui");
-        const wslEnabled = config.get<boolean>("wsl.enabled", false);
-
-        if (!wslEnabled || process.platform !== "win32") {
-            return windowsPath;
-        }
-
-        // Convert C:\path\to\file to /mnt/c/path/to/file
-        if (/^[a-zA-Z]:/.test(windowsPath)) {
-            const driveLetter = windowsPath.charAt(0).toLowerCase();
-            const pathWithoutDrive = windowsPath.slice(2).replace(/\\/g, "/");
-            return `/mnt/${driveLetter}${pathWithoutDrive}`;
-        }
-
-        return windowsPath;
+        return convertToWSLPathUtil(windowsPath);
     }
 
     /**

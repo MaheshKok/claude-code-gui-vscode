@@ -10,7 +10,7 @@ import {
     Clock,
     Zap,
 } from "lucide-react";
-import { formatDuration, formatTokenCount } from "../../utils";
+import { formatDuration, formatTokensCompact } from "../../utils";
 
 export interface ToolResultCardProps {
     content: string;
@@ -23,10 +23,8 @@ export interface ToolResultCardProps {
     defaultCollapsed?: boolean;
 }
 
-/** Format tokens for display - delegates to formatTokenCount utility */
-const formatTokens = (tokens: number): string => {
-    return formatTokenCount(tokens, { includeSuffix: false, abbreviated: true });
-};
+/** Format tokens for display - uses formatTokensCompact utility */
+const formatTokens = formatTokensCompact;
 
 const truncateContent = (
     content: string,

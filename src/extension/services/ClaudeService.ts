@@ -11,6 +11,7 @@ import {
     getCommandPattern,
     ToolName,
 } from "../../shared/constants";
+import { convertToWSLPath } from "../utils";
 
 /**
  * Options for sending a message to Claude
@@ -117,7 +118,7 @@ export class ClaudeService implements vscode.Disposable {
         }
 
         if (options.mcpConfigPath) {
-            args.push("--mcp-config", this._convertToWSLPath(options.mcpConfigPath, config));
+            args.push("--mcp-config", convertToWSLPath(options.mcpConfigPath));
         }
 
         if (options.planMode) {
@@ -530,17 +531,5 @@ export class ClaudeService implements vscode.Disposable {
             });
         }
         this._pendingPermissionRequests.clear();
-    }
-
-    private _convertToWSLPath(windowsPath: string, config: vscode.WorkspaceConfiguration): string {
-        const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
-        if (!wslEnabled || process.platform !== "win32") {
-            return windowsPath;
-        }
-
-        // Convert C:\path\to\file to /mnt/c/path/to/file
-        const driveLetter = windowsPath.charAt(0).toLowerCase();
-        const pathWithoutDrive = windowsPath.slice(2).replace(/\\/g, "/");
-        return `/mnt/${driveLetter}${pathWithoutDrive}`;
     }
 }

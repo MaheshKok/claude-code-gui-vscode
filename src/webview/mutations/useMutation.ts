@@ -7,7 +7,7 @@
  * @module mutations/useMutation
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type {
     MutationState,
     MutationOptions,
@@ -97,6 +97,11 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error, 
 
     const isMounted = useRef(true);
     const currentMutationRef = useRef<symbol | null>(null);
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     /**
      * Update state safely (only if mounted and mutation is current)

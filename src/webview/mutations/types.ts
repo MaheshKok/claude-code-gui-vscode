@@ -187,6 +187,7 @@ export interface SendMessageVariables {
     content: string;
     attachments?: string[];
     contextFiles?: string[];
+    messageId?: string;
 }
 
 export interface UpdateMessageVariables {

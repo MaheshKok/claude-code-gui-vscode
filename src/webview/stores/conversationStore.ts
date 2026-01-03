@@ -10,6 +10,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { ChatMessage, ConversationThread } from "../types";
+import { idGenerators } from "../../shared/utils";
 
 // ============================================================================
 // Types
@@ -116,10 +117,8 @@ const initialState: ConversationState = {
 // Helpers
 // ============================================================================
 
-/**
- * Generate a unique conversation ID
- */
-const generateId = () => `conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+/** Generate a unique conversation ID - uses shared ID generator */
+const generateConversationId = idGenerators.conversation;
 
 /**
  * Generate a title from messages
@@ -187,7 +186,7 @@ export const useConversationStore = create<ConversationStore>()(
             },
 
             saveConversation: (messages, title) => {
-                const id = generateId();
+                const id = generateConversationId();
                 const now = Date.now();
 
                 const summary: ConversationSummary = {
@@ -274,7 +273,7 @@ export const useConversationStore = create<ConversationStore>()(
             clearCurrentConversation: () => set({ currentConversation: null }),
 
             createConversation: (title) => {
-                const id = generateId();
+                const id = generateConversationId();
                 const now = Date.now();
 
                 const summary: ConversationSummary = {
@@ -387,7 +386,7 @@ export const useConversationStore = create<ConversationStore>()(
             importConversation: (json) => {
                 try {
                     const conversation: Conversation = JSON.parse(json);
-                    const newId = generateId();
+                    const newId = generateConversationId();
                     const now = Date.now();
 
                     const summary: ConversationSummary = {

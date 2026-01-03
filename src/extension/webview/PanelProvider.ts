@@ -13,13 +13,10 @@ import {
     type PanelState,
     type WebviewMessage,
 } from "./handlers";
-import type {
-    ClaudeMessage,
-    SystemMessage,
-    ClaudeAssistantMessage,
-    ClaudeUserMessage,
-    ResultMessage,
-} from "../../shared/types";
+import { SessionStateManager } from "./SessionStateManager";
+import { SettingsManager } from "./SettingsManager";
+import { ClaudeMessageProcessor, type MessagePoster } from "./ClaudeMessageProcessor";
+import type { ClaudeMessage } from "../../shared/types";
 
 /**
  * Provides the main chat panel functionality
@@ -32,33 +29,10 @@ export class PanelProvider {
     private _disposables: vscode.Disposable[] = [];
     private _messageHandlerDisposable: vscode.Disposable | undefined;
 
-    // Session state
-    private _totalCost: number = 0;
-    private _totalTokensInput: number = 0;
-    private _totalTokensOutput: number = 0;
-    private _totalCacheReadTokens: number = 0;
-    private _totalCacheCreationTokens: number = 0;
-    private _requestCount: number = 0;
-    private _isProcessing: boolean = false;
-    private _hasOpenOutput: boolean = false;
-    private _draftMessage: string = "";
-    private _selectedModel: string = "default";
-    private _subscriptionType: string | undefined;
-    private _accountInfoFetchedThisSession: boolean = false;
-    private _toolUseMetrics: Map<
-        string,
-        {
-            startTime: number;
-            tokens?: number;
-            cacheReadTokens?: number;
-            cacheCreationTokens?: number;
-            toolName?: string;
-            rawInput?: Record<string, unknown>;
-            fileContentBefore?: string;
-            startLine?: number;
-            startLines?: number[];
-        }
-    > = new Map();
+    // Extracted managers
+    private readonly _stateManager: SessionStateManager;
+    private readonly _settingsManager: SettingsManager;
+    private readonly _messageProcessor: ClaudeMessageProcessor;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -68,20 +42,59 @@ export class PanelProvider {
         private readonly _permissionService: PermissionService,
         private readonly _mcpService: MCPService,
     ) {
+        // Initialize managers
+        this._stateManager = new SessionStateManager();
+        this._settingsManager = new SettingsManager();
+
         // Load saved model preference
-        const config = vscode.workspace.getConfiguration("claudeCodeGui");
-        const defaultModel = config.get<string>("claude.model", "claude-sonnet-4-5-20250929");
-        this._selectedModel = this._context.workspaceState.get(
+        const defaultModel = this._settingsManager.getDefaultModel();
+        const savedModel = this._context.workspaceState.get<string>(
             "claude.selectedModel",
             defaultModel,
         );
-        if (this._selectedModel === "default") {
-            this._selectedModel = defaultModel;
-            this._context.workspaceState.update("claude.selectedModel", this._selectedModel);
+        this._stateManager.selectedModel = savedModel === "default" ? defaultModel : savedModel;
+        if (savedModel === "default") {
+            this._context.workspaceState.update("claude.selectedModel", this._stateManager.selectedModel);
         }
 
         // Load cached subscription type
-        this._subscriptionType = this._context.globalState.get("claude.subscriptionType");
+        this._stateManager.subscriptionType = this._context.globalState.get("claude.subscriptionType");
+
+        // Initialize message processor
+        const messagePoster: MessagePoster = {
+            postMessage: (msg) => this._postMessage(msg),
+            sendAndSaveMessage: (msg) => this._sendAndSaveMessage(msg),
+        };
+
+        this._messageProcessor = new ClaudeMessageProcessor(
+            this._stateManager,
+            messagePoster,
+            {
+                onSessionIdReceived: (sessionId) => {
+                    this._claudeService.setSessionId(sessionId);
+                },
+                onSubscriptionTypeReceived: (subscriptionType) => {
+                    this._stateManager.subscriptionType = subscriptionType;
+                    this._context.globalState.update("claude.subscriptionType", subscriptionType);
+                },
+                onProcessingComplete: (result) => {
+                    const sessionId = result.sessionId || this._claudeService.sessionId;
+                    if (sessionId) {
+                        this._conversationService.saveCurrentConversation({
+                            sessionId,
+                            totalCost: this._stateManager.totalCost,
+                            totalTokens: {
+                                input: this._stateManager.totalTokensInput,
+                                output: this._stateManager.totalTokensOutput,
+                            },
+                        });
+                        console.log("[PanelProvider] Saved conversation with sessionId:", sessionId);
+                    } else {
+                        console.warn("[PanelProvider] Could not save conversation: no sessionId available");
+                    }
+                },
+            },
+        );
 
         // Set up Claude service event handlers
         this._setupClaudeServiceHandlers();
@@ -91,25 +104,23 @@ export class PanelProvider {
      * Set up event handlers for Claude service
      */
     private _setupClaudeServiceHandlers(): void {
-        this._claudeService.onMessage((message) => {
+        this._claudeService.onMessage((message: ClaudeMessage) => {
             console.log("[PanelProvider] Received Claude message:", message.type);
-            this._handleClaudeMessage(message);
+            void this._messageProcessor.processMessage(message);
         });
 
         this._claudeService.onProcessEnd(() => {
-            this._isProcessing = false;
-            this._finalizeOutputStream();
+            this._stateManager.isProcessing = false;
+            this._messageProcessor.finalizeAndClear();
             this._postMessage({ type: "clearLoading" });
             this._postMessage({ type: "setProcessing", isProcessing: false });
-            this._toolUseMetrics.clear();
         });
 
         this._claudeService.onError((error) => {
-            this._isProcessing = false;
-            this._finalizeOutputStream();
+            this._stateManager.isProcessing = false;
+            this._messageProcessor.finalizeAndClear();
             this._postMessage({ type: "clearLoading" });
             this._postMessage({ type: "setProcessing", isProcessing: false });
-            this._toolUseMetrics.clear();
 
             if (error.includes("ENOENT") || error.includes("command not found")) {
                 this._postMessage({ type: "showInstallModal" });
@@ -235,11 +246,10 @@ export class PanelProvider {
             });
 
             // Update local state
-            this._totalCost = conversation.totalCost;
-            this._totalTokensInput = conversation.totalTokens.input;
-            this._totalTokensOutput = conversation.totalTokens.output;
-            this._totalCacheReadTokens = 0;
-            this._totalCacheCreationTokens = 0;
+            this._stateManager.restoreFromConversation({
+                totalCost: conversation.totalCost,
+                totalTokens: conversation.totalTokens,
+            });
 
             this._sendReadyMessage();
         }
@@ -249,8 +259,8 @@ export class PanelProvider {
      * Start a new session
      */
     public async newSession(): Promise<void> {
-        this._isProcessing = false;
-        this._hasOpenOutput = false;
+        this._stateManager.isProcessing = false;
+        this._stateManager.hasOpenOutput = false;
         this._postMessage({ type: "setProcessing", isProcessing: false });
         this._postMessage({ type: "clearLoading" });
 
@@ -261,12 +271,7 @@ export class PanelProvider {
         this._conversationService.clearCurrentConversation();
 
         // Reset counters
-        this._totalCost = 0;
-        this._totalTokensInput = 0;
-        this._totalTokensOutput = 0;
-        this._totalCacheReadTokens = 0;
-        this._totalCacheCreationTokens = 0;
-        this._requestCount = 0;
+        this._stateManager.resetSession();
     }
 
     /**
@@ -350,12 +355,12 @@ export class PanelProvider {
             return {
                 messages: currentMessages,
                 sessionId: this._claudeService.sessionId ?? storedSessionId ?? null,
-                totalCost: this._totalCost,
+                totalCost: this._stateManager.totalCost,
                 totalTokens: {
-                    input: this._totalTokensInput,
-                    output: this._totalTokensOutput,
+                    input: this._stateManager.totalTokensInput,
+                    output: this._stateManager.totalTokensOutput,
                 },
-                isProcessing: this._isProcessing,
+                isProcessing: this._stateManager.isProcessing,
             };
         }
 
@@ -394,25 +399,16 @@ export class PanelProvider {
         this._conversationService.addMessage(message);
     }
 
-    private _finalizeOutputStream(): void {
-        if (!this._hasOpenOutput) {
-            return;
-        }
-
-        this._postMessage({ type: "output", text: "", isFinal: true });
-        this._hasOpenOutput = false;
-    }
-
     private _sendReadyMessage(): void {
         this._postMessage({
             type: "setProcessing",
-            isProcessing: this._isProcessing,
+            isProcessing: this._stateManager.isProcessing,
         });
 
-        if (this._subscriptionType) {
+        if (this._stateManager.subscriptionType) {
             this._postMessage({
                 type: "accountInfo",
-                account: { subscriptionType: this._subscriptionType },
+                account: { subscriptionType: this._stateManager.subscriptionType },
             });
         }
 
@@ -420,34 +416,10 @@ export class PanelProvider {
     }
 
     private _sendCurrentSettings(): void {
-        const config = vscode.workspace.getConfiguration("claudeCodeGui");
+        const settings = this._settingsManager.getCurrentSettings(this._stateManager.selectedModel);
         this._postMessage({
             type: "settingsUpdate",
-            settings: {
-                wsl: {
-                    enabled: config.get<boolean>("wsl.enabled", false),
-                    distro: config.get<string>("wsl.distro", "Ubuntu"),
-                    nodePath: config.get<string>("wsl.nodePath", "/usr/bin/node"),
-                    claudePath: config.get<string>("wsl.claudePath", "/usr/local/bin/claude"),
-                },
-                selectedModel: this._selectedModel,
-                thinkingMode: config.get<boolean>("thinking.enabled", true),
-                thinkingIntensity: config.get<string>("thinking.intensity", "think"),
-                showThinkingProcess: config.get<boolean>("thinking.showProcess", true),
-                yoloMode: config.get<boolean>("permissions.yoloMode", false),
-                autoApprovePatterns: config.get<string[]>("permissions.autoApprove", []),
-                claudeExecutable: config.get<string>("claude.executable", "claude"),
-                maxHistorySize: config.get<number>("chat.maxHistorySize", 100),
-                streamResponses: config.get<boolean>("chat.streamResponses", true),
-                showTimestamps: config.get<boolean>("chat.showTimestamps", true),
-                codeBlockTheme: config.get<string>("chat.codeBlockTheme", "auto"),
-                fontSize: config.get<number>("ui.fontSize", 14),
-                compactMode: config.get<boolean>("ui.compactMode", false),
-                showAvatars: config.get<boolean>("ui.showAvatars", true),
-                includeFileContext: config.get<boolean>("context.includeFileContext", true),
-                includeWorkspaceInfo: config.get<boolean>("context.includeWorkspaceInfo", true),
-                maxContextLines: config.get<number>("context.maxContextLines", 500),
-            },
+            settings,
         });
     }
 
@@ -526,390 +498,14 @@ export class PanelProvider {
      * Get current panel state
      */
     private _getState(): PanelState {
-        return {
-            totalCost: this._totalCost,
-            totalTokensInput: this._totalTokensInput,
-            totalTokensOutput: this._totalTokensOutput,
-            totalCacheReadTokens: this._totalCacheReadTokens,
-            totalCacheCreationTokens: this._totalCacheCreationTokens,
-            requestCount: this._requestCount,
-            isProcessing: this._isProcessing,
-            hasOpenOutput: this._hasOpenOutput,
-            draftMessage: this._draftMessage,
-            selectedModel: this._selectedModel,
-            subscriptionType: this._subscriptionType,
-            accountInfoFetchedThisSession: this._accountInfoFetchedThisSession,
-        };
+        return this._stateManager.getState();
     }
 
     /**
      * Update panel state
      */
     private _setState(updates: Partial<PanelState>): void {
-        if (updates.totalCost !== undefined) this._totalCost = updates.totalCost;
-        if (updates.totalTokensInput !== undefined)
-            this._totalTokensInput = updates.totalTokensInput;
-        if (updates.totalTokensOutput !== undefined)
-            this._totalTokensOutput = updates.totalTokensOutput;
-        if (updates.totalCacheReadTokens !== undefined)
-            this._totalCacheReadTokens = updates.totalCacheReadTokens;
-        if (updates.totalCacheCreationTokens !== undefined)
-            this._totalCacheCreationTokens = updates.totalCacheCreationTokens;
-        if (updates.requestCount !== undefined) this._requestCount = updates.requestCount;
-        if (updates.isProcessing !== undefined) this._isProcessing = updates.isProcessing;
-        if (updates.hasOpenOutput !== undefined) this._hasOpenOutput = updates.hasOpenOutput;
-        if (updates.draftMessage !== undefined) this._draftMessage = updates.draftMessage;
-        if (updates.selectedModel !== undefined) this._selectedModel = updates.selectedModel;
-        if (updates.subscriptionType !== undefined)
-            this._subscriptionType = updates.subscriptionType;
-        if (updates.accountInfoFetchedThisSession !== undefined)
-            this._accountInfoFetchedThisSession = updates.accountInfoFetchedThisSession;
-    }
-
-    private _handleClaudeMessage(message: ClaudeMessage): void {
-        switch (message.type) {
-            case "system":
-                this._handleSystemMessage(message);
-                break;
-            case "assistant":
-                void this._handleAssistantMessage(message);
-                break;
-            case "user":
-                void this._handleUserMessage(message);
-                break;
-            case "result":
-                this._handleResultMessage(message);
-                break;
-            case "accountInfo":
-                this._subscriptionType = message.account?.subscriptionType;
-                this._context.globalState.update("claude.subscriptionType", this._subscriptionType);
-                this._postMessage({
-                    type: "accountInfo",
-                    account: message.account,
-                });
-                break;
-        }
-    }
-
-    private _handleSystemMessage(message: SystemMessage): void {
-        if (message.subtype === "init") {
-            this._claudeService.setSessionId(message.session_id);
-            this._sendAndSaveMessage({
-                type: "sessionInfo",
-                data: {
-                    sessionId: message.session_id,
-                    tools: message.tools || [],
-                    mcpServers: message.mcp_servers || [],
-                },
-                sessionId: message.session_id,
-                tools: message.tools || [],
-                mcpServers: message.mcp_servers || [],
-            });
-        } else if (message.subtype === "status") {
-            if (message.status === "compacting") {
-                this._sendAndSaveMessage({
-                    type: "compacting",
-                    data: { isCompacting: true },
-                    isCompacting: true,
-                });
-            } else if (message.status === null) {
-                this._sendAndSaveMessage({
-                    type: "compacting",
-                    data: { isCompacting: false },
-                    isCompacting: false,
-                });
-            }
-        } else if (message.subtype === "compact_boundary") {
-            this._totalTokensInput = 0;
-            this._totalTokensOutput = 0;
-            this._totalCacheReadTokens = 0;
-            this._totalCacheCreationTokens = 0;
-
-            this._sendAndSaveMessage({
-                type: "compactBoundary",
-                data: {
-                    trigger: message.compact_metadata?.trigger,
-                    preTokens: message.compact_metadata?.pre_tokens,
-                },
-                trigger: message.compact_metadata?.trigger,
-                preTokens: message.compact_metadata?.pre_tokens,
-            });
-        }
-    }
-
-    private async _handleAssistantMessage(message: ClaudeAssistantMessage): Promise<void> {
-        if (message.message && message.message.content) {
-            // Track token usage
-            const usage = message.message.usage;
-            let tokenCount: number | undefined;
-            let cacheReadTokens = 0;
-            let cacheCreationTokens = 0;
-            if (usage) {
-                const current = {
-                    input_tokens: usage.input_tokens || 0,
-                    output_tokens: usage.output_tokens || 0,
-                    cache_read_input_tokens: usage.cache_read_input_tokens || 0,
-                    cache_creation_input_tokens: usage.cache_creation_input_tokens || 0,
-                };
-                cacheReadTokens = current.cache_read_input_tokens || 0;
-                cacheCreationTokens = current.cache_creation_input_tokens || 0;
-
-                tokenCount = current.input_tokens + current.output_tokens;
-
-                this._totalTokensInput += current.input_tokens;
-                this._totalTokensOutput += current.output_tokens;
-                this._totalCacheReadTokens += cacheReadTokens;
-                this._totalCacheCreationTokens += cacheCreationTokens;
-
-                const total = {
-                    inputTokens: this._totalTokensInput,
-                    outputTokens: this._totalTokensOutput,
-                    cacheReadTokens: this._totalCacheReadTokens,
-                    cacheCreationTokens: this._totalCacheCreationTokens,
-                };
-
-                this._sendAndSaveMessage({
-                    type: "updateTokens",
-                    data: {
-                        current,
-                        total,
-                    },
-                    current,
-                    total,
-                });
-            }
-
-            // Process content
-            for (const content of message.message.content) {
-                if (content.type === "text" && content.text.trim()) {
-                    this._hasOpenOutput = true;
-                    const text = content.text.trim();
-                    this._sendAndSaveMessage({
-                        type: "output",
-                        data: text,
-                        text,
-                        isFinal: false,
-                    });
-                } else if (content.type === "thinking" && content.thinking.trim()) {
-                    const thinking = content.thinking.trim();
-                    this._sendAndSaveMessage({
-                        type: "thinking",
-                        data: thinking,
-                        thinking,
-                    });
-                } else if (content.type === "tool_use") {
-                    const toolUseId = content.id || content.tool_use_id || `tool-${Date.now()}`;
-                    const toolInfo = `Executing: ${content.name}`;
-                    const rawInput = content.input as Record<string, unknown> | undefined;
-
-                    let fileContentBefore: string | undefined;
-                    if (
-                        (content.name === "Edit" ||
-                            content.name === "MultiEdit" ||
-                            content.name === "Write") &&
-                        rawInput &&
-                        typeof rawInput.file_path === "string"
-                    ) {
-                        try {
-                            const fileUri = vscode.Uri.file(rawInput.file_path);
-                            const fileData = await vscode.workspace.fs.readFile(fileUri);
-                            fileContentBefore = Buffer.from(fileData).toString("utf8");
-                        } catch {
-                            fileContentBefore = "";
-                        }
-                    }
-
-                    let startLine: number | undefined;
-                    let startLines: number[] | undefined;
-                    if (fileContentBefore !== undefined && rawInput) {
-                        if (content.name === "Edit" && typeof rawInput.old_string === "string") {
-                            const position = fileContentBefore.indexOf(rawInput.old_string);
-                            if (position !== -1) {
-                                const textBefore = fileContentBefore.substring(0, position);
-                                startLine = (textBefore.match(/\n/g) || []).length + 1;
-                            } else {
-                                startLine = 1;
-                            }
-                        } else if (content.name === "MultiEdit" && Array.isArray(rawInput.edits)) {
-                            startLines = rawInput.edits.map((edit: { old_string?: string }) => {
-                                if (edit && typeof edit.old_string === "string") {
-                                    const position = fileContentBefore!.indexOf(edit.old_string);
-                                    if (position !== -1) {
-                                        const textBefore = fileContentBefore!.substring(
-                                            0,
-                                            position,
-                                        );
-                                        return (textBefore.match(/\n/g) || []).length + 1;
-                                    }
-                                }
-                                return 1;
-                            });
-                        }
-                    }
-
-                    this._toolUseMetrics.set(toolUseId, {
-                        startTime: Date.now(),
-                        tokens: tokenCount,
-                        cacheReadTokens,
-                        cacheCreationTokens,
-                        toolName: content.name,
-                        rawInput,
-                        fileContentBefore,
-                        startLine,
-                        startLines,
-                    });
-                    this._sendAndSaveMessage({
-                        type: "toolUse",
-                        data: {
-                            toolInfo,
-                            rawInput,
-                            toolName: content.name,
-                            toolUseId,
-                            tokens: tokenCount,
-                            cacheReadTokens,
-                            cacheCreationTokens,
-                            fileContentBefore,
-                            startLine,
-                            startLines,
-                        },
-                        toolUseId,
-                        toolName: content.name,
-                        rawInput,
-                        toolInfo,
-                        tokens: tokenCount,
-                        cacheReadTokens,
-                        cacheCreationTokens,
-                        fileContentBefore,
-                        startLine,
-                        startLines,
-                    });
-                }
-            }
-        }
-    }
-
-    private async _handleUserMessage(message: ClaudeUserMessage): Promise<void> {
-        if (message.message && message.message.content) {
-            for (const content of message.message.content) {
-                if (content.type === "tool_result") {
-                    let resultContent = content.content || "Tool executed successfully";
-                    if (typeof resultContent === "object") {
-                        resultContent = JSON.stringify(resultContent, null, 2);
-                    }
-                    const toolUseId = content.tool_use_id;
-                    const toolMetrics = toolUseId ? this._toolUseMetrics.get(toolUseId) : undefined;
-                    const duration = toolMetrics ? Date.now() - toolMetrics.startTime : undefined;
-                    const tokens = toolMetrics?.tokens;
-                    const cacheReadTokens = toolMetrics?.cacheReadTokens;
-                    const cacheCreationTokens = toolMetrics?.cacheCreationTokens;
-                    const toolName = toolMetrics?.toolName;
-                    const rawInput = toolMetrics?.rawInput;
-                    let fileContentAfter: string | undefined;
-                    if (
-                        (toolName === "Edit" || toolName === "MultiEdit" || toolName === "Write") &&
-                        rawInput &&
-                        typeof rawInput.file_path === "string" &&
-                        !content.is_error
-                    ) {
-                        try {
-                            const fileUri = vscode.Uri.file(rawInput.file_path);
-                            const fileData = await vscode.workspace.fs.readFile(fileUri);
-                            fileContentAfter = Buffer.from(fileData).toString("utf8");
-                        } catch {
-                            fileContentAfter = undefined;
-                        }
-                    }
-
-                    this._sendAndSaveMessage({
-                        type: "toolResult",
-                        data: {
-                            content: resultContent,
-                            isError: content.is_error || false,
-                            toolUseId: toolUseId,
-                            hidden: false,
-                            duration,
-                            tokens,
-                            cacheReadTokens,
-                            cacheCreationTokens,
-                            toolName,
-                            fileContentAfter,
-                        },
-                        toolUseId: toolUseId,
-                        toolName,
-                        content: resultContent,
-                        isError: content.is_error || false,
-                        hidden: false,
-                        duration,
-                        tokens,
-                        cacheReadTokens,
-                        cacheCreationTokens,
-                        fileContentAfter,
-                    });
-
-                    if (toolUseId) {
-                        this._toolUseMetrics.delete(toolUseId);
-                    }
-                }
-            }
-        }
-    }
-
-    private _handleResultMessage(message: ResultMessage): void {
-        if (message.subtype === "success") {
-            this._isProcessing = false;
-
-            // Use session_id from message if available, otherwise use the one from ClaudeService
-            const sessionId = message.session_id || this._claudeService.sessionId;
-
-            if (message.session_id) {
-                this._claudeService.setSessionId(message.session_id);
-                this._sendAndSaveMessage({
-                    type: "sessionInfo",
-                    data: { sessionId: message.session_id },
-                    sessionId: message.session_id,
-                    tools: [],
-                    mcpServers: [],
-                });
-            }
-
-            this._finalizeOutputStream();
-
-            this._postMessage({
-                type: "setProcessing",
-                isProcessing: false,
-            });
-
-            this._requestCount++;
-            if (message.total_cost_usd) {
-                this._totalCost += message.total_cost_usd;
-            }
-
-            this._postMessage({
-                type: "updateTotals",
-                totalCostUsd: message.total_cost_usd || 0,
-                durationMs: message.duration_ms || 0,
-                numTurns: message.num_turns || 0,
-                totalCost: this._totalCost,
-                totalTokensInput: this._totalTokensInput,
-                totalTokensOutput: this._totalTokensOutput,
-                requestCount: this._requestCount,
-            });
-
-            // Save conversation - use sessionId from ClaudeService if not in message
-            if (sessionId) {
-                this._conversationService.saveCurrentConversation({
-                    sessionId: sessionId,
-                    totalCost: this._totalCost,
-                    totalTokens: {
-                        input: this._totalTokensInput,
-                        output: this._totalTokensOutput,
-                    },
-                });
-                console.log("[PanelProvider] Saved conversation with sessionId:", sessionId);
-            } else {
-                console.warn("[PanelProvider] Could not save conversation: no sessionId available");
-            }
-        }
+        this._stateManager.setState(updates);
     }
 
     private _sendConversationList(): void {
@@ -947,168 +543,17 @@ export class PanelProvider {
     }
 
     private async _updateSettings(settings: Record<string, unknown>): Promise<void> {
-        const config = vscode.workspace.getConfiguration("claudeCodeGui");
-
-        if (!settings || typeof settings !== "object") {
-            return;
-        }
-
-        if (settings.wsl && typeof settings.wsl === "object") {
-            const wsl = settings.wsl as Record<string, unknown>;
-            if (typeof wsl.enabled === "boolean") {
-                await config.update("wsl.enabled", wsl.enabled, vscode.ConfigurationTarget.Global);
-            }
-            if (typeof wsl.distro === "string") {
-                await config.update("wsl.distro", wsl.distro, vscode.ConfigurationTarget.Global);
-            }
-            if (typeof wsl.nodePath === "string") {
-                await config.update(
-                    "wsl.nodePath",
-                    wsl.nodePath,
-                    vscode.ConfigurationTarget.Global,
-                );
-            }
-            if (typeof wsl.claudePath === "string") {
-                await config.update(
-                    "wsl.claudePath",
-                    wsl.claudePath,
-                    vscode.ConfigurationTarget.Global,
-                );
-            }
-        }
-
+        // Handle model selection separately (needs state update)
         if (typeof settings.selectedModel === "string") {
             this._setSelectedModel(settings.selectedModel);
-            await config.update(
-                "claude.model",
-                settings.selectedModel,
-                vscode.ConfigurationTarget.Global,
-            );
         }
 
-        if (typeof settings.thinkingMode === "boolean") {
-            await config.update(
-                "thinking.enabled",
-                settings.thinkingMode,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.thinkingIntensity === "string") {
-            await config.update(
-                "thinking.intensity",
-                settings.thinkingIntensity,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.showThinkingProcess === "boolean") {
-            await config.update(
-                "thinking.showProcess",
-                settings.showThinkingProcess,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
-        if (typeof settings.yoloMode === "boolean") {
-            await config.update(
-                "permissions.yoloMode",
-                settings.yoloMode,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (Array.isArray(settings.autoApprovePatterns)) {
-            await config.update(
-                "permissions.autoApprove",
-                settings.autoApprovePatterns,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
-        if (typeof settings.claudeExecutable === "string") {
-            await config.update(
-                "claude.executable",
-                settings.claudeExecutable,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
-        if (typeof settings.maxHistorySize === "number") {
-            await config.update(
-                "chat.maxHistorySize",
-                settings.maxHistorySize,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.streamResponses === "boolean") {
-            await config.update(
-                "chat.streamResponses",
-                settings.streamResponses,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.showTimestamps === "boolean") {
-            await config.update(
-                "chat.showTimestamps",
-                settings.showTimestamps,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.codeBlockTheme === "string") {
-            await config.update(
-                "chat.codeBlockTheme",
-                settings.codeBlockTheme,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
-        if (typeof settings.fontSize === "number") {
-            await config.update(
-                "ui.fontSize",
-                settings.fontSize,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.compactMode === "boolean") {
-            await config.update(
-                "ui.compactMode",
-                settings.compactMode,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.showAvatars === "boolean") {
-            await config.update(
-                "ui.showAvatars",
-                settings.showAvatars,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
-        if (typeof settings.includeFileContext === "boolean") {
-            await config.update(
-                "context.includeFileContext",
-                settings.includeFileContext,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.includeWorkspaceInfo === "boolean") {
-            await config.update(
-                "context.includeWorkspaceInfo",
-                settings.includeWorkspaceInfo,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-        if (typeof settings.maxContextLines === "number") {
-            await config.update(
-                "context.maxContextLines",
-                settings.maxContextLines,
-                vscode.ConfigurationTarget.Global,
-            );
-        }
-
+        await this._settingsManager.updateSettings(settings);
         this._sendCurrentSettings();
     }
 
     private _setSelectedModel(model: string): void {
-        this._selectedModel = model;
+        this._stateManager.selectedModel = model;
         this._context.workspaceState.update("claude.selectedModel", model);
         this._postMessage({
             type: "settingsUpdate",
@@ -1167,8 +612,7 @@ export class PanelProvider {
     }
 
     private async _enableYoloMode(): Promise<void> {
-        const config = vscode.workspace.getConfiguration("claudeCodeGui");
-        await config.update("permissions.yoloMode", true, vscode.ConfigurationTarget.Global);
+        await this._settingsManager.enableYoloMode();
         this._sendCurrentSettings();
 
         vscode.window.showInformationMessage(

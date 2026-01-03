@@ -3,26 +3,12 @@ import {
     computeLineDiff,
     computeContextualDiff,
     formatDuration,
-    formatTokenCount,
+    formatTokensCompact,
+    ToolName,
 } from "../../utils";
 import { useVSCode } from "../../hooks/useVSCode";
-import {
-    ChevronRight,
-    Code,
-    Terminal,
-    FileText,
-    Globe,
-    Search,
-    CheckSquare,
-    Edit3,
-    Clock,
-    Zap,
-    FileDiff,
-    Files,
-    ListChecks,
-    BookOpen,
-} from "lucide-react";
-import { ToolName } from "../../../shared/constants";
+import { ChevronRight, Clock, FileDiff, FileText, Zap } from "lucide-react";
+import { getToolIcon } from "../Common";
 
 export interface ToolInput {
     [key: string]: unknown;
@@ -41,43 +27,6 @@ export interface ToolUseCardProps {
     startLine?: number;
     startLines?: number[];
 }
-
-const getToolIconElement = (toolName: string) => {
-    switch (toolName) {
-        case ToolName.Read:
-            return <FileText className="w-4 h-4" />;
-        case ToolName.Write:
-            return <Edit3 className="w-4 h-4" />;
-        case ToolName.Edit:
-            return <Edit3 className="w-4 h-4" />;
-        case ToolName.MultiEdit:
-            return <Files className="w-4 h-4" />;
-        case ToolName.Bash:
-            return <Terminal className="w-4 h-4" />;
-        case ToolName.Glob:
-            return <Search className="w-4 h-4" />;
-        case ToolName.Grep:
-            return <Search className="w-4 h-4" />;
-        case ToolName.Task:
-            return <ListChecks className="w-4 h-4" />;
-        case ToolName.TodoRead:
-            return <CheckSquare className="w-4 h-4" />;
-        case ToolName.TodoWrite:
-            return <CheckSquare className="w-4 h-4" />;
-        case ToolName.WebFetch:
-            return <Globe className="w-4 h-4" />;
-        case ToolName.WebSearch:
-            return <Search className="w-4 h-4" />;
-        case ToolName.NotebookRead:
-        case ToolName.NotebookEdit:
-            return <BookOpen className="w-4 h-4" />;
-        default:
-            if (toolName.startsWith("mcp__")) {
-                return <Zap className="w-4 h-4" />;
-            }
-            return <Code className="w-4 h-4" />;
-    }
-};
 
 const formatFilePath = (filePath: string): string => {
     if (!filePath) return "";
@@ -109,10 +58,8 @@ const formatValue = (value: unknown, maxLength = 200): string => {
     return String(value);
 };
 
-/** Format tokens for display - delegates to formatTokenCount utility */
-const formatTokens = (tokens: number): string => {
-    return formatTokenCount(tokens, { includeSuffix: false, abbreviated: true });
-};
+/** Format tokens for display - uses formatTokensCompact utility */
+const formatTokens = formatTokensCompact;
 
 export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
     ({
@@ -301,7 +248,7 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
                     />
 
                     <div className="text-orange-400 opacity-80 group-hover:opacity-100 transition-opacity">
-                        {getToolIconElement(toolName)}
+                        {getToolIcon(toolName)}
                     </div>
                     <span className="font-medium text-sm text-white/90">{toolName}</span>
 

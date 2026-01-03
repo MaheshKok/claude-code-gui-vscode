@@ -65,14 +65,16 @@ export const MESSAGE_LIMITS = {
  * Notification timing and display settings
  */
 export const NOTIFICATION_CONFIG = {
+    /** Info notification timeout in milliseconds */
+    INFO_TIMEOUT: 5000,
+    /** Success notification timeout in milliseconds */
+    SUCCESS_TIMEOUT: 3000,
+    /** Warning notification timeout in milliseconds */
+    WARNING_TIMEOUT: 7000,
+    /** Error notification timeout in milliseconds */
+    ERROR_TIMEOUT: 10000,
     /** Default auto-dismiss timeout in milliseconds */
     DEFAULT_TIMEOUT: 5000,
-    /** Error notification timeout (0 = no auto-dismiss) */
-    ERROR_TIMEOUT: 0,
-    /** Success notification timeout */
-    SUCCESS_TIMEOUT: 3000,
-    /** Warning notification timeout */
-    WARNING_TIMEOUT: 5000,
     /** Maximum number of visible notifications */
     MAX_VISIBLE: 5,
 } as const;

@@ -238,6 +238,19 @@ export function formatTokenCount(count: number, options: TokenOptions = {}): str
 }
 
 /**
+ * Format tokens in compact form for UI display (no suffix, abbreviated)
+ *
+ * This is a convenience function that provides the common pattern:
+ * `formatTokenCount(tokens, { includeSuffix: false, abbreviated: true })`
+ *
+ * @param tokens - Number of tokens to format
+ * @returns Formatted string (e.g., "1.5K", "2.3M", "500")
+ */
+export function formatTokensCompact(tokens: number): string {
+    return formatTokenCount(tokens, { includeSuffix: false, abbreviated: true });
+}
+
+/**
  * Format token usage breakdown
  */
 export interface TokenUsageInfo {

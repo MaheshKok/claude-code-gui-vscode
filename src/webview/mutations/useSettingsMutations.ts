@@ -55,10 +55,7 @@ export function useUpdateModel(): MutationResult<void, UpdateModelVariables, Err
     const selectedModel = useSettingsStore((state) => state.selectedModel);
 
     return useOptimisticMutation<void, UpdateModelVariables, ClaudeModel>({
-        mutationFn: async (variables) => {
-            // Update local store - settings are persisted locally
-            setSelectedModel(variables.model as ClaudeModel);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => selectedModel,
         optimisticUpdate: (variables) => {
             setSelectedModel(variables.model as ClaudeModel);
@@ -101,15 +98,7 @@ export function useUpdateThinking(): MutationResult<void, UpdateThinkingVariable
     };
 
     return useOptimisticMutation<void, UpdateThinkingVariables, ThinkingSnapshot>({
-        mutationFn: async (variables) => {
-            // Update local store - settings are persisted locally
-            if (variables.enabled !== undefined) {
-                setThinkingMode(variables.enabled);
-            }
-            if (variables.intensity) {
-                setThinkingIntensity(variables.intensity as ThinkingIntensity);
-            }
-        },
+        mutationFn: async () => {},
         getSnapshot: () => ({
             enabled: thinkingMode,
             intensity: thinkingIntensity,
@@ -155,10 +144,7 @@ export function useUpdateWSL(): MutationResult<void, UpdateWSLVariables, Error> 
     const wsl = useSettingsStore((state) => state.wsl);
 
     return useOptimisticMutation<void, UpdateWSLVariables, typeof wsl>({
-        mutationFn: async (variables) => {
-            // Update local store - settings are persisted locally
-            updateWSL(variables);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => ({ ...wsl }),
         optimisticUpdate: (variables) => {
             updateWSL(variables);
@@ -203,9 +189,7 @@ export function useUpdateUISettings(): MutationResult<void, UISettingsUpdate, Er
     };
 
     return useOptimisticMutation<void, UISettingsUpdate, UISnapshot>({
-        mutationFn: async (variables) => {
-            updateUISettings(variables);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => ({
             fontSize,
             compactMode,
@@ -249,9 +233,7 @@ export function useUpdateContextSettings(): MutationResult<void, ContextSettings
     };
 
     return useOptimisticMutation<void, ContextSettingsUpdate, ContextSnapshot>({
-        mutationFn: async (variables) => {
-            updateContextSettings(variables);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => ({
             includeFileContext,
             includeWorkspaceInfo,
@@ -316,10 +298,7 @@ export function useTogglePlanMode(): MutationResult<void, void, Error> {
     const planMode = useSettingsStore((state) => state.planMode);
 
     return useOptimisticMutation<void, void, boolean>({
-        mutationFn: async () => {
-            // Update local store - settings are persisted locally
-            togglePlanMode();
-        },
+        mutationFn: async () => {},
         getSnapshot: () => planMode,
         optimisticUpdate: () => {
             togglePlanMode();
@@ -349,10 +328,7 @@ export function useToggleYoloMode(): MutationResult<void, void, Error> {
     const yoloMode = useSettingsStore((state) => state.yoloMode);
 
     return useOptimisticMutation<void, void, boolean>({
-        mutationFn: async () => {
-            // Update local store - settings are persisted locally
-            toggleYoloMode();
-        },
+        mutationFn: async () => {},
         getSnapshot: () => yoloMode,
         optimisticUpdate: () => {
             toggleYoloMode();

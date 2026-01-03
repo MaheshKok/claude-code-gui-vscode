@@ -33,9 +33,9 @@ function generateMessageId(): string {
 /**
  * Create a user message object
  */
-function createUserMessage(content: string, attachments?: string[]): ChatMessage {
+function createUserMessage(content: string, attachments?: string[], messageId?: string): ChatMessage {
     return {
-        id: generateMessageId(),
+        id: messageId ?? generateMessageId(),
         type: "user",
         content,
         timestamp: Date.now(),
@@ -67,9 +67,14 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
     const startRequestTiming = useChatStore((state) => state.startRequestTiming);
     const incrementTurns = useChatStore((state) => state.incrementTurns);
 
-    return useOptimisticMutation<ChatMessage, SendMessageVariables, ChatMessage[]>({
+    const mutation = useOptimisticMutation<ChatMessage, SendMessageVariables, ChatMessage[]>({
         mutationFn: async (variables) => {
-            const userMessage = createUserMessage(variables.content, variables.attachments);
+            const messageId = variables.messageId ?? generateMessageId();
+            const userMessage = createUserMessage(
+                variables.content,
+                variables.attachments,
+                messageId
+            );
 
             // Send to extension
             postMessage({
@@ -81,7 +86,12 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
         },
         getSnapshot: () => [...messages],
         optimisticUpdate: (variables) => {
-            const userMessage = createUserMessage(variables.content, variables.attachments);
+            const messageId = variables.messageId ?? generateMessageId();
+            const userMessage = createUserMessage(
+                variables.content,
+                variables.attachments,
+                messageId
+            );
             addMessage(userMessage);
             setProcessing(true);
             startRequestTiming();
@@ -99,6 +109,34 @@ export function useSendMessage(): MutationResult<ChatMessage, SendMessageVariabl
             setProcessing(false);
         },
     });
+
+    const withMessageId = useCallback(
+        (variables: SendMessageVariables): SendMessageVariables => ({
+            ...variables,
+            messageId: variables.messageId ?? generateMessageId(),
+        }),
+        []
+    );
+
+    const { mutate: baseMutate, mutateAsync: baseMutateAsync } = mutation;
+
+    const mutate = useCallback(
+        (variables: SendMessageVariables) => {
+            baseMutate(withMessageId(variables));
+        },
+        [baseMutate, withMessageId]
+    );
+
+    const mutateAsync = useCallback(
+        (variables: SendMessageVariables) => baseMutateAsync(withMessageId(variables)),
+        [baseMutateAsync, withMessageId]
+    );
+
+    return {
+        ...mutation,
+        mutate,
+        mutateAsync,
+    };
 }
 
 // ============================================================================
@@ -120,10 +158,7 @@ export function useUpdateMessage(): MutationResult<void, UpdateMessageVariables,
     const messages = useChatStore((state) => state.messages);
 
     return useOptimisticMutation<void, UpdateMessageVariables, ChatMessage[]>({
-        mutationFn: async (variables) => {
-            // Update is local-only, no API call needed
-            updateMessage(variables.id, variables.updates as Partial<ChatMessage>);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...messages],
         optimisticUpdate: (variables) => {
             updateMessage(variables.id, variables.updates as Partial<ChatMessage>);
@@ -155,9 +190,7 @@ export function useDeleteMessage(): MutationResult<void, DeleteMessageVariables,
     const messages = useChatStore((state) => state.messages);
 
     return useOptimisticMutation<void, DeleteMessageVariables, ChatMessage[]>({
-        mutationFn: async (variables) => {
-            removeMessage(variables.id);
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...messages],
         optimisticUpdate: (variables) => {
             removeMessage(variables.id);
@@ -190,10 +223,7 @@ export function useClearChat(): MutationResult<void, void, Error> {
     const messages = useChatStore((state) => state.messages);
 
     return useOptimisticMutation<void, void, ChatMessage[]>({
-        mutationFn: async () => {
-            clearMessages();
-            clearTodos();
-        },
+        mutationFn: async () => {},
         getSnapshot: () => [...messages],
         optimisticUpdate: () => {
             clearMessages();

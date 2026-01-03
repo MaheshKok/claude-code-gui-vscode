@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo } from "react";
 import { ToolUseCard, ToolResultCard, TodoDisplay } from "../Tools";
 import { CodeBlock } from "../Common";
-import { extractTodosFromInput, formatDuration, formatTokenCount } from "../../utils";
+import { extractTodosFromInput, formatDuration, formatTokensCompact } from "../../utils";
 import type { Message as MessageType } from "../App";
 import { MessageRole, ToolExecutionStatus, ToolName } from "../../../shared/constants";
 import { User, Bot, Terminal, AlertCircle, Clock, ChevronRight, Zap } from "lucide-react";
@@ -17,10 +17,8 @@ interface MessageProps {
     message: MessageType;
 }
 
-/** Format tokens for display - delegates to formatTokenCount utility */
-const formatTokens = (tokens: number): string => {
-    return formatTokenCount(tokens, { includeSuffix: false, abbreviated: true });
-};
+/** Format tokens for display - uses formatTokensCompact utility */
+const formatTokens = formatTokensCompact;
 
 export const Message: React.FC<MessageProps> = memo(({ message }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
