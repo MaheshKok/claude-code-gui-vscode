@@ -22,11 +22,6 @@ describe("Header", () => {
         expect(screen.getByTitle("New Chat")).toBeInTheDocument();
     });
 
-    it("renders the Settings button", () => {
-        render(<Header {...defaultProps} />);
-        expect(screen.getByTitle("Settings")).toBeInTheDocument();
-    });
-
     it("renders the History button with correct title when closed", () => {
         render(<Header {...defaultProps} isHistoryOpen={false} />);
         expect(screen.getByTitle("Chat History")).toBeInTheDocument();

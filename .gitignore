@@ -74,5 +74,12 @@ hive-mind-prompt-*.txt
 # Development scripts
 verify-setup.sh
 
-.vscode/
+# VS Code - exclude most but keep launch.json and tasks.json
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 .vscode-test/
+
+# Test workspace for debugging (keeps conversations between debug sessions)
+test-workspace/*
+!test-workspace/.gitkeep

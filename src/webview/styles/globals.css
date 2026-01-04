@@ -257,7 +257,7 @@ body {
 
     /* Chat Messages */
     .message {
-        @apply p-5 rounded-2xl relative mb-6 transition-all duration-300;
+        @apply p-5 rounded-2xl relative mb-3 transition-all duration-300;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 

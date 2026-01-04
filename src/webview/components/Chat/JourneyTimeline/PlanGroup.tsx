@@ -119,7 +119,11 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
             {isPlanOpen && (
                 <div className="bg-black/10 border-t border-white/5 p-4 space-y-3 max-h-[500px] overflow-y-auto">
                     {item.assistant.content && (
-                        <div className={showStepsSection ? "mb-4 pb-4 border-b border-white/5" : "mb-2"}>
+                        <div
+                            className={
+                                showStepsSection ? "mb-4 pb-4 border-b border-white/5" : "mb-2"
+                            }
+                        >
                             <CollapsibleReasoning content={item.assistant.content} />
                         </div>
                     )}

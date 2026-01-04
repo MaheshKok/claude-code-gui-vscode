@@ -179,7 +179,7 @@ export const Message: React.FC<MessageProps> = memo(({ message, showPreview = fa
 
     if (isToolResult) {
         return (
-            <div className="space-y-2 mb-4 animate-fade-in">
+            <div className="space-y-2 mb-2 animate-fade-in">
                 <div className="flex items-center gap-2 text-xs text-white/40 px-1">
                     <span>{getRoleLabel()}</span>
                     <span>{formatTimestamp(message.timestamp)}</span>

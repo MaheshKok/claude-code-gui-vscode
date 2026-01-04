@@ -117,7 +117,7 @@ export const TodoDisplay: React.FC<TodoDisplayProps> = ({
                         return (
                             <div
                                 key={todo.id || index}
-                                className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                                className={`flex items-start gap-3 px-4 py-1.5 transition-colors ${
                                     isInProgress ? "bg-blue-500/5" : "hover:bg-white/5"
                                 }`}
                             >

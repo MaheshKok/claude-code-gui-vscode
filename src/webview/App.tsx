@@ -74,6 +74,7 @@ export const App: React.FC = () => {
 
     const state = useAppState();
     const { chat, settings, ui, permission, local } = state;
+    const { isHistoryOpen, setIsHistoryLoading } = local;
 
     const callbacks = useAppCallbacks({ state, vscode });
 
@@ -117,11 +118,11 @@ export const App: React.FC = () => {
     }, [isVSCode, postMessage]);
 
     useEffect(() => {
-        if (isVSCode && local.isHistoryOpen) {
-            local.setIsHistoryLoading(true);
+        if (isVSCode && isHistoryOpen) {
+            setIsHistoryLoading(true);
             postMessage({ type: "getConversationList" });
         }
-    }, [isVSCode, local.isHistoryOpen, postMessage, local]);
+    }, [isVSCode, isHistoryOpen, postMessage, setIsHistoryLoading]);
 
     const session = useChatStore.getState().currentSessionId
         ? {
@@ -148,11 +149,11 @@ export const App: React.FC = () => {
                 session={session}
                 onNewChat={callbacks.handleNewChat}
                 onToggleHistory={callbacks.handleToggleHistory}
-                isHistoryOpen={local.isHistoryOpen}
+                isHistoryOpen={isHistoryOpen}
             />
 
             <ConversationHistory
-                isOpen={local.isHistoryOpen}
+                isOpen={isHistoryOpen}
                 onClose={callbacks.handleCloseHistory}
                 onConversationLoad={callbacks.handleConversationLoad}
                 onConversationDelete={callbacks.handleConversationDelete}
