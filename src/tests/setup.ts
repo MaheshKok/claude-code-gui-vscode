@@ -73,6 +73,9 @@ const mockVscodeApi = {
 // Adding to global for webview tests
 (globalThis as Record<string, unknown>).acquireVsCodeApi = vi.fn(() => mockVscodeApi);
 
+// Mock scrollIntoView for tests
+Element.prototype.scrollIntoView = vi.fn();
+
 // Setup DOM for React tests
 beforeAll(() => {
     // Ensure we have a proper DOM environment

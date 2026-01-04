@@ -418,6 +418,7 @@
         "@typescript-eslint/eslint-plugin": "^8.31.1",
         "@typescript-eslint/parser": "^8.31.1",
         "@vitejs/plugin-react": "^4.3.4",
+        "@vitest/coverage-v8": "^2.1.9",
         "@vscode/test-cli": "^0.0.10",
         "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.5.0",

@@ -12,6 +12,33 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Message } from "../../webview/components/Chat/Message";
 
+// Mock child components
+vi.mock("../../webview/components/Tools", () => ({
+    ToolUseCard: ({ toolName, isExecuting }: { toolName: string; isExecuting: boolean }) => (
+        <div data-testid="tool-use-card">
+            <span>{toolName}</span>
+            {isExecuting && <span data-testid="executing">Executing</span>}
+        </div>
+    ),
+    ToolResultCard: ({ content, isError }: { content: string; isError?: boolean }) => (
+        <div data-testid="tool-result-card">
+            <span>{content}</span>
+            {isError && <span data-testid="error">Error</span>}
+        </div>
+    ),
+    TodoDisplay: ({ todos }: { todos: unknown[] }) => (
+        <div data-testid="todo-display">{todos.length} todos</div>
+    ),
+}));
+
+// Mock useVSCode hook
+const mockPostMessage = vi.fn();
+vi.mock("../../webview/hooks/useVSCode", () => ({
+    useVSCode: () => ({
+        postMessage: mockPostMessage,
+    }),
+}));
+
 // Mock the Message type as defined in the component
 interface MessageType {
     id: string;
@@ -20,6 +47,18 @@ interface MessageType {
     timestamp: Date;
     isStreaming?: boolean;
     toolName?: string;
+    messageType?: "tool_use" | "tool_result";
+    rawInput?: Record<string, unknown>;
+    status?: string;
+    duration?: number;
+    tokens?: number;
+    isError?: boolean;
+    usage?: {
+        input_tokens: number;
+        output_tokens: number;
+        cache_creation_input_tokens?: number;
+        cache_read_input_tokens?: number;
+    };
 }
 
 // Helper to create a mock message
@@ -545,6 +584,326 @@ describe("Message Component", () => {
 
             const codeBlocks = container.querySelectorAll("pre");
             expect(codeBlocks.length).toBe(2);
+        });
+    });
+
+    // ==========================================================================
+    // Tool Use Messages
+    // ==========================================================================
+    describe("tool_use messages", () => {
+        it("should render ToolUseCard for tool_use message type", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "Read",
+                rawInput: { file_path: "/test/file.ts" },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("tool-use-card")).toBeInTheDocument();
+            // "Read" appears multiple times (header and tool card)
+            const readElements = screen.getAllByText("Read");
+            expect(readElements.length).toBeGreaterThan(0);
+        });
+
+        it("should show TodoDisplay for TodoWrite tool", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "TodoWrite",
+                rawInput: {
+                    todos: [
+                        { content: "Task 1", status: "pending" },
+                        { content: "Task 2", status: "completed" },
+                    ],
+                },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("todo-display")).toBeInTheDocument();
+        });
+
+        it("should show status badge when status is provided", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "Bash",
+                status: "completed",
+                rawInput: { command: "ls" },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByText("completed")).toBeInTheDocument();
+        });
+
+        it("should show duration when provided", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "Bash",
+                duration: 1500,
+                rawInput: { command: "ls" },
+            });
+
+            const { container } = render(<Message message={message} />);
+
+            // Duration should be shown with clock icon
+            const clockIcon = container.querySelector(".lucide-clock");
+            expect(clockIcon).toBeInTheDocument();
+            // formatDuration abbreviates - shows "1s" for 1500ms
+            expect(screen.getByText(/\d+s/)).toBeInTheDocument();
+        });
+
+        it("should show executing indicator when status is not terminal", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "Bash",
+                status: "executing",
+                rawInput: { command: "npm test" },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("executing")).toBeInTheDocument();
+        });
+
+        it("should show executing when isStreaming is true", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_use",
+                toolName: "Read",
+                isStreaming: true,
+                rawInput: { file_path: "/test.ts" },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("executing")).toBeInTheDocument();
+        });
+    });
+
+    // ==========================================================================
+    // Tool Result Messages
+    // ==========================================================================
+    describe("tool_result messages", () => {
+        it("should render ToolResultCard for tool_result message type", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_result",
+                toolName: "Read",
+                content: "File content here",
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("tool-result-card")).toBeInTheDocument();
+        });
+
+        it("should show error indicator for error results", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_result",
+                toolName: "Bash",
+                content: "Command failed",
+                isError: true,
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByTestId("error")).toBeInTheDocument();
+        });
+
+        it("should show duration for tool results", () => {
+            const message = createMockMessage({
+                role: "tool",
+                messageType: "tool_result",
+                toolName: "Read",
+                content: "Result",
+                duration: 250,
+            });
+
+            render(<Message message={message} />);
+
+            // formatDuration shows "250ms" or similar for sub-second durations
+            expect(screen.getByText(/\d+ms/)).toBeInTheDocument();
+        });
+    });
+
+    // ==========================================================================
+    // Usage Summary Display
+    // ==========================================================================
+    describe("usage summary", () => {
+        it("should display usage summary for assistant messages", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "Response text",
+                usage: {
+                    input_tokens: 1000,
+                    output_tokens: 500,
+                },
+            });
+
+            render(<Message message={message} />);
+
+            // Should show "📊 Tokens: 1,500" or similar
+            expect(screen.getByText(/Tokens.*1,500/)).toBeInTheDocument();
+        });
+
+        it("should show cache creation tokens", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "Response",
+                usage: {
+                    input_tokens: 500,
+                    output_tokens: 200,
+                    cache_creation_input_tokens: 1000,
+                },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByText(/cache created/)).toBeInTheDocument();
+        });
+
+        it("should show cache read tokens", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "Response",
+                usage: {
+                    input_tokens: 500,
+                    output_tokens: 200,
+                    cache_read_input_tokens: 800,
+                },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByText(/cache read/)).toBeInTheDocument();
+        });
+
+        it("should not show usage for zero tokens", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "Response",
+                usage: {
+                    input_tokens: 0,
+                    output_tokens: 0,
+                },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.queryByText(/Tokens/)).not.toBeInTheDocument();
+        });
+
+        it("should not show usage for user messages", () => {
+            const message = createMockMessage({
+                role: "user",
+                content: "Hello",
+                usage: {
+                    input_tokens: 100,
+                    output_tokens: 50,
+                },
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.queryByText(/Tokens/)).not.toBeInTheDocument();
+        });
+    });
+
+    // ==========================================================================
+    // Preview Functionality
+    // ==========================================================================
+    describe("preview functionality", () => {
+        it("should show preview button for markdown content", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "# Heading\n\n- List item 1\n- List item 2",
+            });
+
+            render(<Message message={message} showPreview={true} />);
+
+            expect(screen.getByText("Preview")).toBeInTheDocument();
+        });
+
+        it("should not show preview button when showPreview is false", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "# Heading\n\n- List item",
+            });
+
+            render(<Message message={message} showPreview={false} />);
+
+            expect(screen.queryByText("Preview")).not.toBeInTheDocument();
+        });
+
+        it("should call postMessage when preview button clicked", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "# Heading\n\n- List item",
+            });
+
+            render(<Message message={message} showPreview={true} />);
+
+            fireEvent.click(screen.getByText("Preview"));
+
+            expect(mockPostMessage).toHaveBeenCalledWith({
+                type: "openMarkdownPreview",
+                content: "# Heading\n\n- List item",
+                title: "Assistant Response",
+            });
+        });
+
+        it("should not show preview for non-markdown content", () => {
+            const message = createMockMessage({
+                role: "assistant",
+                content: "Plain text without markdown",
+            });
+
+            render(<Message message={message} showPreview={true} />);
+
+            expect(screen.queryByText("Preview")).not.toBeInTheDocument();
+        });
+    });
+
+    // ==========================================================================
+    // Collapsible Tool Messages
+    // ==========================================================================
+    describe("collapsible tool messages", () => {
+        it("should show streaming indicator for tool messages", () => {
+            const message = createMockMessage({
+                role: "tool",
+                content: "Tool output",
+                isStreaming: true,
+            });
+
+            render(<Message message={message} />);
+
+            expect(screen.getByText(/streaming/i)).toBeInTheDocument();
+        });
+
+        it("should display tokens badge for tool messages", () => {
+            const message = createMockMessage({
+                role: "tool",
+                content: "Tool output",
+                tokens: 150,
+            });
+
+            const { container } = render(<Message message={message} />);
+
+            // Click to see tokens (may be in header)
+            const header = container.querySelector('div[class*="cursor-pointer"]');
+            if (header) {
+                fireEvent.click(header);
+            }
+
+            // Tokens should be visible somewhere
+            expect(screen.getByText(/150/)).toBeInTheDocument();
         });
     });
 });
