@@ -9,6 +9,7 @@ describe("mcpStore", () => {
         args: ["test-server"],
         enabled: true,
         description: "A test server",
+        type: "stdio",
     };
 
     beforeEach(() => {
