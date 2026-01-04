@@ -3,9 +3,16 @@
  */
 
 import { useMemo, useCallback, useRef } from "react";
-import { useChatStore, useSettingsStore, useUIStore, usePermissionStore } from "../stores";
+import {
+    useChatStore,
+    useSettingsStore,
+    useUIStore,
+    usePermissionStore,
+    useUsageStore,
+} from "../stores";
 import { MessageType, ToolExecutionStatus } from "../../shared/constants";
 import type { ChatMessage, PermissionRequest, TokenUsage } from "../types";
+import type { UsageData } from "../../shared/types/usage";
 import type { ConversationListItem } from "../types/history";
 import {
     extractTodosFromInput,
@@ -441,6 +448,11 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
 
             compactBoundary: () => {
                 resetTokenTracking();
+            },
+
+            usageData: (msg: unknown) => {
+                const data = msg as { data: UsageData };
+                useUsageStore.getState().setUsageData(data.data);
             },
         };
 

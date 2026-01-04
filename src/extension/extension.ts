@@ -5,6 +5,7 @@ import { ClaudeService } from "./services/ClaudeService";
 import { ConversationService } from "./services/ConversationService";
 import { PermissionService } from "./services/PermissionService";
 import { MCPService } from "./services/MCPService";
+import { UsageService } from "./services/UsageService";
 import { COMMAND_IDS, VIEW_IDS, CONFIG_KEYS } from "../shared/constants";
 import {
     DiffContentProvider,
@@ -27,6 +28,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const conversationService = new ConversationService(context);
     const permissionService = new PermissionService(context);
     const mcpService = new MCPService(context);
+    const usageService = new UsageService(claudeService);
 
     // Create the main panel provider (for editor area)
     const panelProvider = new PanelProvider(
@@ -36,6 +38,7 @@ export function activate(context: vscode.ExtensionContext): void {
         conversationService,
         permissionService,
         mcpService,
+        usageService,
     );
 
     // Create sidebar webview provider (shares state with panel provider)
@@ -112,6 +115,7 @@ export function activate(context: vscode.ExtensionContext): void {
         conversationService,
         permissionService,
         mcpService,
+        usageService,
     );
 
     console.log("Claude Code GUI extension activation completed successfully!");

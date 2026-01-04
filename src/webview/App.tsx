@@ -11,6 +11,7 @@ import {
     PermissionModal,
     InstallModal,
     SlashCommandsModal,
+    UsageModal,
 } from "./components/Modals";
 
 import { useChatStore } from "./stores";
@@ -191,6 +192,7 @@ export const App: React.FC = () => {
                 lastDurationMs={local.lastDurationMs}
                 requestStartTime={chat.requestStartTime}
                 subscriptionType={local.subscriptionType}
+                onUsageClick={() => state.uiActions.openModal("usage")}
             />
 
             {ui.activeModal === "mcp" && (
@@ -259,6 +261,10 @@ export const App: React.FC = () => {
 
             {ui.activeModal === "install" && (
                 <InstallModal isOpen={true} onClose={state.uiActions.closeModal} />
+            )}
+
+            {ui.activeModal === "usage" && (
+                <UsageModal isOpen={true} onClose={state.uiActions.closeModal} />
             )}
 
             {ui.activeModal === "keyboard-shortcuts" && (

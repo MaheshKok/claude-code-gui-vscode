@@ -14,6 +14,7 @@ import { useUIStore as _useUIStore } from "./uiStore";
 import { usePermissionStore as _usePermissionStore } from "./permissionStore";
 import { useConversationStore as _useConversationStore } from "./conversationStore";
 import { useMCPStore as _useMCPStore } from "./mcpStore";
+import { useUsageStore as _useUsageStore } from "./usageStore";
 
 // ============================================================================
 // Chat Store
@@ -141,6 +142,11 @@ export type {
 } from "./mcpStore";
 
 // ============================================================================
+// Usage Store
+// ============================================================================
+export { useUsageStore } from "./usageStore";
+
+// ============================================================================
 // Combined Store Hook
 // ============================================================================
 
@@ -155,6 +161,7 @@ export const useStores = () => {
     const permission = _usePermissionStore();
     const conversation = _useConversationStore();
     const mcp = _useMCPStore();
+    const usage = _useUsageStore();
 
     return {
         chat,
@@ -163,6 +170,7 @@ export const useStores = () => {
         permission,
         conversation,
         mcp,
+        usage,
     };
 };
 
@@ -176,6 +184,7 @@ export const getStores = () => ({
     permission: _usePermissionStore.getState(),
     conversation: _useConversationStore.getState(),
     mcp: _useMCPStore.getState(),
+    usage: _useUsageStore.getState(),
 });
 
 /**

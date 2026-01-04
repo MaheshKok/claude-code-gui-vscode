@@ -34,3 +34,6 @@ export type {
 // Install Modal
 export { InstallModal } from "./InstallModal";
 export type { InstallModalProps, InstallState } from "./InstallModal";
+
+// Usage Modal
+export { UsageModal } from "./UsageModal";

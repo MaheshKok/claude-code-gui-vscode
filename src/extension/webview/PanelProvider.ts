@@ -6,6 +6,7 @@ import { ClaudeService } from "../services/ClaudeService";
 import { ConversationService, ConversationMessage } from "../services/ConversationService";
 import { PermissionService } from "../services/PermissionService";
 import { MCPService } from "../services/MCPService";
+import { UsageService } from "../services/UsageService";
 import { getHtml } from "./html";
 import {
     handleWebviewMessage,
@@ -41,6 +42,7 @@ export class PanelProvider {
         private readonly _conversationService: ConversationService,
         private readonly _permissionService: PermissionService,
         private readonly _mcpService: MCPService,
+        private readonly _usageService: UsageService,
     ) {
         // Initialize managers
         this._stateManager = new SessionStateManager();
@@ -100,6 +102,9 @@ export class PanelProvider {
 
         // Set up Claude service event handlers
         this._setupClaudeServiceHandlers();
+
+        // Set up Usage service event handlers
+        this._setupUsageServiceHandlers();
     }
 
     /**
@@ -148,6 +153,27 @@ export class PanelProvider {
         });
     }
 
+    /**
+     * Set up event handlers for Usage service
+     */
+    private _setupUsageServiceHandlers(): void {
+        this._usageService.onUsageUpdate((data) => {
+            this._postMessage({
+                type: "usageData",
+                data,
+            });
+        });
+    }
+
+    private _sendUsageData(): void {
+        const usageData = this._usageService.currentUsage;
+        if (usageData) {
+            this._postMessage({
+                type: "usageData",
+                data: usageData,
+            });
+        }
+    }
     /**
      * Show the panel in the editor area
      */
@@ -415,6 +441,7 @@ export class PanelProvider {
         }
 
         this._sendCurrentSettings();
+        this._sendUsageData();
     }
 
     private _sendCurrentSettings(): void {

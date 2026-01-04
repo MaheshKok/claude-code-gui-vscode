@@ -30,6 +30,7 @@ export type ModalType =
     | "about"
     | "export"
     | "keyboard-shortcuts"
+    | "usage"
     | null;
 
 /**

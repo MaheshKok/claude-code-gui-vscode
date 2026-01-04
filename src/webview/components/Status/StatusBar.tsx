@@ -12,6 +12,7 @@ export interface StatusBarProps {
     lastDurationMs: number | null;
     requestStartTime: number | null;
     subscriptionType: string | null;
+    onUsageClick?: () => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -24,6 +25,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     lastDurationMs,
     requestStartTime,
     subscriptionType,
+    onUsageClick,
 }) => {
     const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -92,8 +94,12 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                         </div>
                     )}
 
-                    {!isProcessing && sessionCostUsd > 0 && (
-                        <div className="flex items-center gap-1.5" title="Session Cost">
+                    {!isProcessing && (
+                        <div
+                            className={`flex items-center gap-1.5 ${onUsageClick ? "cursor-pointer hover:text-white/80 transition-colors" : ""}`}
+                            title="Session Cost - Click for Usage Details"
+                            onClick={onUsageClick}
+                        >
                             <DollarSign className="w-3 h-3" />
                             <span>{formatCost(sessionCostUsd, { showFreeForZero: false })}</span>
                         </div>
