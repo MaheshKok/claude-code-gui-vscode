@@ -3,11 +3,11 @@
     "displayName": "Claude Code GUI",
     "description": "Modern AI-Powered GUI Interface for Claude Code CLI",
     "version": "1.0.0",
-    "publisher": "claude-flow",
-    "author": "Claude Flow Team",
+    "publisher": "MaheshKok",
+    "author": "Mahesh Kokare",
     "repository": {
         "type": "git",
-        "url": "https://github.com/anthropics/claude-code-gui"
+        "url": "https://github.com/MaheshKok/claude-code-gui-vscode"
     },
     "license": "MIT",
     "engines": {
