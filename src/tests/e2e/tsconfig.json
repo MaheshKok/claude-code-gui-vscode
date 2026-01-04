@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "lib": ["ES2022"],
+        "outDir": "../../../out/tests/e2e",
+        "rootDir": ".",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "declaration": false,
+        "types": ["node", "mocha", "vscode"]
+    },
+    "include": ["./**/*.ts"],
+    "exclude": ["node_modules"]
+}

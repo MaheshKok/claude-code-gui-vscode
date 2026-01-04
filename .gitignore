@@ -75,3 +75,4 @@ hive-mind-prompt-*.txt
 verify-setup.sh
 
 .vscode/
+.vscode-test/
