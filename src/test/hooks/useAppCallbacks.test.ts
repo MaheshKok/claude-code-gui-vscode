@@ -88,7 +88,7 @@ describe("useAppCallbacks", () => {
                 expect.objectContaining({
                     type: MessageType.User,
                     content: "Hello world",
-                })
+                }),
             );
             expect(mockSetProcessing).toHaveBeenCalledWith(true);
             expect(mockStartRequestTiming).toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe("useAppCallbacks", () => {
                 expect.objectContaining({
                     type: "sendMessage",
                     message: "Hello world",
-                })
+                }),
             );
         });
 
@@ -112,12 +112,12 @@ describe("useAppCallbacks", () => {
             expect(mockAddMessage).toHaveBeenCalledWith(
                 expect.objectContaining({
                     attachments,
-                })
+                }),
             );
             expect(mockPostMessage).toHaveBeenCalledWith(
                 expect.objectContaining({
                     attachments,
-                })
+                }),
             );
         });
     });

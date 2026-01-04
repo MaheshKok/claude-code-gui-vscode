@@ -49,9 +49,7 @@ describe("MessageList", () => {
         it("should show description in empty state", () => {
             render(<MessageList messages={[]} isProcessing={false} />);
 
-            expect(
-                screen.getByText(/Ask Claude anything about your code/)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/Ask Claude anything about your code/)).toBeInTheDocument();
         });
 
         it("should show quick action buttons in empty state", () => {
@@ -64,9 +62,7 @@ describe("MessageList", () => {
         });
 
         it("should hide empty state when showEmptyState is false", () => {
-            render(
-                <MessageList messages={[]} isProcessing={false} showEmptyState={false} />
-            );
+            render(<MessageList messages={[]} isProcessing={false} showEmptyState={false} />);
 
             expect(screen.queryByText("Start a conversation")).not.toBeInTheDocument();
         });
@@ -87,7 +83,7 @@ describe("MessageList", () => {
 
         it("should show animated dots when processing", () => {
             const { container } = render(
-                <MessageList messages={mockMessages} isProcessing={true} />
+                <MessageList messages={mockMessages} isProcessing={true} />,
             );
 
             const dots = container.querySelectorAll(".animate-bounce");
@@ -98,7 +94,7 @@ describe("MessageList", () => {
     describe("scrollable prop", () => {
         it("should apply overflow class when scrollable", () => {
             const { container } = render(
-                <MessageList messages={mockMessages} isProcessing={false} isScrollable={true} />
+                <MessageList messages={mockMessages} isProcessing={false} isScrollable={true} />,
             );
 
             const messageContainer = container.querySelector(".overflow-y-auto");
@@ -107,11 +103,7 @@ describe("MessageList", () => {
 
         it("should not apply overflow class when not scrollable", () => {
             const { container } = render(
-                <MessageList
-                    messages={mockMessages}
-                    isProcessing={false}
-                    isScrollable={false}
-                />
+                <MessageList messages={mockMessages} isProcessing={false} isScrollable={false} />,
             );
 
             const messageContainer = container.querySelector(".overflow-y-auto");
@@ -121,9 +113,7 @@ describe("MessageList", () => {
 
     describe("single message", () => {
         it("should render single message correctly", () => {
-            const singleMessage: Message[] = [
-                { id: "1", role: "user", content: "Hello world" },
-            ];
+            const singleMessage: Message[] = [{ id: "1", role: "user", content: "Hello world" }];
 
             render(<MessageList messages={singleMessage} isProcessing={false} />);
 
@@ -146,7 +136,7 @@ describe("MessageList", () => {
     describe("message order", () => {
         it("should render messages in order", () => {
             const { container } = render(
-                <MessageList messages={mockMessages} isProcessing={false} />
+                <MessageList messages={mockMessages} isProcessing={false} />,
             );
 
             const messageElements = container.querySelectorAll('[data-testid^="message-"]');
@@ -159,7 +149,7 @@ describe("MessageList", () => {
     describe("bottom reference", () => {
         it("should render bottom div for scroll anchor", () => {
             const { container } = render(
-                <MessageList messages={mockMessages} isProcessing={false} />
+                <MessageList messages={mockMessages} isProcessing={false} />,
             );
 
             // The component renders an empty div at the bottom for scroll anchoring

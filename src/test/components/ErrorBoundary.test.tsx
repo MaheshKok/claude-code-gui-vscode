@@ -22,7 +22,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <div>Child content</div>
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("Child content")).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe("ErrorBoundary", () => {
                 <ErrorBoundary>
                     <div>First child</div>
                     <div>Second child</div>
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("First child")).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("Something went wrong")).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText(/Test error/)).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary fallback={<div>Custom fallback</div>}>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("Custom fallback")).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary componentName="MyComponent">
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText(/Error in MyComponent/)).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary onError={onError}>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(onError).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(consoleSpy).toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("Try again")).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             expect(screen.getByText("Something went wrong")).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe("ErrorBoundary", () => {
             render(
                 <ErrorBoundary>
                     <ThrowingComponent shouldThrow={true} />
-                </ErrorBoundary>
+                </ErrorBoundary>,
             );
 
             // The error UI should be displayed

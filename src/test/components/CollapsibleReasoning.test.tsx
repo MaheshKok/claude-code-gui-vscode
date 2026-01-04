@@ -62,7 +62,7 @@ describe("CollapsibleReasoning", () => {
             render(
                 <div onClick={parentClick}>
                     <CollapsibleReasoning content={longContent} />
-                </div>
+                </div>,
             );
 
             fireEvent.click(screen.getByText("Show full reasoning"));
@@ -73,9 +73,7 @@ describe("CollapsibleReasoning", () => {
 
     describe("content styling", () => {
         it("should preserve whitespace in content", () => {
-            const { container } = render(
-                <CollapsibleReasoning content="Line 1\nLine 2\nLine 3" />
-            );
+            const { container } = render(<CollapsibleReasoning content="Line 1\nLine 2\nLine 3" />);
 
             const paragraph = container.querySelector("p");
             expect(paragraph?.classList.contains("whitespace-pre-wrap")).toBe(true);

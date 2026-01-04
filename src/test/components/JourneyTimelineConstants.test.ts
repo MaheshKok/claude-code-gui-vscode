@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { STATUS_LABELS, STATUS_CLASSES } from "../../webview/components/Chat/JourneyTimeline/constants";
+import {
+    STATUS_LABELS,
+    STATUS_CLASSES,
+} from "../../webview/components/Chat/JourneyTimeline/constants";
 
 describe("JourneyTimeline Constants", () => {
     describe("STATUS_LABELS", () => {

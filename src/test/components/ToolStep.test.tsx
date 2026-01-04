@@ -6,8 +6,12 @@ import type { TimelineItemTool } from "../../webview/components/Chat/JourneyTime
 // Mock child components
 vi.mock("../../webview/components/Tools", () => ({
     TodoDisplay: ({ title }: { title: string }) => <div data-testid="todo-display">{title}</div>,
-    ToolUseCard: ({ toolName }: { toolName: string }) => <div data-testid="tool-use-card">{toolName}</div>,
-    ToolResultCard: ({ content }: { content: string }) => <div data-testid="tool-result-card">{content}</div>,
+    ToolUseCard: ({ toolName }: { toolName: string }) => (
+        <div data-testid="tool-use-card">{toolName}</div>
+    ),
+    ToolResultCard: ({ content }: { content: string }) => (
+        <div data-testid="tool-result-card">{content}</div>
+    ),
 }));
 
 vi.mock("../../webview/components/Common", () => ({
@@ -145,12 +149,7 @@ describe("ToolStep", () => {
         });
 
         it("should expand when collapsedSteps is false for step id", () => {
-            render(
-                <ToolStep
-                    {...defaultProps}
-                    collapsedSteps={{ "step-1": false }}
-                />
-            );
+            render(<ToolStep {...defaultProps} collapsedSteps={{ "step-1": false }} />);
 
             expect(screen.getByTestId("tool-use-card")).toBeInTheDocument();
         });
@@ -182,23 +181,13 @@ describe("ToolStep", () => {
 
     describe("content display", () => {
         it("should show ToolUseCard when expanded", () => {
-            render(
-                <ToolStep
-                    {...defaultProps}
-                    collapsedSteps={{ "step-1": false }}
-                />
-            );
+            render(<ToolStep {...defaultProps} collapsedSteps={{ "step-1": false }} />);
 
             expect(screen.getByTestId("tool-use-card")).toBeInTheDocument();
         });
 
         it("should show ToolResultCard when result exists and expanded", () => {
-            render(
-                <ToolStep
-                    {...defaultProps}
-                    collapsedSteps={{ "step-1": false }}
-                />
-            );
+            render(<ToolStep {...defaultProps} collapsedSteps={{ "step-1": false }} />);
 
             expect(screen.getByTestId("tool-result-card")).toBeInTheDocument();
         });
@@ -219,7 +208,7 @@ describe("ToolStep", () => {
                     step={step}
                     collapsedSteps={{ "step-1": false }}
                     onToggleStep={vi.fn()}
-                />
+                />,
             );
 
             expect(screen.getByTestId("todo-display")).toBeInTheDocument();
@@ -236,10 +225,7 @@ describe("ToolStep", () => {
 
         it("should rotate chevron when expanded", () => {
             const { container } = render(
-                <ToolStep
-                    {...defaultProps}
-                    collapsedSteps={{ "step-1": false }}
-                />
+                <ToolStep {...defaultProps} collapsedSteps={{ "step-1": false }} />,
             );
 
             const chevrons = container.querySelectorAll("svg.lucide-chevron-right");

@@ -139,17 +139,13 @@ describe("StatusBadge", () => {
 
     describe("className prop", () => {
         it("should apply additional class names", () => {
-            const { container } = render(
-                <StatusBadge status="success" className="custom-class" />
-            );
+            const { container } = render(<StatusBadge status="success" className="custom-class" />);
             const badge = container.firstChild;
             expect(badge).toHaveClass("custom-class");
         });
 
         it("should preserve default classes when adding custom ones", () => {
-            const { container } = render(
-                <StatusBadge status="success" className="custom-class" />
-            );
+            const { container } = render(<StatusBadge status="success" className="custom-class" />);
             const badge = container.firstChild;
             expect(badge).toHaveClass("inline-flex", "items-center", "rounded", "font-bold");
         });

@@ -47,7 +47,9 @@ describe("StatusIcon", () => {
         });
 
         it("should apply custom className", () => {
-            const { container } = render(<StatusIcon status="completed" className="w-6 h-6 custom" />);
+            const { container } = render(
+                <StatusIcon status="completed" className="w-6 h-6 custom" />,
+            );
 
             const svg = container.querySelector("svg");
             expect(svg?.classList.contains("w-6")).toBe(true);

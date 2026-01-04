@@ -61,7 +61,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -81,7 +81,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -100,7 +100,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: [mockConversations[0]],
                         },
-                    })
+                    }),
                 );
             });
 
@@ -119,7 +119,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -141,15 +141,13 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: [],
                         },
-                    })
+                    }),
                 );
             });
 
             await waitFor(() => {
                 expect(screen.getByText("No conversations found")).toBeInTheDocument();
-                expect(
-                    screen.getByText("Start chatting to see history here")
-                ).toBeInTheDocument();
+                expect(screen.getByText("Start chatting to see history here")).toBeInTheDocument();
             });
         });
     });
@@ -165,7 +163,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -190,7 +188,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -215,7 +213,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -241,7 +239,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -269,7 +267,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -301,7 +299,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -330,7 +328,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: mockConversations,
                         },
-                    })
+                    }),
                 );
             });
 
@@ -346,7 +344,7 @@ describe("HistoryView", () => {
                             type: "conversationDeleted",
                             filename: "conv-1.json",
                         },
-                    })
+                    }),
                 );
             });
 
@@ -366,7 +364,7 @@ describe("HistoryView", () => {
                             type: "conversationList",
                             conversations: [],
                         },
-                    })
+                    }),
                 );
             });
 
@@ -383,10 +381,7 @@ describe("HistoryView", () => {
 
             unmount();
 
-            expect(removeEventListenerSpy).toHaveBeenCalledWith(
-                "message",
-                expect.any(Function)
-            );
+            expect(removeEventListenerSpy).toHaveBeenCalledWith("message", expect.any(Function));
             removeEventListenerSpy.mockRestore();
         });
     });

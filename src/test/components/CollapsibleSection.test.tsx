@@ -8,7 +8,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Test Header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByText("Test Header")).toBeInTheDocument();
@@ -18,7 +18,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header={<span data-testid="custom-header">Custom Header</span>}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByTestId("custom-header")).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.queryByTestId("content")).not.toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" defaultCollapsed={false}>
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByTestId("content")).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             fireEvent.click(screen.getByText("Header"));
@@ -62,7 +62,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" defaultCollapsed={false}>
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             fireEvent.click(screen.getByText("Header"));
@@ -75,7 +75,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" onToggle={onToggle}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             fireEvent.click(screen.getByText("Header"));
@@ -87,7 +87,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const headerButton = screen.getByRole("button");
@@ -100,7 +100,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const headerButton = screen.getByRole("button");
@@ -115,7 +115,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" isCollapsed={false}>
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByTestId("content")).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe("CollapsibleSection", () => {
             const { rerender } = render(
                 <CollapsibleSection header="Header" isCollapsed={true}>
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.queryByTestId("content")).not.toBeInTheDocument();
@@ -133,7 +133,7 @@ describe("CollapsibleSection", () => {
             rerender(
                 <CollapsibleSection header="Header" isCollapsed={false}>
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByTestId("content")).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const svg = container.querySelector("svg");
@@ -156,7 +156,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" showChevron={false}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const svg = container.querySelector("svg");
@@ -167,7 +167,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" defaultCollapsed={false}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const svg = container.querySelector("svg");
@@ -178,7 +178,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" defaultCollapsed={true}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const svg = container.querySelector("svg");
@@ -189,7 +189,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" chevronPosition="right">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const header = container.querySelector('[role="button"]');
@@ -204,7 +204,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" chevronSize={24}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const svg = container.querySelector("svg");
@@ -218,7 +218,7 @@ describe("CollapsibleSection", () => {
             const { container } = render(
                 <CollapsibleSection header="Header" className="custom-container">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(container.firstChild).toHaveClass("custom-container");
@@ -228,7 +228,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" headerClassName="custom-header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const header = screen.getByRole("button");
@@ -243,7 +243,7 @@ describe("CollapsibleSection", () => {
                     defaultCollapsed={false}
                 >
                     <div data-testid="content">Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             const contentWrapper = screen.getByTestId("content").parentElement;
@@ -256,7 +256,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByRole("button")).toBeInTheDocument();
@@ -266,7 +266,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByRole("button")).toHaveAttribute("tabIndex", "0");
@@ -276,7 +276,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header">
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "false");
@@ -286,7 +286,7 @@ describe("CollapsibleSection", () => {
             render(
                 <CollapsibleSection header="Header" defaultCollapsed={false}>
                     <div>Content</div>
-                </CollapsibleSection>
+                </CollapsibleSection>,
             );
 
             expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "true");

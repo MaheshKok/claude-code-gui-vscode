@@ -24,7 +24,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/test.ts" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("Read")).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/test.ts" }}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             // file_path should not be visible when collapsed
@@ -49,7 +49,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/test.ts" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("file_path:")).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/test.ts" }}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("Read"));
@@ -77,7 +77,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/test.ts" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("Read"));
@@ -148,7 +148,7 @@ describe("ToolUseCard", () => {
                     }}
                     fileContentBefore="const a = 1\nconst b = 3"
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("Diff Preview")).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe("ToolUseCard", () => {
                     }}
                     fileContentBefore=""
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("Diff Preview")).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe("ToolUseCard", () => {
                     input={{ command: "npm test" }}
                     isExecuting={true}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("Executing...")).toBeInTheDocument();
@@ -196,7 +196,7 @@ describe("ToolUseCard", () => {
                     input={{ command: "npm test" }}
                     isExecuting={false}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.queryByText("Executing...")).not.toBeInTheDocument();
@@ -211,7 +211,7 @@ describe("ToolUseCard", () => {
                     input={{ file_path: "/test.ts" }}
                     duration={1500}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             // Check for clock icon which indicates duration is shown
@@ -228,7 +228,7 @@ describe("ToolUseCard", () => {
                     input={{ file_path: "/test.ts" }}
                     tokens={150}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText(/150/)).toBeInTheDocument();
@@ -242,7 +242,7 @@ describe("ToolUseCard", () => {
                     toolName="mcp__server__tool"
                     input={{ param: "value" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("MCP")).toBeInTheDocument();
@@ -254,7 +254,7 @@ describe("ToolUseCard", () => {
                     toolName="mcp__myserver__mytool"
                     input={{ param: "value" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             // Server and tool names are shown combined as "myserver / mytool"
@@ -270,7 +270,7 @@ describe("ToolUseCard", () => {
                     toolName="Read"
                     input={{ file_path: "/path/to/myfile.ts" }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("myfile.ts")).toBeInTheDocument();
@@ -284,7 +284,7 @@ describe("ToolUseCard", () => {
                     input={{ file_path: "/path/to/myfile.ts" }}
                     onFilePathClick={onFilePathClick}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("myfile.ts"));
@@ -301,7 +301,7 @@ describe("ToolUseCard", () => {
                     toolName="Write"
                     input={{ content: longValue }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
@@ -314,7 +314,7 @@ describe("ToolUseCard", () => {
                     toolName="Write"
                     input={{ content: longValue }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("(show more)")).toBeInTheDocument();
@@ -327,7 +327,7 @@ describe("ToolUseCard", () => {
                     toolName="Write"
                     input={{ content: longValue }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("(show more)"));
@@ -339,13 +339,7 @@ describe("ToolUseCard", () => {
 
     describe("input with no content", () => {
         it("should handle empty input", () => {
-            render(
-                <ToolUseCard
-                    toolName="Read"
-                    input={{}}
-                    defaultCollapsed={false}
-                />
-            );
+            render(<ToolUseCard toolName="Read" input={{}} defaultCollapsed={false} />);
 
             expect(screen.getByText("Read")).toBeInTheDocument();
         });
@@ -358,7 +352,7 @@ describe("ToolUseCard", () => {
                     toolName="Task"
                     input={{ config: { key: "value" } }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText(/key/)).toBeInTheDocument();
@@ -371,7 +365,7 @@ describe("ToolUseCard", () => {
                     toolName="Task"
                     input={{ nullValue: null }}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("null")).toBeInTheDocument();
@@ -391,7 +385,7 @@ describe("ToolUseCard", () => {
                     fileContentBefore="line1\nline2\nfoo\nline4"
                     startLine={10}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText(/Line 10/)).toBeInTheDocument();
@@ -411,7 +405,7 @@ describe("ToolUseCard", () => {
                     fileContentBefore="a\nc"
                     startLines={[5, 15]}
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText(/Line 5/)).toBeInTheDocument();
@@ -432,7 +426,7 @@ describe("ToolUseCard", () => {
                     fileContentBefore="foo"
                     fileContentAfter="bar"
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("Diff Preview")).toBeInTheDocument();

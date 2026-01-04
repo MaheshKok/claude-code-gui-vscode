@@ -158,7 +158,9 @@ describe("mcpStore", () => {
     describe("getEnabledServers", () => {
         it("should return only enabled servers", () => {
             useMCPStore.getState().addServer(mockServerConfig);
-            useMCPStore.getState().addServer({ ...mockServerConfig, id: "disabled", enabled: false });
+            useMCPStore
+                .getState()
+                .addServer({ ...mockServerConfig, id: "disabled", enabled: false });
             const enabled = useMCPStore.getState().getEnabledServers();
             expect(enabled.length).toBe(1);
             expect(enabled[0].config.id).toBe("test-server-1");
@@ -221,7 +223,11 @@ describe("mcpStore", () => {
         it("should reset all servers to disconnected", () => {
             useMCPStore.getState().addServer(mockServerConfig);
             useMCPStore.getState().setServerStatus("test-server-1", "connected");
-            useMCPStore.getState().setServerTools("test-server-1", [{ name: "tool", description: "", inputSchema: {} }]);
+            useMCPStore
+                .getState()
+                .setServerTools("test-server-1", [
+                    { name: "tool", description: "", inputSchema: {} },
+                ]);
             useMCPStore.getState().incrementRetryCount("test-server-1");
 
             useMCPStore.getState().resetAllServers();

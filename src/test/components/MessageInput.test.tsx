@@ -29,17 +29,13 @@ describe("MessageInput", () => {
         it("should render the textarea", () => {
             render(<MessageInput {...defaultProps} />);
 
-            expect(
-                screen.getByPlaceholderText("How can I help you?")
-            ).toBeInTheDocument();
+            expect(screen.getByPlaceholderText("How can I help you?")).toBeInTheDocument();
         });
 
         it("should show disabled placeholder when disabled", () => {
             render(<MessageInput {...defaultProps} disabled={true} />);
 
-            expect(
-                screen.getByPlaceholderText("Claude is thinking...")
-            ).toBeInTheDocument();
+            expect(screen.getByPlaceholderText("Claude is thinking...")).toBeInTheDocument();
         });
 
         it("should render model selector", () => {
@@ -137,7 +133,7 @@ describe("MessageInput", () => {
         it("should not submit when disabled", () => {
             const onSendMessage = vi.fn();
             render(
-                <MessageInput {...defaultProps} disabled={true} onSendMessage={onSendMessage} />
+                <MessageInput {...defaultProps} disabled={true} onSendMessage={onSendMessage} />,
             );
 
             // Textarea is disabled, so we can't type in it
@@ -187,17 +183,13 @@ describe("MessageInput", () => {
         });
 
         it("should display correct model name for Opus", () => {
-            render(
-                <MessageInput {...defaultProps} currentModel="claude-opus-4-5-20251101" />
-            );
+            render(<MessageInput {...defaultProps} currentModel="claude-opus-4-5-20251101" />);
 
             expect(screen.getByText("Opus 4.5")).toBeInTheDocument();
         });
 
         it("should display correct model name for Haiku", () => {
-            render(
-                <MessageInput {...defaultProps} currentModel="claude-haiku-4-5-20251001" />
-            );
+            render(<MessageInput {...defaultProps} currentModel="claude-haiku-4-5-20251001" />);
 
             expect(screen.getByText("Haiku 4.5")).toBeInTheDocument();
         });
@@ -220,7 +212,7 @@ describe("MessageInput", () => {
                     {...defaultProps}
                     thinkingMode={true}
                     thinkingIntensity={ThinkingIntensity.ThinkHard}
-                />
+                />,
             );
 
             expect(screen.getByText("Think Hard")).toBeInTheDocument();
@@ -234,15 +226,13 @@ describe("MessageInput", () => {
                     {...defaultProps}
                     onThinkingIntensityChange={onThinkingIntensityChange}
                     onThinkingModeToggle={onThinkingModeToggle}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("Think"));
             fireEvent.click(screen.getByText("Ultrathink"));
 
-            expect(onThinkingIntensityChange).toHaveBeenCalledWith(
-                ThinkingIntensity.Ultrathink
-            );
+            expect(onThinkingIntensityChange).toHaveBeenCalledWith(ThinkingIntensity.Ultrathink);
         });
 
         it("should toggle thinking mode when selecting intensity with mode off", () => {
@@ -252,7 +242,7 @@ describe("MessageInput", () => {
                     {...defaultProps}
                     thinkingMode={false}
                     onThinkingModeToggle={onThinkingModeToggle}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByText("Think"));

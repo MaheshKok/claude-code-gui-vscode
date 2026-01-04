@@ -115,11 +115,7 @@ describe("FilePickerModal", () => {
             const onSelectFile = vi.fn();
             const onClose = vi.fn();
             render(
-                <FilePickerModal
-                    {...defaultProps}
-                    onSelectFile={onSelectFile}
-                    onClose={onClose}
-                />
+                <FilePickerModal {...defaultProps} onSelectFile={onSelectFile} onClose={onClose} />,
             );
 
             fireEvent.click(screen.getByText("index.ts"));
@@ -145,9 +141,7 @@ describe("FilePickerModal", () => {
             const searchInput = screen.getByPlaceholderText("Search files...");
 
             // First item is selected by default
-            expect(screen.getByRole("option", { selected: true })).toHaveTextContent(
-                "index.ts"
-            );
+            expect(screen.getByRole("option", { selected: true })).toHaveTextContent("index.ts");
 
             // Navigate down
             fireEvent.keyDown(searchInput, { key: "ArrowDown" });
@@ -177,11 +171,7 @@ describe("FilePickerModal", () => {
             const onSelectFile = vi.fn();
             const onClose = vi.fn();
             render(
-                <FilePickerModal
-                    {...defaultProps}
-                    onSelectFile={onSelectFile}
-                    onClose={onClose}
-                />
+                <FilePickerModal {...defaultProps} onSelectFile={onSelectFile} onClose={onClose} />,
             );
 
             const searchInput = screen.getByPlaceholderText("Search files...");

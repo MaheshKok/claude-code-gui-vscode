@@ -219,13 +219,21 @@ describe("toolInput utils", () => {
 
     describe("getToolFilePath", () => {
         it("should return file path for file tools", () => {
-            expect(getToolFilePath("Read", { file_path: "/path/to/file.ts" })).toBe("/path/to/file.ts");
-            expect(getToolFilePath("Write", { file_path: "/path/to/file.ts" })).toBe("/path/to/file.ts");
-            expect(getToolFilePath("Edit", { file_path: "/path/to/file.ts" })).toBe("/path/to/file.ts");
+            expect(getToolFilePath("Read", { file_path: "/path/to/file.ts" })).toBe(
+                "/path/to/file.ts",
+            );
+            expect(getToolFilePath("Write", { file_path: "/path/to/file.ts" })).toBe(
+                "/path/to/file.ts",
+            );
+            expect(getToolFilePath("Edit", { file_path: "/path/to/file.ts" })).toBe(
+                "/path/to/file.ts",
+            );
         });
 
         it("should return notebook path", () => {
-            expect(getToolFilePath("NotebookRead", { notebook_path: "/path/to/notebook.ipynb" })).toBe("/path/to/notebook.ipynb");
+            expect(
+                getToolFilePath("NotebookRead", { notebook_path: "/path/to/notebook.ipynb" }),
+            ).toBe("/path/to/notebook.ipynb");
         });
 
         it("should return undefined for non-file tools", () => {
@@ -262,10 +270,12 @@ describe("toolInput utils", () => {
         });
 
         it("should include edit count for MultiEdit", () => {
-            expect(getToolSummary("MultiEdit", {
-                file_path: "/path/to/file.ts",
-                edits: [{ old_string: "a", new_string: "b" }],
-            })).toContain("1 edits");
+            expect(
+                getToolSummary("MultiEdit", {
+                    file_path: "/path/to/file.ts",
+                    edits: [{ old_string: "a", new_string: "b" }],
+                }),
+            ).toContain("1 edits");
         });
 
         it("should return pattern for Glob", () => {
@@ -281,7 +291,9 @@ describe("toolInput utils", () => {
         });
 
         it("should use description for Bash if available", () => {
-            expect(getToolSummary("Bash", { command: "npm install", description: "Install deps" })).toBe("Install deps");
+            expect(
+                getToolSummary("Bash", { command: "npm install", description: "Install deps" }),
+            ).toBe("Install deps");
         });
 
         it("should use command for Bash without description", () => {
@@ -295,11 +307,7 @@ describe("toolInput utils", () => {
 
         it("should show stats for TodoWrite", () => {
             const result = getToolSummary("TodoWrite", {
-                todos: [
-                    { status: "completed" },
-                    { status: "in_progress" },
-                    { status: "pending" },
-                ],
+                todos: [{ status: "completed" }, { status: "in_progress" }, { status: "pending" }],
             });
             expect(result).toContain("3 tasks");
             expect(result).toContain("1 done");
@@ -307,7 +315,9 @@ describe("toolInput utils", () => {
         });
 
         it("should get hostname for WebFetch", () => {
-            expect(getToolSummary("WebFetch", { url: "https://example.com/page" })).toBe("example.com");
+            expect(getToolSummary("WebFetch", { url: "https://example.com/page" })).toBe(
+                "example.com",
+            );
         });
 
         it("should handle invalid URL for WebFetch", () => {
@@ -319,7 +329,9 @@ describe("toolInput utils", () => {
         });
 
         it("should format LSP summary", () => {
-            expect(getToolSummary("LSP", { operation: "goto", filePath: "/path/to/file.ts" })).toContain("goto");
+            expect(
+                getToolSummary("LSP", { operation: "goto", filePath: "/path/to/file.ts" }),
+            ).toContain("goto");
         });
 
         it("should truncate long summaries", () => {
@@ -329,7 +341,9 @@ describe("toolInput utils", () => {
         });
 
         it("should handle unknown tools with common params", () => {
-            expect(getToolSummary("CustomTool", { description: "Custom desc" })).toBe("Custom desc");
+            expect(getToolSummary("CustomTool", { description: "Custom desc" })).toBe(
+                "Custom desc",
+            );
             expect(getToolSummary("CustomTool", { name: "Custom name" })).toBe("Custom name");
         });
     });

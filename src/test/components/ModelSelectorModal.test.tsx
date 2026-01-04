@@ -33,7 +33,7 @@ describe("ModelSelectorModal", () => {
             render(<ModelSelectorModal {...defaultProps} />);
 
             expect(
-                screen.getByText(/This overrides your default model setting/)
+                screen.getByText(/This overrides your default model setting/),
             ).toBeInTheDocument();
         });
     });
@@ -122,12 +122,14 @@ describe("ModelSelectorModal", () => {
     describe("selected styling", () => {
         it("should apply active styling to selected model", () => {
             const { container } = render(
-                <ModelSelectorModal {...defaultProps} selectedModel="opus" />
+                <ModelSelectorModal {...defaultProps} selectedModel="opus" />,
             );
 
             const labels = container.querySelectorAll("label");
             // The opus label (second one) should have active styling
-            expect(labels[1].className).toContain("bg-[var(--vscode-list-activeSelectionBackground)]");
+            expect(labels[1].className).toContain(
+                "bg-[var(--vscode-list-activeSelectionBackground)]",
+            );
         });
     });
 });

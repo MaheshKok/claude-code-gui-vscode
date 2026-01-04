@@ -295,7 +295,7 @@ describe("usageStore", () => {
 
             expect(localStorageMock.setItem).toHaveBeenCalledWith(
                 "claude-usage-cache",
-                expect.any(String)
+                expect.any(String),
             );
         });
 

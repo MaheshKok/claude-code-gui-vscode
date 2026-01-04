@@ -48,11 +48,7 @@ describe("JourneyTimeline", () => {
 
         it("should not show empty state when showEmptyState is false", () => {
             const { container } = render(
-                <JourneyTimeline
-                    messages={[]}
-                    isProcessing={false}
-                    showEmptyState={false}
-                />
+                <JourneyTimeline messages={[]} isProcessing={false} showEmptyState={false} />,
             );
 
             expect(screen.queryByTestId("empty-state")).not.toBeInTheDocument();
@@ -214,7 +210,7 @@ describe("JourneyTimeline", () => {
             ];
 
             const { container } = render(
-                <JourneyTimeline messages={messages} isProcessing={false} />
+                <JourneyTimeline messages={messages} isProcessing={false} />,
             );
 
             // The bottom ref element should exist (it's a div with h-4 class)

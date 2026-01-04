@@ -13,7 +13,11 @@ vi.mock("../../webview/hooks/useVSCode", () => ({
     })),
 }));
 
-import { useClipboard, copyToClipboard, isClipboardApiAvailable } from "../../webview/hooks/useClipboard";
+import {
+    useClipboard,
+    copyToClipboard,
+    isClipboardApiAvailable,
+} from "../../webview/hooks/useClipboard";
 import { useVSCode } from "../../webview/hooks/useVSCode";
 
 describe("useClipboard", () => {

@@ -23,7 +23,10 @@ const loadCachedData = (): { data: UsageData | null; lastUpdatedAt: Date | null 
             // Only use cache if less than 1 hour old
             const oneHourAgo = Date.now() - 60 * 60 * 1000;
             if (parsed.timestamp > oneHourAgo) {
-                console.log("[UsageStore] Loaded cached usage data from", new Date(parsed.timestamp).toLocaleTimeString());
+                console.log(
+                    "[UsageStore] Loaded cached usage data from",
+                    new Date(parsed.timestamp).toLocaleTimeString(),
+                );
                 return {
                     data: parsed.data,
                     lastUpdatedAt: new Date(parsed.timestamp),

@@ -277,9 +277,7 @@ describe("useFilePicker", () => {
         it("should call onSearch callback with debounce", () => {
             vi.useFakeTimers();
             const onSearch = vi.fn();
-            const { result } = renderHook(() =>
-                useFilePicker({ onSearch, searchDebounce: 100 })
-            );
+            const { result } = renderHook(() => useFilePicker({ onSearch, searchDebounce: 100 }));
 
             act(() => {
                 result.current.setSearchQuery("test");

@@ -77,13 +77,7 @@ describe("StatusBar", () => {
         });
 
         it("should not display session cost when processing", () => {
-            render(
-                <StatusBar
-                    {...defaultProps}
-                    isProcessing={true}
-                    sessionCostUsd={0.25}
-                />
-            );
+            render(<StatusBar {...defaultProps} isProcessing={true} sessionCostUsd={0.25} />);
 
             expect(screen.queryByTitle("Session Cost")).not.toBeInTheDocument();
         });
@@ -106,19 +100,13 @@ describe("StatusBar", () => {
         it("should not display duration when null", () => {
             render(<StatusBar {...defaultProps} lastDurationMs={null} />);
 
-            expect(
-                screen.queryByTitle("Last Request Duration")
-            ).not.toBeInTheDocument();
+            expect(screen.queryByTitle("Last Request Duration")).not.toBeInTheDocument();
         });
 
         it("should display elapsed time when processing", () => {
             const startTime = Date.now();
             render(
-                <StatusBar
-                    {...defaultProps}
-                    isProcessing={true}
-                    requestStartTime={startTime}
-                />
+                <StatusBar {...defaultProps} isProcessing={true} requestStartTime={startTime} />,
             );
 
             // Advance time
@@ -179,11 +167,7 @@ describe("StatusBar", () => {
             // Set start time to 1 second in the past so elapsedMs > 0 initially
             const startTime = Date.now() - 1000;
             render(
-                <StatusBar
-                    {...defaultProps}
-                    isProcessing={true}
-                    requestStartTime={startTime}
-                />
+                <StatusBar {...defaultProps} isProcessing={true} requestStartTime={startTime} />,
             );
 
             // Initial render should show 1s (since start was 1 second ago)
@@ -202,11 +186,7 @@ describe("StatusBar", () => {
             // Start 1 second in the past so elapsedMs > 0
             const startTime = Date.now() - 1000;
             const { rerender } = render(
-                <StatusBar
-                    {...defaultProps}
-                    isProcessing={true}
-                    requestStartTime={startTime}
-                />
+                <StatusBar {...defaultProps} isProcessing={true} requestStartTime={startTime} />,
             );
 
             // Advance by 2 more seconds (total 3s from start)
@@ -215,13 +195,7 @@ describe("StatusBar", () => {
             });
 
             // Stop processing
-            rerender(
-                <StatusBar
-                    {...defaultProps}
-                    isProcessing={false}
-                    requestStartTime={null}
-                />
-            );
+            rerender(<StatusBar {...defaultProps} isProcessing={false} requestStartTime={null} />);
 
             // Elapsed time should be reset - now shows last duration instead
             expect(screen.queryByTitle("Elapsed Time")).not.toBeInTheDocument();

@@ -139,7 +139,7 @@ describe("logger", () => {
                     level: LogLevel.INFO,
                     message: "Test message",
                     timestamp: expect.any(Date),
-                })
+                }),
             );
         });
 

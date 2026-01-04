@@ -187,7 +187,13 @@ describe("PermissionModal", () => {
         it("should call onAlwaysAllow when button clicked with pattern", () => {
             const onAlwaysAllow = vi.fn();
             const onClose = vi.fn();
-            render(<PermissionModal {...defaultProps} onAlwaysAllow={onAlwaysAllow} onClose={onClose} />);
+            render(
+                <PermissionModal
+                    {...defaultProps}
+                    onAlwaysAllow={onAlwaysAllow}
+                    onClose={onClose}
+                />,
+            );
 
             fireEvent.click(screen.getByText("Always allow this pattern..."));
 
@@ -269,7 +275,7 @@ describe("PermissionModal", () => {
             // Check that the command is displayed somewhere in the modal
             const codeElements = document.querySelectorAll("code, pre");
             const hasCommand = Array.from(codeElements).some((el) =>
-                el.textContent?.includes("npm install")
+                el.textContent?.includes("npm install"),
             );
             expect(hasCommand || screen.getAllByText(/npm install/).length > 0).toBe(true);
         });
@@ -281,9 +287,7 @@ describe("PermissionModal", () => {
                 input: { file_path: "/src/index.ts" },
             };
 
-            render(
-                <PermissionModal {...defaultProps} request={requestNoDesc} />
-            );
+            render(<PermissionModal {...defaultProps} request={requestNoDesc} />);
 
             expect(screen.getByText(/Read/)).toBeInTheDocument();
         });
@@ -299,9 +303,7 @@ describe("PermissionModal", () => {
                 },
             };
 
-            render(
-                <PermissionModal {...defaultProps} request={complexRequest} />
-            );
+            render(<PermissionModal {...defaultProps} request={complexRequest} />);
 
             expect(screen.getByText(/file_path/)).toBeInTheDocument();
         });

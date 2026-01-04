@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useConversationStore, type ConversationSummary } from "../../webview/stores/conversationStore";
+import {
+    useConversationStore,
+    type ConversationSummary,
+} from "../../webview/stores/conversationStore";
 import type { ChatMessage } from "../../webview/types";
 
 // Mock localStorage
@@ -107,7 +110,10 @@ describe("conversationStore", () => {
     describe("updateConversation", () => {
         it("should update an existing conversation", () => {
             const id = useConversationStore.getState().saveConversation(mockMessages);
-            const newMessages = [...mockMessages, { id: "3", type: "user", content: "More" } as ChatMessage];
+            const newMessages = [
+                ...mockMessages,
+                { id: "3", type: "user", content: "More" } as ChatMessage,
+            ];
             useConversationStore.getState().updateConversation(id, newMessages);
             expect(useConversationStore.getState().conversations[0].messageCount).toBe(3);
         });
@@ -156,7 +162,14 @@ describe("conversationStore", () => {
     describe("setCurrentConversation", () => {
         it("should set current conversation", () => {
             const conversation = {
-                summary: { id: "test", title: "Test", preview: "", createdAt: Date.now(), updatedAt: Date.now(), messageCount: 0 },
+                summary: {
+                    id: "test",
+                    title: "Test",
+                    preview: "",
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    messageCount: 0,
+                },
                 messages: [],
             };
             useConversationStore.getState().setCurrentConversation(conversation);
@@ -174,7 +187,9 @@ describe("conversationStore", () => {
         it("should update currentConversation title if same id", () => {
             const id = useConversationStore.getState().saveConversation(mockMessages);
             useConversationStore.getState().updateTitle(id, "Updated Title");
-            expect(useConversationStore.getState().currentConversation?.summary.title).toBe("Updated Title");
+            expect(useConversationStore.getState().currentConversation?.summary.title).toBe(
+                "Updated Title",
+            );
         });
     });
 
@@ -189,17 +204,28 @@ describe("conversationStore", () => {
             const id = useConversationStore.getState().saveConversation(mockMessages);
             useConversationStore.getState().addTag(id, "important");
             useConversationStore.getState().removeTag(id, "important");
-            expect(useConversationStore.getState().conversations[0].tags).not.toContain("important");
+            expect(useConversationStore.getState().conversations[0].tags).not.toContain(
+                "important",
+            );
         });
     });
 
     describe("searchConversations", () => {
         beforeEach(() => {
             useConversationStore.getState().saveConversation(mockMessages, "First Chat");
-            useConversationStore.getState().saveConversation(
-                [{ id: "1", type: "user", content: "Python tutorial", timestamp: Date.now() } as ChatMessage],
-                "Python Chat"
-            );
+            useConversationStore
+                .getState()
+                .saveConversation(
+                    [
+                        {
+                            id: "1",
+                            type: "user",
+                            content: "Python tutorial",
+                            timestamp: Date.now(),
+                        } as ChatMessage,
+                    ],
+                    "Python Chat",
+                );
         });
 
         it("should search by title", () => {
@@ -247,10 +273,19 @@ describe("conversationStore", () => {
     describe("importConversation", () => {
         it("should import conversation from JSON", () => {
             const conversation = {
-                summary: { id: "old-id", title: "Imported", preview: "", createdAt: 0, updatedAt: 0, messageCount: 0 },
+                summary: {
+                    id: "old-id",
+                    title: "Imported",
+                    preview: "",
+                    createdAt: 0,
+                    updatedAt: 0,
+                    messageCount: 0,
+                },
                 messages: [],
             };
-            const newId = useConversationStore.getState().importConversation(JSON.stringify(conversation));
+            const newId = useConversationStore
+                .getState()
+                .importConversation(JSON.stringify(conversation));
             expect(newId).not.toBeNull();
             expect(newId).not.toBe("old-id"); // Should generate new ID
         });

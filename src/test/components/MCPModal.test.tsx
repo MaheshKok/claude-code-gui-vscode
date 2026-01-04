@@ -235,7 +235,7 @@ describe("MCPModal", () => {
             fireEvent.change(typeSelect, { target: { value: "stdio" } });
 
             expect(
-                screen.getByLabelText("Environment Variables (KEY=value, one per line)")
+                screen.getByLabelText("Environment Variables (KEY=value, one per line)"),
             ).toBeInTheDocument();
         });
 
@@ -264,7 +264,7 @@ describe("MCPModal", () => {
                 screen.getByLabelText("Environment Variables (KEY=value, one per line)"),
                 {
                     target: { value: "API_KEY=secret\nPORT=3000" },
-                }
+                },
             );
 
             fireEvent.click(screen.getByText("Add Server"));
@@ -286,9 +286,7 @@ describe("MCPModal", () => {
 
             fireEvent.click(screen.getByText("+ Add MCP Server"));
 
-            expect(
-                screen.getByLabelText("Headers (KEY=value, one per line)")
-            ).toBeInTheDocument();
+            expect(screen.getByLabelText("Headers (KEY=value, one per line)")).toBeInTheDocument();
         });
 
         it("should parse headers correctly", () => {

@@ -67,10 +67,8 @@ describe("usePermissions", () => {
         it("should check if tool is allowed", () => {
             const { result } = renderHook(() =>
                 usePermissions({
-                    toolConfigs: [
-                        { toolName: "Write", autoApprove: false, alwaysDeny: true },
-                    ],
-                })
+                    toolConfigs: [{ toolName: "Write", autoApprove: false, alwaysDeny: true }],
+                }),
             );
 
             expect(result.current.isToolAllowed("Write")).toBe(false);
@@ -80,10 +78,8 @@ describe("usePermissions", () => {
         it("should check if tool is auto-approved", () => {
             const { result } = renderHook(() =>
                 usePermissions({
-                    toolConfigs: [
-                        { toolName: "Read", autoApprove: true, alwaysDeny: false },
-                    ],
-                })
+                    toolConfigs: [{ toolName: "Read", autoApprove: true, alwaysDeny: false }],
+                }),
             );
 
             expect(result.current.isToolAutoApproved("Read")).toBe(true);
@@ -93,10 +89,8 @@ describe("usePermissions", () => {
         it("should check if tool is denied", () => {
             const { result } = renderHook(() =>
                 usePermissions({
-                    toolConfigs: [
-                        { toolName: "Bash", autoApprove: false, alwaysDeny: true },
-                    ],
-                })
+                    toolConfigs: [{ toolName: "Bash", autoApprove: false, alwaysDeny: true }],
+                }),
             );
 
             expect(result.current.isToolDenied("Bash")).toBe(true);
@@ -107,9 +101,7 @@ describe("usePermissions", () => {
     describe("respondToPermission", () => {
         it("should respond to permission request", () => {
             const onPermissionResolved = vi.fn();
-            const { result } = renderHook(() =>
-                usePermissions({ onPermissionResolved })
-            );
+            const { result } = renderHook(() => usePermissions({ onPermissionResolved }));
 
             // Manually add a pending request for testing
             act(() => {
@@ -259,9 +251,7 @@ describe("formatPermissionRequest", () => {
             timestamp: Date.now(),
         };
 
-        expect(formatPermissionRequest(request as any)).toBe(
-            "Read: No description provided"
-        );
+        expect(formatPermissionRequest(request as any)).toBe("Read: No description provided");
     });
 });
 
@@ -291,9 +281,7 @@ describe("matchesPattern", () => {
     });
 
     it("should check multiple patterns", () => {
-        expect(
-            matchesPattern("/lib/utils.ts", ["/src/*.ts", "/lib/*.ts"])
-        ).toBe(true);
+        expect(matchesPattern("/lib/utils.ts", ["/src/*.ts", "/lib/*.ts"])).toBe(true);
     });
 
     it("should return false for empty patterns", () => {

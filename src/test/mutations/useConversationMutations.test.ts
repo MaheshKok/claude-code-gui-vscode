@@ -20,9 +20,15 @@ const localStorageMock = (() => {
     let store: Record<string, string> = {};
     return {
         getItem: vi.fn((key: string) => store[key] || null),
-        setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-        removeItem: vi.fn((key: string) => { delete store[key]; }),
-        clear: vi.fn(() => { store = {}; }),
+        setItem: vi.fn((key: string, value: string) => {
+            store[key] = value;
+        }),
+        removeItem: vi.fn((key: string) => {
+            delete store[key];
+        }),
+        clear: vi.fn(() => {
+            store = {};
+        }),
     };
 })();
 
@@ -88,7 +94,10 @@ describe("useConversationMutations", () => {
             const id = useConversationStore.getState().saveConversation(mockMessages, "Original");
             const { result } = renderHook(() => useUpdateConversation());
 
-            const updatedMessages = [...mockMessages, { id: "3", type: "user", content: "More" } as ChatMessage];
+            const updatedMessages = [
+                ...mockMessages,
+                { id: "3", type: "user", content: "More" } as ChatMessage,
+            ];
 
             await act(async () => {
                 result.current.mutate({ id, messages: updatedMessages, title: "Updated" });
@@ -172,7 +181,14 @@ describe("useConversationMutations", () => {
     describe("useImportConversation", () => {
         it("should import a conversation from JSON", async () => {
             const conversation = {
-                summary: { id: "imported", title: "Imported", preview: "", createdAt: 0, updatedAt: 0, messageCount: 0 },
+                summary: {
+                    id: "imported",
+                    title: "Imported",
+                    preview: "",
+                    createdAt: 0,
+                    updatedAt: 0,
+                    messageCount: 0,
+                },
                 messages: mockMessages,
             };
             const { result } = renderHook(() => useImportConversation());
@@ -283,7 +299,9 @@ describe("useConversationMutations", () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(useConversationStore.getState().conversations[0].tags).not.toContain("important");
+            expect(useConversationStore.getState().conversations[0].tags).not.toContain(
+                "important",
+            );
         });
     });
 });

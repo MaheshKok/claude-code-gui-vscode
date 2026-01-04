@@ -27,13 +27,7 @@ describe("CodeBlock", () => {
         });
 
         it("should display filename instead of language when provided", () => {
-            render(
-                <CodeBlock
-                    code="const x = 1"
-                    language="typescript"
-                    filename="index.ts"
-                />
-            );
+            render(<CodeBlock code="const x = 1" language="typescript" filename="index.ts" />);
 
             expect(screen.getByText("index.ts")).toBeInTheDocument();
             expect(screen.queryByText("typescript")).not.toBeInTheDocument();
@@ -117,26 +111,20 @@ describe("CodeBlock", () => {
 
     describe("styling", () => {
         it("should apply custom className", () => {
-            const { container } = render(
-                <CodeBlock code="code" className="custom-class" />
-            );
+            const { container } = render(<CodeBlock code="code" className="custom-class" />);
 
             expect(container.querySelector(".custom-class")).toBeInTheDocument();
         });
 
         it("should apply maxHeight as number", () => {
-            const { container } = render(
-                <CodeBlock code="code" maxHeight={200} />
-            );
+            const { container } = render(<CodeBlock code="code" maxHeight={200} />);
 
             const codeArea = container.querySelector("pre");
             expect(codeArea).toHaveStyle({ maxHeight: "200px" });
         });
 
         it("should apply maxHeight as string", () => {
-            const { container } = render(
-                <CodeBlock code="code" maxHeight="50vh" />
-            );
+            const { container } = render(<CodeBlock code="code" maxHeight="50vh" />);
 
             const codeArea = container.querySelector("pre");
             expect(codeArea).toHaveStyle({ maxHeight: "50vh" });

@@ -51,7 +51,9 @@ describe("usePermissionMutations", () => {
             });
 
             // With 'once' scope, permission should be resolved but not added to allowed
-            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(PermissionStatus.Approved);
+            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(
+                PermissionStatus.Approved,
+            );
             expect(usePermissionStore.getState().allowedPermissions.length).toBe(0);
         });
 
@@ -108,7 +110,9 @@ describe("usePermissionMutations", () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(PermissionStatus.Denied);
+            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(
+                PermissionStatus.Denied,
+            );
         });
 
         it("should deny permission without reason", async () => {
@@ -125,7 +129,9 @@ describe("usePermissionMutations", () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(PermissionStatus.Denied);
+            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(
+                PermissionStatus.Denied,
+            );
         });
     });
 

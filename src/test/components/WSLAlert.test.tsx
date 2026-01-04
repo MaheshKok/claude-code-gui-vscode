@@ -18,8 +18,8 @@ describe("WSLAlert", () => {
 
             expect(
                 screen.getByText(
-                    "Running on Windows without WSL configured. Some features may not work correctly."
-                )
+                    "Running on Windows without WSL configured. Some features may not work correctly.",
+                ),
             ).toBeInTheDocument();
         });
 
@@ -66,19 +66,13 @@ describe("WSLAlert", () => {
         it("should have button type for Configure WSL", () => {
             render(<WSLAlert {...defaultProps} />);
 
-            expect(screen.getByText("Configure WSL")).toHaveAttribute(
-                "type",
-                "button"
-            );
+            expect(screen.getByText("Configure WSL")).toHaveAttribute("type", "button");
         });
 
         it("should have button type for dismiss", () => {
             render(<WSLAlert {...defaultProps} />);
 
-            expect(screen.getByLabelText("Dismiss")).toHaveAttribute(
-                "type",
-                "button"
-            );
+            expect(screen.getByLabelText("Dismiss")).toHaveAttribute("type", "button");
         });
     });
 });

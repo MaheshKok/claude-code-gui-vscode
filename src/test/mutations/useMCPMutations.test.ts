@@ -114,7 +114,9 @@ describe("useMCPMutations", () => {
                 expect(result.current.isSuccess).toBe(true);
             });
 
-            expect(useMCPStore.getState().servers[0].config.description).toBe("Updated description");
+            expect(useMCPStore.getState().servers[0].config.description).toBe(
+                "Updated description",
+            );
         });
 
         it("should preserve existing configuration when updating", async () => {

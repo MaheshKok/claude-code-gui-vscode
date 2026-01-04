@@ -49,7 +49,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Done", status: "completed" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             // Should have green check icon
@@ -57,7 +57,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Done", status: "completed" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
             expect(container.querySelector(".text-green-400")).toBeInTheDocument();
         });
@@ -67,7 +67,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Working", status: "in_progress" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             // Should have blue clock icon
@@ -79,11 +79,11 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Waiting", status: "pending" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             // Should have white/muted circle icon (text-white/20 class)
-            const circleIcon = container.querySelector('svg.lucide-circle');
+            const circleIcon = container.querySelector("svg.lucide-circle");
             expect(circleIcon).toBeInTheDocument();
         });
     });
@@ -94,7 +94,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Urgent", status: "pending", priority: "critical" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("critical")).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Important", status: "pending", priority: "high" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("high")).toBeInTheDocument();
@@ -116,7 +116,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Normal", status: "pending", priority: "medium" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("medium")).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Later", status: "pending", priority: "low" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("low")).toBeInTheDocument();
@@ -138,7 +138,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "No priority", status: "pending" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.queryByText("critical")).not.toBeInTheDocument();
@@ -248,7 +248,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Single", status: "pending" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("Single")).toBeInTheDocument();
@@ -276,7 +276,7 @@ describe("TodoDisplay", () => {
                 <TodoDisplay
                     todos={[{ content: "Working", status: "in_progress" }]}
                     defaultCollapsed={true}
-                />
+                />,
             );
 
             expect(screen.getByText("In Progress")).toBeInTheDocument();

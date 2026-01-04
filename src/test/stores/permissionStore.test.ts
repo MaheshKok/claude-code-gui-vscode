@@ -49,7 +49,9 @@ describe("permissionStore", () => {
 
         it("should clear all pending permissions", () => {
             usePermissionStore.getState().addPending(mockPermissionRequest);
-            usePermissionStore.getState().addPending({ ...mockPermissionRequest, requestId: "req-2" });
+            usePermissionStore
+                .getState()
+                .addPending({ ...mockPermissionRequest, requestId: "req-2" });
             usePermissionStore.getState().clearPending();
             expect(usePermissionStore.getState().pendingPermissions.length).toBe(0);
         });
@@ -71,7 +73,9 @@ describe("permissionStore", () => {
         it("should update pending status", () => {
             usePermissionStore.getState().addPending(mockPermissionRequest);
             usePermissionStore.getState().updatePendingStatus("req-1", PermissionStatus.Approved);
-            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(PermissionStatus.Approved);
+            expect(usePermissionStore.getState().pendingPermissions[0].status).toBe(
+                PermissionStatus.Approved,
+            );
         });
 
         it("should get pending by id", () => {
@@ -126,14 +130,20 @@ describe("permissionStore", () => {
         });
 
         it("should replace existing permission with same tool and pattern", () => {
-            usePermissionStore.getState().addAllowed({ toolName: "Read", pattern: "/path/*", scope: "once" });
-            usePermissionStore.getState().addAllowed({ toolName: "Read", pattern: "/path/*", scope: "always" });
+            usePermissionStore
+                .getState()
+                .addAllowed({ toolName: "Read", pattern: "/path/*", scope: "once" });
+            usePermissionStore
+                .getState()
+                .addAllowed({ toolName: "Read", pattern: "/path/*", scope: "always" });
             expect(usePermissionStore.getState().allowedPermissions.length).toBe(1);
             expect(usePermissionStore.getState().allowedPermissions[0].scope).toBe("always");
         });
 
         it("should remove allowed permission", () => {
-            usePermissionStore.getState().addAllowed({ toolName: "Read", pattern: "/path/*", scope: "always" });
+            usePermissionStore
+                .getState()
+                .addAllowed({ toolName: "Read", pattern: "/path/*", scope: "always" });
             usePermissionStore.getState().removeAllowed("Read", "/path/*");
             expect(usePermissionStore.getState().allowedPermissions.length).toBe(0);
         });
@@ -151,9 +161,9 @@ describe("permissionStore", () => {
             // Make the session permission expired
             const permissions = usePermissionStore.getState().allowedPermissions;
             usePermissionStore.setState({
-                allowedPermissions: permissions.map(p =>
-                    p.scope === "session" ? { ...p, expiresAt: Date.now() - 1000 } : p
-                )
+                allowedPermissions: permissions.map((p) =>
+                    p.scope === "session" ? { ...p, expiresAt: Date.now() - 1000 } : p,
+                ),
             });
             usePermissionStore.getState().clearSessionPermissions();
             const remaining = usePermissionStore.getState().allowedPermissions;
@@ -209,15 +219,23 @@ describe("permissionStore", () => {
                 pattern: "/allowed/**",
                 scope: "always",
             });
-            expect(usePermissionStore.getState().isAutoAllowed("Read", { file_path: "/allowed/file.txt" })).toBe(true);
-            expect(usePermissionStore.getState().isAutoAllowed("Read", { file_path: "/other/file.txt" })).toBe(false);
+            expect(
+                usePermissionStore
+                    .getState()
+                    .isAutoAllowed("Read", { file_path: "/allowed/file.txt" }),
+            ).toBe(true);
+            expect(
+                usePermissionStore
+                    .getState()
+                    .isAutoAllowed("Read", { file_path: "/other/file.txt" }),
+            ).toBe(false);
         });
 
         it("should return false for expired permission", () => {
             usePermissionStore.getState().addAllowed({ toolName: "Read", scope: "session" });
             // Make it expired
             usePermissionStore.setState({
-                allowedPermissions: usePermissionStore.getState().allowedPermissions.map(p => ({
+                allowedPermissions: usePermissionStore.getState().allowedPermissions.map((p) => ({
                     ...p,
                     expiresAt: Date.now() - 1000,
                 })),

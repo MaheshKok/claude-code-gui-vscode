@@ -45,11 +45,13 @@ describe("useMessages", () => {
     describe("message handling", () => {
         it("should call handler for matching message type", () => {
             const outputHandler = vi.fn();
-            const { result } = renderHook(() => useMessages({
-                handlers: {
-                    output: outputHandler,
-                },
-            }));
+            const { result } = renderHook(() =>
+                useMessages({
+                    handlers: {
+                        output: outputHandler,
+                    },
+                }),
+            );
 
             // Simulate message event
             const messageEvent = new MessageEvent("message", {
@@ -81,10 +83,12 @@ describe("useMessages", () => {
 
         it("should call onUnhandledMessage for messages without handlers", () => {
             const onUnhandledMessage = vi.fn();
-            renderHook(() => useMessages({
-                handlers: {},
-                onUnhandledMessage,
-            }));
+            renderHook(() =>
+                useMessages({
+                    handlers: {},
+                    onUnhandledMessage,
+                }),
+            );
 
             const messageEvent = new MessageEvent("message", {
                 data: { type: "unknownType", data: "test" },

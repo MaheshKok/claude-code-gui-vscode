@@ -12,10 +12,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             const { result } = renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler, description: "Close" },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler, description: "Close" }],
+                }),
             );
 
             const shortcuts = result.current.getShortcuts();
@@ -27,10 +25,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "Escape" });
@@ -43,10 +39,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "Enter" });
@@ -60,10 +54,8 @@ describe("useKeyboard", () => {
             renderHook(() =>
                 useKeyboard({
                     enabled: false,
-                    shortcuts: [
-                        { key: "Escape", handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "Escape" });
@@ -78,10 +70,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "s", modifiers: { ctrl: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "s", modifiers: { ctrl: true }, handler }],
+                }),
             );
 
             // Without ctrl
@@ -99,10 +89,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Enter", modifiers: { shift: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Enter", modifiers: { shift: true }, handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "Enter", shiftKey: true });
@@ -115,10 +103,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "a", modifiers: { alt: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "a", modifiers: { alt: true }, handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "a", altKey: true });
@@ -131,10 +117,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "k", modifiers: { meta: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "k", modifiers: { meta: true }, handler }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });
@@ -147,10 +131,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "z", modifiers: { ctrl: true, shift: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "z", modifiers: { ctrl: true, shift: true }, handler }],
+                }),
             );
 
             // Only ctrl
@@ -159,7 +141,11 @@ describe("useKeyboard", () => {
             expect(handler).not.toHaveBeenCalled();
 
             // Both ctrl and shift
-            const eventBoth = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, shiftKey: true });
+            const eventBoth = new KeyboardEvent("keydown", {
+                key: "z",
+                ctrlKey: true,
+                shiftKey: true,
+            });
             document.dispatchEvent(eventBoth);
             expect(handler).toHaveBeenCalled();
         });
@@ -173,7 +159,7 @@ describe("useKeyboard", () => {
                     shortcuts: [
                         { key: "s", modifiers: { ctrl: true }, handler, preventDefault: true },
                     ],
-                })
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "s", ctrlKey: true });
@@ -187,10 +173,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler, stopPropagation: true },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler, stopPropagation: true }],
+                }),
             );
 
             const event = new KeyboardEvent("keydown", { key: "Escape" });
@@ -245,10 +229,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             const { result } = renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler }],
+                }),
             );
 
             act(() => {
@@ -265,10 +247,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             const { result } = renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "s", modifiers: { ctrl: true }, handler },
-                    ],
-                })
+                    shortcuts: [{ key: "s", modifiers: { ctrl: true }, handler }],
+                }),
             );
 
             act(() => {
@@ -287,10 +267,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             const { result } = renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler }],
+                }),
             );
 
             act(() => {
@@ -307,10 +285,8 @@ describe("useKeyboard", () => {
             const handler = vi.fn();
             const { result } = renderHook(() =>
                 useKeyboard({
-                    shortcuts: [
-                        { key: "Escape", handler, enabled: false },
-                    ],
-                })
+                    shortcuts: [{ key: "Escape", handler, enabled: false }],
+                }),
             );
 
             // Should not work initially
@@ -338,7 +314,7 @@ describe("useKeyboard", () => {
                         { key: "Escape", handler: handler1 },
                         { key: "Enter", handler: handler2 },
                     ],
-                })
+                }),
             );
 
             const shortcuts = result.current.getShortcuts();
@@ -359,7 +335,7 @@ describe("useKeyboard", () => {
             const { unmount } = renderHook(() =>
                 useKeyboard({
                     shortcuts: [{ key: "Escape", handler: vi.fn() }],
-                })
+                }),
             );
 
             unmount();
@@ -376,16 +352,20 @@ describe("useChatKeyboard", () => {
     });
 
     // Helper to create React keyboard event
-    const createKeyboardEvent = (key: string, options: Partial<KeyboardEvent> = {}): React.KeyboardEvent => ({
-        key,
-        ctrlKey: options.ctrlKey || false,
-        altKey: options.altKey || false,
-        shiftKey: options.shiftKey || false,
-        metaKey: options.metaKey || false,
-        preventDefault: vi.fn(),
-        stopPropagation: vi.fn(),
-        nativeEvent: new KeyboardEvent("keydown", { key, ...options }),
-    } as unknown as React.KeyboardEvent);
+    const createKeyboardEvent = (
+        key: string,
+        options: Partial<KeyboardEvent> = {},
+    ): React.KeyboardEvent =>
+        ({
+            key,
+            ctrlKey: options.ctrlKey || false,
+            altKey: options.altKey || false,
+            shiftKey: options.shiftKey || false,
+            metaKey: options.metaKey || false,
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn(),
+            nativeEvent: new KeyboardEvent("keydown", { key, ...options }),
+        }) as unknown as React.KeyboardEvent;
 
     it("should call onSend when Enter is pressed", () => {
         const onSend = vi.fn();
@@ -450,7 +430,9 @@ describe("useChatKeyboard", () => {
 
     it("should not call onHistoryPrev on ArrowUp when input has content", () => {
         const onHistoryPrev = vi.fn();
-        const { result } = renderHook(() => useChatKeyboard({ onHistoryPrev, isInputEmpty: false }));
+        const { result } = renderHook(() =>
+            useChatKeyboard({ onHistoryPrev, isInputEmpty: false }),
+        );
 
         act(() => {
             result.current(createKeyboardEvent("ArrowUp"));
@@ -461,7 +443,9 @@ describe("useChatKeyboard", () => {
 
     it("should call onHistoryNext on ArrowDown when suggestions are visible", () => {
         const onHistoryNext = vi.fn();
-        const { result } = renderHook(() => useChatKeyboard({ onHistoryNext, suggestionsVisible: true }));
+        const { result } = renderHook(() =>
+            useChatKeyboard({ onHistoryNext, suggestionsVisible: true }),
+        );
 
         act(() => {
             result.current(createKeyboardEvent("ArrowDown"));
@@ -501,7 +485,9 @@ describe("useChatKeyboard", () => {
     it("should trigger onSlashCommand when / is typed on empty input", () => {
         vi.useFakeTimers();
         const onSlashCommand = vi.fn();
-        const { result } = renderHook(() => useChatKeyboard({ onSlashCommand, isInputEmpty: true }));
+        const { result } = renderHook(() =>
+            useChatKeyboard({ onSlashCommand, isInputEmpty: true }),
+        );
 
         act(() => {
             result.current(createKeyboardEvent("/"));

@@ -40,7 +40,7 @@ describe("Modal", () => {
                 <Modal {...defaultProps}>
                     <p>Custom Content</p>
                     <button>Action</button>
-                </Modal>
+                </Modal>,
             );
 
             expect(screen.getByText("Custom Content")).toBeInTheDocument();
@@ -202,10 +202,7 @@ describe("Modal", () => {
 
             unmount();
 
-            expect(removeEventListenerSpy).toHaveBeenCalledWith(
-                "keydown",
-                expect.any(Function)
-            );
+            expect(removeEventListenerSpy).toHaveBeenCalledWith("keydown", expect.any(Function));
             removeEventListenerSpy.mockRestore();
         });
     });

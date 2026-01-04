@@ -94,7 +94,12 @@ describe("conversationRestore utils", () => {
 
         it("should build assistant message from output", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", text: "Hello!", isFinal: true, timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "output",
+                    text: "Hello!",
+                    isFinal: true,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
             ];
             const result = buildChatMessages(messages);
             expect(result.length).toBe(1);
@@ -105,8 +110,18 @@ describe("conversationRestore utils", () => {
 
         it("should merge streaming assistant messages", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", text: "Hello", isFinal: false, timestamp: "2024-01-15T10:00:00Z" },
-                { type: "output", text: " world", isFinal: false, timestamp: "2024-01-15T10:00:01Z" },
+                {
+                    type: "output",
+                    text: "Hello",
+                    isFinal: false,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
+                {
+                    type: "output",
+                    text: " world",
+                    isFinal: false,
+                    timestamp: "2024-01-15T10:00:01Z",
+                },
                 { type: "output", text: "!", isFinal: true, timestamp: "2024-01-15T10:00:02Z" },
             ];
             const result = buildChatMessages(messages);
@@ -125,7 +140,12 @@ describe("conversationRestore utils", () => {
 
         it("should use data field as fallback for output text", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", data: "Fallback text", isFinal: true, timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "output",
+                    data: "Fallback text",
+                    isFinal: true,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
             ];
             const result = buildChatMessages(messages);
             expect(result[0].content).toBe("Fallback text");
@@ -133,7 +153,11 @@ describe("conversationRestore utils", () => {
 
         it("should build thinking message", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "thinking", thinking: "Let me think...", timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "thinking",
+                    thinking: "Let me think...",
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
             ];
             const result = buildChatMessages(messages);
             expect(result.length).toBe(1);
@@ -256,7 +280,11 @@ describe("conversationRestore utils", () => {
 
         it("should build error message", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "error", message: "Something went wrong", timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "error",
+                    message: "Something went wrong",
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
             ];
             const result = buildChatMessages(messages);
             expect(result.length).toBe(1);
@@ -274,7 +302,12 @@ describe("conversationRestore utils", () => {
 
         it("should handle updateTokens message", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", text: "Hello", isFinal: false, timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "output",
+                    text: "Hello",
+                    isFinal: false,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
                 {
                     type: "updateTokens",
                     current: {
@@ -311,7 +344,12 @@ describe("conversationRestore utils", () => {
 
         it("should extract updateTokens from data.current", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", text: "Hello", isFinal: false, timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "output",
+                    text: "Hello",
+                    isFinal: false,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
                 {
                     type: "updateTokens",
                     data: {
@@ -424,7 +462,12 @@ describe("conversationRestore utils", () => {
 
         it("should finalize assistant when new user input arrives", () => {
             const messages: StoredConversationMessage[] = [
-                { type: "output", text: "Hello", isFinal: false, timestamp: "2024-01-15T10:00:00Z" },
+                {
+                    type: "output",
+                    text: "Hello",
+                    isFinal: false,
+                    timestamp: "2024-01-15T10:00:00Z",
+                },
                 { type: "userInput", data: "Hi there", timestamp: "2024-01-15T10:00:01Z" },
             ];
             const result = buildChatMessages(messages);
@@ -435,7 +478,11 @@ describe("conversationRestore utils", () => {
         it("should handle complex conversation with multiple message types", () => {
             const messages: StoredConversationMessage[] = [
                 { type: "userInput", data: "Read the file", timestamp: "2024-01-15T10:00:00Z" },
-                { type: "thinking", thinking: "I will read the file", timestamp: "2024-01-15T10:00:01Z" },
+                {
+                    type: "thinking",
+                    thinking: "I will read the file",
+                    timestamp: "2024-01-15T10:00:01Z",
+                },
                 {
                     type: "toolUse",
                     toolUseId: "tool-1",
@@ -450,7 +497,12 @@ describe("conversationRestore utils", () => {
                     hidden: false,
                     timestamp: "2024-01-15T10:00:03Z",
                 },
-                { type: "output", text: "Here is the file contents", isFinal: true, timestamp: "2024-01-15T10:00:04Z" },
+                {
+                    type: "output",
+                    text: "Here is the file contents",
+                    isFinal: true,
+                    timestamp: "2024-01-15T10:00:04Z",
+                },
             ];
             const result = buildChatMessages(messages);
             expect(result.length).toBe(5);

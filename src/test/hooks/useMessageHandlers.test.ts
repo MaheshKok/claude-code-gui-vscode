@@ -401,11 +401,11 @@ describe("useMessageHandlers", () => {
                     totalCostUsd: 0.05,
                     durationMs: 1500,
                     numTurns: 1,
-                    totalCost: 0.10,
+                    totalCost: 0.1,
                 });
             });
 
-            expect(useChatStore.getState().costs.sessionCostUsd).toBe(0.10);
+            expect(useChatStore.getState().costs.sessionCostUsd).toBe(0.1);
         });
 
         it("should set request count if provided", () => {
@@ -552,9 +552,7 @@ describe("useMessageHandlers", () => {
 
             act(() => {
                 result.current.handlers.conversationList({
-                    conversations: [
-                        { filename: "conv-1", lastModified: Date.now(), messages: [] },
-                    ],
+                    conversations: [{ filename: "conv-1", lastModified: Date.now(), messages: [] }],
                 });
             });
 
@@ -567,9 +565,7 @@ describe("useMessageHandlers", () => {
 
             act(() => {
                 result.current.handlers.conversationList({
-                    data: [
-                        { filename: "conv-1", lastModified: Date.now(), messages: [] },
-                    ],
+                    data: [{ filename: "conv-1", lastModified: Date.now(), messages: [] }],
                 });
             });
 

@@ -193,7 +193,9 @@ describe("UsageData", () => {
             const { container } = render(<UsageData />);
 
             // Find progress bar elements (the filled portion)
-            const progressBars = container.querySelectorAll('[class*="rounded-full"][class*="h-full"]');
+            const progressBars = container.querySelectorAll(
+                '[class*="rounded-full"][class*="h-full"]',
+            );
             expect(progressBars.length).toBeGreaterThan(0);
         });
     });

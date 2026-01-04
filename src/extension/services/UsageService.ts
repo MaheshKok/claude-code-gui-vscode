@@ -94,8 +94,12 @@ export class UsageService implements vscode.Disposable {
                 this._log("");
                 this._log("✅ ═══════════════════════════════════════════");
                 this._log("✅ GOT USAGE DATA FROM RATE LIMITS:");
-                this._log(`   📊 Session: ${(rateLimitUsage.currentSession.usageCost * 100).toFixed(1)}% used`);
-                this._log(`   📊 Weekly:  ${(rateLimitUsage.weekly.costLikely * 100).toFixed(1)}% used`);
+                this._log(
+                    `   📊 Session: ${(rateLimitUsage.currentSession.usageCost * 100).toFixed(1)}% used`,
+                );
+                this._log(
+                    `   📊 Weekly:  ${(rateLimitUsage.weekly.costLikely * 100).toFixed(1)}% used`,
+                );
                 this._log(`   ⏱️  Session resets in: ${rateLimitUsage.currentSession.resetsIn}`);
                 this._log(`   ⏱️  Weekly resets at: ${rateLimitUsage.weekly.resetsAt}`);
                 this._log("✅ ═══════════════════════════════════════════");
@@ -142,7 +146,10 @@ export class UsageService implements vscode.Disposable {
 
             return usageData;
         } catch (error) {
-            this._log("Rate-limit usage fetch failed:", error instanceof Error ? error.message : error);
+            this._log(
+                "Rate-limit usage fetch failed:",
+                error instanceof Error ? error.message : error,
+            );
             return null;
         }
     }
@@ -439,7 +446,9 @@ export class UsageService implements vscode.Disposable {
                 }
 
                 if (output.length > 0) {
-                    this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+                    this._log(
+                        `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
+                    );
                 }
 
                 resolve(output);
@@ -475,7 +484,9 @@ export class UsageService implements vscode.Disposable {
             this._log(`✅ Command succeeded in ${elapsed}s (${output.length} chars)`);
             // Log first 200 chars to see if we got anything useful
             if (output.length > 0) {
-                this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+                this._log(
+                    `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
+                );
             }
             return output;
         } catch (error) {
@@ -503,7 +514,9 @@ export class UsageService implements vscode.Disposable {
 
             if (stdout || stderr) {
                 this._log(`ℹ️  Command failed but has output (${output.length} chars)`);
-                this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+                this._log(
+                    `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
+                );
                 return output;
             }
 
@@ -542,12 +555,16 @@ export class UsageService implements vscode.Disposable {
                 this._log("   Output contains 'anthropic' string but no matching headers");
                 // Log sample around 'anthropic' to help debug
                 const idx = output.indexOf("anthropic");
-                this._log(`   Sample around 'anthropic': ${output.substring(Math.max(0, idx - 20), idx + 80)}`);
+                this._log(
+                    `   Sample around 'anthropic': ${output.substring(Math.max(0, idx - 20), idx + 80)}`,
+                );
             } else {
                 this._log("   Output does not contain 'anthropic' string");
             }
             // Log a sample of the output
-            this._log(`   Output sample (first 300 chars): ${output.substring(0, 300).replace(/\n/g, "\\n")}`);
+            this._log(
+                `   Output sample (first 300 chars): ${output.substring(0, 300).replace(/\n/g, "\\n")}`,
+            );
         }
 
         return headers;
@@ -603,9 +620,7 @@ export class UsageService implements vscode.Disposable {
             currentSession: {
                 usageCost: this._clampUsage(sessionClaim?.utilization),
                 costLimit: 1,
-                resetsIn: sessionClaim?.reset
-                    ? this._formatResetCountdown(sessionClaim.reset)
-                    : "",
+                resetsIn: sessionClaim?.reset ? this._formatResetCountdown(sessionClaim.reset) : "",
             },
             weekly: {
                 costLikely: this._clampUsage(weeklyClaim?.utilization),

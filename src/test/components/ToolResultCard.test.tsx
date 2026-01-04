@@ -144,7 +144,13 @@ describe("ToolResultCard", () => {
 
         it("should call postMessage when preview clicked", () => {
             const markdownContent = "# Heading\n\n- List item";
-            render(<ToolResultCard content={markdownContent} defaultCollapsed={false} toolName="Read" />);
+            render(
+                <ToolResultCard
+                    content={markdownContent}
+                    defaultCollapsed={false}
+                    toolName="Read"
+                />,
+            );
 
             fireEvent.click(screen.getByTitle("Open markdown preview"));
 
@@ -159,7 +165,7 @@ describe("ToolResultCard", () => {
     describe("error styling", () => {
         it("should have error border when isError is true", () => {
             const { container } = render(
-                <ToolResultCard content="Error" isError={true} defaultCollapsed={false} />
+                <ToolResultCard content="Error" isError={true} defaultCollapsed={false} />,
             );
 
             const card = container.firstChild;
@@ -168,7 +174,7 @@ describe("ToolResultCard", () => {
 
         it("should show Error label for error results", () => {
             render(
-                <ToolResultCard content="Error message" isError={true} defaultCollapsed={false} />
+                <ToolResultCard content="Error message" isError={true} defaultCollapsed={false} />,
             );
 
             // Multiple "Error" texts exist - header and content, so check for all
@@ -181,7 +187,7 @@ describe("ToolResultCard", () => {
         it("should render code blocks in content", () => {
             const contentWithCode = "Before\n```javascript\nconst x = 1;\n```\nAfter";
             const { container } = render(
-                <ToolResultCard content={contentWithCode} defaultCollapsed={false} />
+                <ToolResultCard content={contentWithCode} defaultCollapsed={false} />,
             );
 
             const pre = container.querySelector("pre");
@@ -190,7 +196,7 @@ describe("ToolResultCard", () => {
 
         it("should render inline code with proper styling", () => {
             const { container } = render(
-                <ToolResultCard content="Use the `test` function" defaultCollapsed={false} />
+                <ToolResultCard content="Use the `test` function" defaultCollapsed={false} />,
             );
 
             const code = container.querySelector("code");
@@ -206,7 +212,7 @@ describe("ToolResultCard", () => {
                     content="Test"
                     toolName="mcp__server__tool"
                     defaultCollapsed={false}
-                />
+                />,
             );
 
             expect(screen.getByText("MCP")).toBeInTheDocument();
@@ -216,7 +222,7 @@ describe("ToolResultCard", () => {
     describe("header icons", () => {
         it("should show success icon for non-error results", () => {
             const { container } = render(
-                <ToolResultCard content="Test" isError={false} defaultCollapsed={false} />
+                <ToolResultCard content="Test" isError={false} defaultCollapsed={false} />,
             );
 
             // Check for green color on the icon container
@@ -226,7 +232,7 @@ describe("ToolResultCard", () => {
 
         it("should show error icon for error results", () => {
             const { container } = render(
-                <ToolResultCard content="Error" isError={true} defaultCollapsed={false} />
+                <ToolResultCard content="Error" isError={true} defaultCollapsed={false} />,
             );
 
             // Check for red color on the icon container

@@ -146,7 +146,9 @@ export function activate(context: vscode.ExtensionContext): void {
     console.log("Claude Code GUI extension activation completed successfully!");
 
     // Show a notification so user knows extension is active
-    vscode.window.showInformationMessage("Claude Code GUI extension activated. Check 'Claude Code GUI' output channel for logs.");
+    vscode.window.showInformationMessage(
+        "Claude Code GUI extension activated. Check 'Claude Code GUI' output channel for logs.",
+    );
 }
 
 /**

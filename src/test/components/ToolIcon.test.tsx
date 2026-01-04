@@ -128,7 +128,7 @@ describe("ToolIcon", () => {
 
         it("should apply custom className", () => {
             const { container } = render(
-                <ToolIcon toolName={ToolName.Read} className="w-6 h-6 text-blue-500" />
+                <ToolIcon toolName={ToolName.Read} className="w-6 h-6 text-blue-500" />,
             );
             const svg = container.querySelector("svg");
             expect(svg).toHaveClass("w-6", "h-6", "text-blue-500");

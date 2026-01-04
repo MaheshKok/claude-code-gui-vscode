@@ -46,7 +46,7 @@ describe("SlashCommandsModal", () => {
             render(<SlashCommandsModal {...defaultProps} />);
 
             expect(
-                screen.getByPlaceholderText("Search commands and snippets...")
+                screen.getByPlaceholderText("Search commands and snippets..."),
             ).toBeInTheDocument();
         });
 
@@ -151,7 +151,7 @@ describe("SlashCommandsModal", () => {
         it("should call onAddCustomCommand when form submitted", () => {
             const onAddCustomCommand = vi.fn();
             render(
-                <SlashCommandsModal {...defaultProps} onAddCustomCommand={onAddCustomCommand} />
+                <SlashCommandsModal {...defaultProps} onAddCustomCommand={onAddCustomCommand} />,
             );
 
             fireEvent.click(screen.getByText("Add Custom Command"));
@@ -194,7 +194,7 @@ describe("SlashCommandsModal", () => {
                 <SlashCommandsModal
                     {...defaultProps}
                     onDeleteCustomCommand={onDeleteCustomCommand}
-                />
+                />,
             );
 
             const deleteButton = screen.getByLabelText("Delete command");
@@ -252,7 +252,7 @@ describe("SlashCommandsModal", () => {
                     {...defaultProps}
                     onQuickCommand={onQuickCommand}
                     onClose={onClose}
-                />
+                />,
             );
 
             const quickInput = screen.getByPlaceholderText("enter-command");

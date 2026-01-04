@@ -47,7 +47,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, preview: "" }}
-                />
+                />,
             );
 
             expect(screen.getByText("No preview available")).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() }}
-                />
+                />,
             );
 
             expect(screen.getByText("Just now")).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 60000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("1 min ago")).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 3600000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("1 hour ago")).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 86400000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("Yesterday")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 172800000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("2 days ago")).toBeInTheDocument();
@@ -129,9 +129,7 @@ describe("ConversationItem", () => {
 
     describe("cost display", () => {
         it("should show cost bar when cost is provided", () => {
-            const { container } = render(
-                <ConversationItem {...defaultProps} cost={5} />
-            );
+            const { container } = render(<ConversationItem {...defaultProps} cost={5} />);
 
             const costBar = container.querySelector(".bg-green-500");
             expect(costBar).toBeInTheDocument();
@@ -145,9 +143,7 @@ describe("ConversationItem", () => {
         });
 
         it("should not show cost bar when cost is 0", () => {
-            const { container } = render(
-                <ConversationItem {...defaultProps} cost={0} />
-            );
+            const { container } = render(<ConversationItem {...defaultProps} cost={0} />);
 
             const costBar = container.querySelector(".bg-green-500");
             expect(costBar).not.toBeInTheDocument();
@@ -200,9 +196,7 @@ describe("ConversationItem", () => {
             const confirmButton = screen.getByRole("button", { name: "" }); // Trash icon button
             const buttons = screen.getAllByRole("button");
             // Find the confirm delete button (first button in the confirm dialog)
-            const confirmDeleteBtn = buttons.find(
-                (btn) => btn.classList.contains("text-red-400")
-            );
+            const confirmDeleteBtn = buttons.find((btn) => btn.classList.contains("text-red-400"));
             if (confirmDeleteBtn) {
                 fireEvent.click(confirmDeleteBtn);
             }
@@ -230,7 +224,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 120000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("2 mins ago")).toBeInTheDocument();
@@ -241,7 +235,7 @@ describe("ConversationItem", () => {
                 <ConversationItem
                     {...defaultProps}
                     conversation={{ ...mockConversation, updatedAt: Date.now() - 7200000 }}
-                />
+                />,
             );
 
             expect(screen.getByText("2 hours ago")).toBeInTheDocument();

@@ -35,7 +35,9 @@ const mockClipboard = {
 Object.assign(navigator, { clipboard: mockClipboard });
 
 describe("PlanGroup", () => {
-    const createMockPlanGroup = (overrides: Partial<TimelinePlanGroup> = {}): TimelinePlanGroup => ({
+    const createMockPlanGroup = (
+        overrides: Partial<TimelinePlanGroup> = {},
+    ): TimelinePlanGroup => ({
         kind: "plan",
         id: "plan-1",
         timestamp: new Date(),
@@ -92,7 +94,9 @@ describe("PlanGroup", () => {
         it("should render plan header with content", () => {
             render(<PlanGroup {...defaultProps} />);
 
-            expect(screen.getByText("Planning to read the file and analyze its contents")).toBeInTheDocument();
+            expect(
+                screen.getByText("Planning to read the file and analyze its contents"),
+            ).toBeInTheDocument();
         });
 
         it("should show step count", () => {
@@ -168,12 +172,7 @@ describe("PlanGroup", () => {
             });
 
             render(
-                <PlanGroup
-                    {...defaultProps}
-                    item={item}
-                    isProcessing={true}
-                    isPlanOpen={true}
-                />
+                <PlanGroup {...defaultProps} item={item} isProcessing={true} isPlanOpen={true} />,
             );
 
             expect(screen.getByText(/Reasoning about the next step/)).toBeInTheDocument();

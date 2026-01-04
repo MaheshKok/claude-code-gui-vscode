@@ -12,7 +12,11 @@ describe("useAppState", () => {
         useChatStore.getState().resetChat();
         useSettingsStore.getState().resetToDefaults();
         useUIStore.getState().closeModal();
-        usePermissionStore.setState({ pendingPermissions: [], allowedPermissions: [], deniedPatterns: [] });
+        usePermissionStore.setState({
+            pendingPermissions: [],
+            allowedPermissions: [],
+            deniedPatterns: [],
+        });
     });
 
     describe("chat state", () => {
@@ -60,9 +64,7 @@ describe("useAppState", () => {
             const { result } = renderHook(() => useAppState());
 
             act(() => {
-                result.current.chatActions.setTodos([
-                    { content: "Task 1", status: "pending" },
-                ]);
+                result.current.chatActions.setTodos([{ content: "Task 1", status: "pending" }]);
             });
 
             expect(result.current.chat.todos).toHaveLength(1);

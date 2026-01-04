@@ -13,9 +13,7 @@ describe("EmptyState", () => {
         it("should render the description", () => {
             render(<EmptyState />);
 
-            expect(
-                screen.getByText(/I can help you analyze code, fix bugs/)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/I can help you analyze code, fix bugs/)).toBeInTheDocument();
         });
 
         it("should render quick action buttons", () => {

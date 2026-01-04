@@ -7,7 +7,10 @@ import {
     getStepStatus,
     getGroupStatus,
 } from "../../webview/components/Chat/JourneyTimeline/utils";
-import type { TimelineItemTool, TimelinePlanGroup } from "../../webview/components/Chat/JourneyTimeline/types";
+import type {
+    TimelineItemTool,
+    TimelinePlanGroup,
+} from "../../webview/components/Chat/JourneyTimeline/types";
 
 describe("JourneyTimeline Utils", () => {
     describe("formatTimestamp", () => {
@@ -348,7 +351,10 @@ describe("JourneyTimeline Utils", () => {
     });
 
     describe("getGroupStatus", () => {
-        const createGroup = (steps: TimelineItemTool[], isStreaming = false): TimelinePlanGroup => ({
+        const createGroup = (
+            steps: TimelineItemTool[],
+            isStreaming = false,
+        ): TimelinePlanGroup => ({
             kind: "plan",
             id: "plan-1",
             timestamp: new Date(),

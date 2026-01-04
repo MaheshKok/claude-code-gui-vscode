@@ -168,7 +168,7 @@ describe("useVSCode", () => {
 
             expect(localStorageMock.setItem).toHaveBeenCalledWith(
                 "vscode-webview-state",
-                '{"foo":"bar"}'
+                '{"foo":"bar"}',
             );
         });
 

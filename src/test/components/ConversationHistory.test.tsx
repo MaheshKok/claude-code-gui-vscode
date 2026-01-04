@@ -26,13 +26,12 @@ vi.mock("../../webview/components/History/ConversationItem", () => ({
         onClick: (id: string) => void;
         onDelete: (id: string) => void;
     }) => (
-        <div
-            data-testid={`conversation-${conversation.id}`}
-            data-active={isActive}
-            role="listitem"
-        >
+        <div data-testid={`conversation-${conversation.id}`} data-active={isActive} role="listitem">
             <button onClick={() => onClick(conversation.id)}>{conversation.title}</button>
-            <button data-testid={`delete-${conversation.id}`} onClick={() => onDelete(conversation.id)}>
+            <button
+                data-testid={`delete-${conversation.id}`}
+                onClick={() => onDelete(conversation.id)}
+            >
                 Delete
             </button>
         </div>
@@ -186,10 +185,7 @@ describe("ConversationHistory", () => {
         it("should call onConversationLoad when conversation clicked", () => {
             const onConversationLoad = vi.fn();
             render(
-                <ConversationHistory
-                    {...defaultProps}
-                    onConversationLoad={onConversationLoad}
-                />
+                <ConversationHistory {...defaultProps} onConversationLoad={onConversationLoad} />,
             );
 
             fireEvent.click(screen.getByText("First Conversation"));
@@ -212,7 +208,7 @@ describe("ConversationHistory", () => {
                 <ConversationHistory
                     {...defaultProps}
                     onConversationDelete={onConversationDelete}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByTestId("delete-conv-1"));
@@ -223,18 +219,14 @@ describe("ConversationHistory", () => {
 
     describe("active conversation", () => {
         it("should mark active conversation", () => {
-            render(
-                <ConversationHistory {...defaultProps} activeConversationId="conv-1" />
-            );
+            render(<ConversationHistory {...defaultProps} activeConversationId="conv-1" />);
 
             const activeItem = screen.getByTestId("conversation-conv-1");
             expect(activeItem).toHaveAttribute("data-active", "true");
         });
 
         it("should not mark inactive conversation", () => {
-            render(
-                <ConversationHistory {...defaultProps} activeConversationId="conv-1" />
-            );
+            render(<ConversationHistory {...defaultProps} activeConversationId="conv-1" />);
 
             const inactiveItem = screen.getByTestId("conversation-conv-2");
             expect(inactiveItem).toHaveAttribute("data-active", "false");
@@ -257,7 +249,7 @@ describe("ConversationHistory", () => {
             render(<ConversationHistory {...defaultProps} />);
 
             expect(
-                screen.getByRole("complementary", { name: "Conversation history" })
+                screen.getByRole("complementary", { name: "Conversation history" }),
             ).toBeInTheDocument();
         });
 

@@ -36,7 +36,9 @@ describe("InstallModal", () => {
         it("should display description in initial state", () => {
             render(<InstallModal {...defaultProps} />);
 
-            expect(screen.getByText("The CLI is required to use this extension")).toBeInTheDocument();
+            expect(
+                screen.getByText("The CLI is required to use this extension"),
+            ).toBeInTheDocument();
         });
 
         it("should show Install Now button in initial state", () => {
@@ -155,7 +157,7 @@ describe("InstallModal", () => {
                     {...defaultProps}
                     installState="error"
                     errorMessage="Connection failed"
-                />
+                />,
             );
 
             expect(screen.getByText("Connection failed")).toBeInTheDocument();
@@ -175,9 +177,7 @@ describe("InstallModal", () => {
 
         it("should call onInstall when Retry clicked", async () => {
             const onInstall = vi.fn().mockResolvedValue(undefined);
-            render(
-                <InstallModal {...defaultProps} installState="error" onInstall={onInstall} />
-            );
+            render(<InstallModal {...defaultProps} installState="error" onInstall={onInstall} />);
 
             fireEvent.click(screen.getByText("Retry"));
 

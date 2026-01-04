@@ -50,17 +50,13 @@ describe("DiffViewer", () => {
 
     describe("expand/collapse", () => {
         it("should expand when expand button clicked", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    maxVisibleLines={2}
-                />
-            );
+            render(<DiffViewer {...defaultProps} maxVisibleLines={2} />);
 
             // Initially collapsed - should show expand option
-            const expandButton = screen.queryByText(/more lines/i) ||
-                                 screen.queryByText(/Show more/i) ||
-                                 document.querySelector('[title*="expand" i]');
+            const expandButton =
+                screen.queryByText(/more lines/i) ||
+                screen.queryByText(/Show more/i) ||
+                document.querySelector('[title*="expand" i]');
 
             if (expandButton) {
                 fireEvent.click(expandButton);
@@ -76,7 +72,7 @@ describe("DiffViewer", () => {
                     oldContent="line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8"
                     newContent="changed1\nline2\nline3\nline4\nline5\nline6\nline7\nchanged8"
                     maxVisibleLines={3}
-                />
+                />,
             );
 
             // The component should handle toggling
@@ -86,12 +82,7 @@ describe("DiffViewer", () => {
     describe("callbacks", () => {
         it("should call onFilePathClick when file path is clicked", () => {
             const onFilePathClick = vi.fn();
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    onFilePathClick={onFilePathClick}
-                />
-            );
+            render(<DiffViewer {...defaultProps} onFilePathClick={onFilePathClick} />);
 
             const filePathElement = screen.getByText("test.ts");
             fireEvent.click(filePathElement);
@@ -101,22 +92,16 @@ describe("DiffViewer", () => {
 
         it("should call onOpenDiff when open diff button clicked", () => {
             const onOpenDiff = vi.fn();
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    onOpenDiff={onOpenDiff}
-                />
-            );
+            render(<DiffViewer {...defaultProps} onOpenDiff={onOpenDiff} />);
 
-            const openButton = screen.queryByTitle(/open diff/i) ||
-                               screen.queryByText(/open/i);
+            const openButton = screen.queryByTitle(/open diff/i) || screen.queryByText(/open/i);
 
             if (openButton) {
                 fireEvent.click(openButton);
                 expect(onOpenDiff).toHaveBeenCalledWith(
                     "/src/test.ts",
                     defaultProps.oldContent,
-                    defaultProps.newContent
+                    defaultProps.newContent,
                 );
             }
         });
@@ -124,25 +109,13 @@ describe("DiffViewer", () => {
 
     describe("edge cases", () => {
         it("should handle empty old content", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    oldContent=""
-                    newContent="new content"
-                />
-            );
+            render(<DiffViewer {...defaultProps} oldContent="" newContent="new content" />);
 
             expect(screen.getByText(/\+1/)).toBeInTheDocument();
         });
 
         it("should handle empty new content", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    oldContent="old content"
-                    newContent=""
-                />
-            );
+            render(<DiffViewer {...defaultProps} oldContent="old content" newContent="" />);
 
             expect(screen.getByText(/-1/)).toBeInTheDocument();
         });
@@ -153,7 +126,7 @@ describe("DiffViewer", () => {
                     {...defaultProps}
                     oldContent="same content"
                     newContent="same content"
-                />
+                />,
             );
 
             // No additions or removals
@@ -161,12 +134,7 @@ describe("DiffViewer", () => {
         });
 
         it("should handle empty file path", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    filePath=""
-                />
-            );
+            render(<DiffViewer {...defaultProps} filePath="" />);
 
             // Should still render without crashing
         });
@@ -174,12 +142,7 @@ describe("DiffViewer", () => {
 
     describe("line numbers", () => {
         it("should use custom start line", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    startLine={10}
-                />
-            );
+            render(<DiffViewer {...defaultProps} startLine={10} />);
 
             // The component should render with custom start line
             expect(screen.getByText("test.ts")).toBeInTheDocument();
@@ -188,23 +151,13 @@ describe("DiffViewer", () => {
 
     describe("file path formatting", () => {
         it("should extract filename from full path", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    filePath="/very/long/path/to/file.ts"
-                />
-            );
+            render(<DiffViewer {...defaultProps} filePath="/very/long/path/to/file.ts" />);
 
             expect(screen.getByText("file.ts")).toBeInTheDocument();
         });
 
         it("should handle path with no slashes", () => {
-            render(
-                <DiffViewer
-                    {...defaultProps}
-                    filePath="simple.ts"
-                />
-            );
+            render(<DiffViewer {...defaultProps} filePath="simple.ts" />);
 
             expect(screen.getByText("simple.ts")).toBeInTheDocument();
         });

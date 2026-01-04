@@ -32,7 +32,7 @@ describe("ThinkingIntensityModal", () => {
             render(<ThinkingIntensityModal {...defaultProps} />);
 
             expect(
-                screen.getByText(/Configure the intensity of thinking mode/)
+                screen.getByText(/Configure the intensity of thinking mode/),
             ).toBeInTheDocument();
         });
 
@@ -58,7 +58,9 @@ describe("ThinkingIntensityModal", () => {
         it("should show Think level description by default", () => {
             render(<ThinkingIntensityModal {...defaultProps} />);
 
-            expect(screen.getByText("Basic reasoning - fastest response times")).toBeInTheDocument();
+            expect(
+                screen.getByText("Basic reasoning - fastest response times"),
+            ).toBeInTheDocument();
         });
 
         it("should update level when slider changed", () => {
@@ -67,7 +69,9 @@ describe("ThinkingIntensityModal", () => {
             const slider = screen.getByRole("slider");
             fireEvent.change(slider, { target: { value: "2" } });
 
-            expect(screen.getByText("Extended reasoning for challenging tasks")).toBeInTheDocument();
+            expect(
+                screen.getByText("Extended reasoning for challenging tasks"),
+            ).toBeInTheDocument();
         });
 
         it("should update level when label clicked", () => {
@@ -75,7 +79,9 @@ describe("ThinkingIntensityModal", () => {
 
             fireEvent.click(screen.getByText("Ultrathink"));
 
-            expect(screen.getByText("Maximum reasoning depth - highest token usage")).toBeInTheDocument();
+            expect(
+                screen.getByText("Maximum reasoning depth - highest token usage"),
+            ).toBeInTheDocument();
         });
     });
 
@@ -150,19 +156,23 @@ describe("ThinkingIntensityModal", () => {
     describe("current level", () => {
         it("should reset to current level when modal opens", () => {
             const { rerender } = render(
-                <ThinkingIntensityModal {...defaultProps} isOpen={false} currentLevel={2} />
+                <ThinkingIntensityModal {...defaultProps} isOpen={false} currentLevel={2} />,
             );
 
             // Open modal
             rerender(<ThinkingIntensityModal {...defaultProps} isOpen={true} currentLevel={2} />);
 
-            expect(screen.getByText("Extended reasoning for challenging tasks")).toBeInTheDocument();
+            expect(
+                screen.getByText("Extended reasoning for challenging tasks"),
+            ).toBeInTheDocument();
         });
 
         it("should start with current level as selected", () => {
             render(<ThinkingIntensityModal {...defaultProps} currentLevel={1} />);
 
-            expect(screen.getByText("More detailed reasoning for complex problems")).toBeInTheDocument();
+            expect(
+                screen.getByText("More detailed reasoning for complex problems"),
+            ).toBeInTheDocument();
         });
     });
 
