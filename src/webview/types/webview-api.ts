@@ -412,7 +412,8 @@ export type WebviewToExtensionMessageType =
     | "telemetry"
     | "getConversationList"
     | "loadConversation"
-    | "deleteConversation";
+    | "deleteConversation"
+    | "refreshUsage";
 
 /**
  * Union type of all webview to extension messages
@@ -443,7 +444,8 @@ export type WebviewToExtensionMessage =
     | TelemetryRequest
     | GetConversationListRequest
     | LoadConversationRequest
-    | DeleteConversationRequest;
+    | DeleteConversationRequest
+    | RefreshUsageRequest;
 
 /**
  * Base interface for webview to extension messages
@@ -619,6 +621,13 @@ export interface LoadConversationRequest extends BaseWebviewMessage {
 export interface DeleteConversationRequest extends BaseWebviewMessage {
     type: "deleteConversation";
     filename: string;
+}
+
+/**
+ * Refresh usage request - requests updated usage data
+ */
+export interface RefreshUsageRequest extends BaseWebviewMessage {
+    type: "refreshUsage";
 }
 
 /**

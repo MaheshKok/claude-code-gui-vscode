@@ -14,6 +14,7 @@ import type {
     ClaudeAssistantMessage,
     ClaudeUserMessage,
     ResultMessage,
+    ToolResultContent,
 } from "../../shared/types";
 import type { SessionStateManager, ToolUseMetric } from "./SessionStateManager";
 import type { ConversationMessage } from "../services/ConversationService";
@@ -342,7 +343,7 @@ export class ClaudeMessageProcessor {
      */
     private async _processToolResult(content: {
         tool_use_id?: string;
-        content?: string | object;
+        content?: unknown;
         is_error?: boolean;
     }): Promise<void> {
         let resultContent: string = content.content

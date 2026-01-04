@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
     Send,
-    BrainCircuit,
+    Brain,
     ChevronDown,
     FileCode,
     Sparkles,
@@ -236,7 +236,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                                     : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
                             }`}
                         >
-                            <BrainCircuit className="w-3.5 h-3.5" />
+                            <Brain className="w-3.5 h-3.5" />
                             <span>{thinkingMode ? currentThinkingMode.label : "Think"}</span>
                         </button>
                         {showThinkingSelector && (

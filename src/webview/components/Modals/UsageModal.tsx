@@ -9,7 +9,7 @@ interface UsageModalProps {
 
 export const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Usage Data" size="md">
+        <Modal isOpen={isOpen} onClose={onClose} title="Usage Data">
             <UsageData />
         </Modal>
     );
