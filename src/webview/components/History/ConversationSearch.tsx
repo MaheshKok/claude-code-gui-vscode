@@ -3,11 +3,13 @@
  *
  * Search input for filtering conversations with debounced input,
  * search icon, and clear button.
+ * Styled to match Claude Code dark theme.
  *
  * @module components/History/ConversationSearch
  */
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Search, X } from "lucide-react";
 
 export interface ConversationSearchProps {
     /** Callback when search query changes (debounced) */
@@ -80,23 +82,10 @@ export const ConversationSearch: React.FC<ConversationSearchProps> = ({
     );
 
     return (
-        <div className="relative">
+        <div className="relative group">
             {/* Search Icon */}
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--vscode-input-placeholderForeground)]">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 group-focus-within:text-white/70 transition-colors">
+                <Search size={14} />
             </div>
 
             {/* Input */}
@@ -109,17 +98,16 @@ export const ConversationSearch: React.FC<ConversationSearchProps> = ({
                 placeholder={placeholder}
                 autoFocus={autoFocus}
                 className={`
-          w-full pl-9 pr-8 py-2
-          text-sm
-          bg-[var(--vscode-input-background)]
-          text-[var(--vscode-input-foreground)]
-          placeholder-[var(--vscode-input-placeholderForeground)]
-          border border-[var(--vscode-input-border)]
-          rounded
-          focus:outline-none
-          focus:border-[var(--vscode-focusBorder)]
-          transition-colors
-        `}
+                    w-full pl-9 pr-8 py-2
+                    text-sm
+                    bg-black/20
+                    text-white
+                    placeholder-white/30
+                    border border-white/10
+                    rounded-lg
+                    focus:outline-none focus:border-white/20 focus:bg-black/40
+                    transition-all duration-200
+                `}
                 aria-label="Search conversations"
             />
 
@@ -127,32 +115,11 @@ export const ConversationSearch: React.FC<ConversationSearchProps> = ({
             {value && (
                 <button
                     onClick={handleClear}
-                    className={`
-            absolute right-2 top-1/2 -translate-y-1/2
-            p-1
-            rounded
-            text-[var(--vscode-input-placeholderForeground)]
-            hover:text-[var(--vscode-input-foreground)]
-            hover:bg-[var(--vscode-toolbar-hoverBackground)]
-            transition-colors
-          `}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors"
                     aria-label="Clear search"
                     title="Clear search (Esc)"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={12} />
                 </button>
             )}
         </div>

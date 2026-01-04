@@ -1,13 +1,14 @@
 /**
  * ConversationHistory Component
  *
- * Main history panel containing header with title and close button,
- * search input, conversation list, and empty state.
+ * Main history panel containing search input and conversation list.
+ * Styled to match the Claude Code dark theme.
  *
  * @module components/History/ConversationHistory
  */
 
 import React, { useState, useCallback, useMemo } from "react";
+import { X } from "lucide-react";
 import { ConversationSearch } from "./ConversationSearch";
 import { ConversationItem } from "./ConversationItem";
 import type { ConversationListItem } from "../../types/history";
@@ -43,7 +44,6 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
     // Filter conversations based on search query
     const filteredConversations = useMemo(() => {
         if (!searchQuery.trim()) {
-            // Sort by updated date descending
             return [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
         }
         const query = searchQuery.toLowerCase();
@@ -78,204 +78,77 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
         [onConversationDelete],
     );
 
-    // Handle keyboard shortcuts
-    const handleKeyDown = useCallback(
-        (event: React.KeyboardEvent) => {
-            if (event.key === "Escape") {
-                onClose();
-            }
-        },
-        [onClose],
-    );
-
     if (!isOpen) return null;
 
     return (
-        <div
-            className={`
-        fixed inset-y-0 left-0 z-40
-        w-80 max-w-full
-        flex flex-col
-        bg-[var(--vscode-sideBar-background)]
-        border-r border-[var(--vscode-panel-border)]
-        shadow-xl
-        animate-slide-in-left
-      `}
-            role="complementary"
-            aria-label="Conversation history"
-            onKeyDown={handleKeyDown}
-        >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--vscode-panel-border)]">
-                <div className="flex items-center gap-2">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-[var(--vscode-foreground)]"
+        <>
+            {/* Backdrop with blur - covers everything behind the sidebar */}
+            <div
+                className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                onClick={onClose}
+                aria-hidden="true"
+            />
+
+            <div
+                className={`
+                    fixed top-0 bottom-0 left-0 z-50
+                    w-full max-w-full
+                    flex flex-col
+                    bg-[#18181b] border-r border-white/10
+                    shadow-2xl
+                    transform transition-transform duration-200 ease-in-out
+                `}
+                role="complementary"
+                aria-label="Conversation history"
+            >
+                {/* Search Header */}
+                <div className="p-3 border-b border-white/5 bg-[#18181b] flex items-center gap-3">
+                    <div className="flex-1">
+                        <ConversationSearch onSearch={handleSearch} autoFocus />
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        title="Close History"
                     >
-                        <path d="M12 8v4l3 3" />
-                        <circle cx="12" cy="12" r="10" />
-                    </svg>
-                    <h2 className="text-sm font-semibold text-[var(--vscode-foreground)]">
-                        Chat History
-                    </h2>
-                    <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-                        ({conversations.length})
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Conversation List */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-32 text-white/40">
+                            <span className="text-sm">Loading conversations...</span>
+                        </div>
+                    ) : filteredConversations.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-64 px-4 text-center text-white/30">
+                            <p className="text-sm">No conversations found</p>
+                        </div>
+                    ) : (
+                        <div role="list" className="py-2">
+                            {filteredConversations.map((conversation) => (
+                                <ConversationItem
+                                    key={conversation.id}
+                                    conversation={conversation}
+                                    isActive={activeConversationId === conversation.id}
+                                    onClick={handleConversationClick}
+                                    onDelete={handleConversationDelete}
+                                    cost={conversation.totalCost}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer Count */}
+                <div className="px-4 py-2 border-t border-white/5 bg-[#18181b] text-[10px] text-white/30 flex justify-between">
+                    <span>
+                        {filteredConversations.length} of {conversations.length} conversations
                     </span>
                 </div>
-
-                <button
-                    onClick={onClose}
-                    className={`
-            p-1.5 rounded
-            text-[var(--vscode-foreground)]
-            hover:bg-[var(--vscode-toolbar-hoverBackground)]
-            transition-colors
-          `}
-                    title="Close history (Esc)"
-                    aria-label="Close conversation history"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
             </div>
-
-            {/* Search */}
-            <div className="px-3 py-2 border-b border-[var(--vscode-panel-border)]">
-                <ConversationSearch onSearch={handleSearch} autoFocus />
-            </div>
-
-            {/* Conversation List */}
-            <div className="flex-1 overflow-y-auto">
-                {isLoading ? (
-                    // Loading state
-                    <div className="flex items-center justify-center h-32">
-                        <div className="flex items-center gap-2 text-[var(--vscode-descriptionForeground)]">
-                            <svg
-                                className="animate-spin h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                />
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                            </svg>
-                            <span className="text-sm">Loading...</span>
-                        </div>
-                    </div>
-                ) : filteredConversations.length === 0 ? (
-                    // Empty state
-                    <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
-                        {searchQuery ? (
-                            // No search results
-                            <>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="text-[var(--vscode-descriptionForeground)] opacity-50 mb-4"
-                                >
-                                    <circle cx="11" cy="11" r="8" />
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    <line x1="8" y1="11" x2="14" y2="11" />
-                                </svg>
-                                <p className="text-sm text-[var(--vscode-foreground)]">
-                                    No conversations found
-                                </p>
-                                <p className="mt-1 text-xs text-[var(--vscode-descriptionForeground)]">
-                                    Try a different search term
-                                </p>
-                            </>
-                        ) : (
-                            // No conversations yet
-                            <>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="text-[var(--vscode-descriptionForeground)] opacity-50 mb-4"
-                                >
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                </svg>
-                                <p className="text-sm text-[var(--vscode-foreground)]">
-                                    No conversations yet
-                                </p>
-                                <p className="mt-1 text-xs text-[var(--vscode-descriptionForeground)]">
-                                    Start a new chat to begin
-                                </p>
-                            </>
-                        )}
-                    </div>
-                ) : (
-                    // Conversation list
-                    <div role="list" aria-label="Conversations">
-                        {filteredConversations.map((conversation) => (
-                            <ConversationItem
-                                key={conversation.id}
-                                conversation={conversation}
-                                isActive={activeConversationId === conversation.id}
-                                onClick={handleConversationClick}
-                                onDelete={handleConversationDelete}
-                                cost={conversation.totalCost}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Footer with count */}
-            {filteredConversations.length > 0 && (
-                <div className="px-4 py-2 border-t border-[var(--vscode-panel-border)]">
-                    <p className="text-xs text-[var(--vscode-descriptionForeground)]">
-                        {filteredConversations.length} of {conversations.length} conversation
-                        {conversations.length !== 1 ? "s" : ""}
-                        {searchQuery && " (filtered)"}
-                    </p>
-                </div>
-            )}
-        </div>
+        </>
     );
 };
 

@@ -3,11 +3,13 @@
  *
  * Individual conversation card displaying title, preview,
  * timestamp, message count, and optional cost badge.
+ * Styled to match Claude Code dark theme.
  *
  * @module components/History/ConversationItem
  */
 
 import React, { useState, useCallback } from "react";
+import { Trash2 } from "lucide-react";
 import type { ConversationListItem } from "../../types/history";
 
 export interface ConversationItemProps {
@@ -34,35 +36,11 @@ const formatRelativeTime = (timestamp: number): string => {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30);
 
-    if (months > 0) {
-        return months === 1 ? "1 month ago" : `${months} months ago`;
-    }
-    if (weeks > 0) {
-        return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
-    }
-    if (days > 0) {
-        return days === 1 ? "Yesterday" : `${days} days ago`;
-    }
-    if (hours > 0) {
-        return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
-    }
-    if (minutes > 0) {
-        return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
-    }
+    if (days > 0) return days === 1 ? "Yesterday" : `${days} days ago`;
+    if (hours > 0) return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+    if (minutes > 0) return minutes === 1 ? "1 min ago" : `${minutes} mins ago`;
     return "Just now";
-};
-
-/**
- * Format cost as currency
- */
-const formatCost = (cost: number): string => {
-    if (cost < 0.01) {
-        return "<$0.01";
-    }
-    return `$${cost.toFixed(2)}`;
 };
 
 export const ConversationItem: React.FC<ConversationItemProps> = ({
@@ -97,228 +75,81 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         setShowDeleteConfirm(false);
     }, []);
 
-    const handleKeyDown = useCallback(
-        (event: React.KeyboardEvent) => {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onClick(conversation.id);
-            }
-        },
-        [onClick, conversation.id],
-    );
-
     return (
         <div
-            role="button"
-            tabIndex={0}
             onClick={handleClick}
-            onKeyDown={handleKeyDown}
             className={`
-        group relative p-3
-        border-b border-[var(--vscode-panel-border)]
-        cursor-pointer
-        transition-colors
-        ${
-            isActive
-                ? "bg-[var(--vscode-list-activeSelectionBackground)]"
-                : "hover:bg-[var(--vscode-list-hoverBackground)]"
-        }
-      `}
-            aria-selected={isActive}
-            aria-label={`Conversation: ${conversation.title}`}
+                group relative px-4 py-3
+                border-b border-white/5
+                cursor-pointer
+                transition-colors duration-200
+                ${isActive ? "bg-white/10" : "hover:bg-white/5"}
+            `}
         >
-            {/* Main Content */}
-            <div className="pr-8">
-                {/* Title */}
+            {/* Title & Preview */}
+            <div className="flex flex-col gap-1 pr-6">
                 <h3
-                    className={`
-            text-sm font-medium truncate
-            ${
-                isActive
-                    ? "text-[var(--vscode-list-activeSelectionForeground)]"
-                    : "text-[var(--vscode-foreground)]"
-            }
-          `}
+                    className={`text-sm font-medium truncate ${isActive ? "text-white" : "text-white/90"}`}
                 >
                     {conversation.title}
                 </h3>
-
-                {/* Preview */}
-                {conversation.preview && (
-                    <p
-                        className={`
-              mt-1 text-xs truncate
-              ${
-                  isActive
-                      ? "text-[var(--vscode-list-activeSelectionForeground)] opacity-80"
-                      : "text-[var(--vscode-descriptionForeground)]"
-              }
-            `}
-                    >
-                        {conversation.preview}
-                    </p>
-                )}
-
-                {/* Meta Info */}
-                <div className="flex items-center gap-2 mt-2">
-                    {/* Timestamp */}
-                    <span
-                        className={`
-              text-xs
-              ${
-                  isActive
-                      ? "text-[var(--vscode-list-activeSelectionForeground)] opacity-70"
-                      : "text-[var(--vscode-descriptionForeground)]"
-              }
-            `}
-                    >
-                        {formatRelativeTime(conversation.updatedAt)}
-                    </span>
-
-                    {/* Message Count Badge */}
-                    <span
-                        className={`
-              inline-flex items-center px-1.5 py-0.5
-              text-xs rounded
-              ${
-                  isActive
-                      ? "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
-                      : "bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)]"
-              }
-            `}
-                    >
-                        {conversation.messageCount}{" "}
-                        {conversation.messageCount === 1 ? "msg" : "msgs"}
-                    </span>
-
-                    {/* Cost Badge */}
-                    {cost !== undefined && cost > 0 && (
-                        <span
-                            className={`
-                inline-flex items-center px-1.5 py-0.5
-                text-xs rounded
-                bg-[var(--vscode-charts-green)] bg-opacity-20
-                text-[var(--vscode-charts-green)]
-              `}
-                        >
-                            {formatCost(cost)}
-                        </span>
-                    )}
-
-                    {/* Tags */}
-                    {conversation.tags && conversation.tags.length > 0 && (
-                        <div className="flex items-center gap-1">
-                            {conversation.tags.slice(0, 2).map((tag) => (
-                                <span
-                                    key={tag}
-                                    className={`
-                    inline-flex items-center px-1.5 py-0.5
-                    text-xs rounded
-                    bg-[var(--vscode-badge-background)]
-                    text-[var(--vscode-badge-foreground)]
-                    opacity-80
-                  `}
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                            {conversation.tags.length > 2 && (
-                                <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-                                    +{conversation.tags.length - 2}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </div>
+                <p className="text-xs text-white/50 truncate">
+                    {conversation.preview || "No preview available"}
+                </p>
             </div>
 
-            {/* Delete Button / Confirmation */}
-            <div className="absolute top-3 right-2">
+            {/* Metadata Row */}
+            <div className="flex items-center gap-3 mt-2 text-[11px]">
+                {/* Time */}
+                <span className="text-white/40">{formatRelativeTime(conversation.updatedAt)}</span>
+
+                {/* Message Count Badge */}
+                <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-medium">
+                    {conversation.messageCount} msgs
+                </span>
+
+                {/* Usage/Cost Bar (Green Block) */}
+                {cost !== undefined && cost > 0 && (
+                    <div className="h-1.5 w-8 bg-green-900/30 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-green-500 rounded-full"
+                            style={{ width: `${Math.min(100, cost * 10)}%` }} // Rough viz
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Status Icon (Right side) */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
                 {showDeleteConfirm ? (
-                    <div className="flex items-center gap-1 bg-[var(--vscode-editorWidget-background)] rounded p-1">
+                    <div
+                        className="flex items-center gap-1 bg-zinc-800 rounded p-1 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button
                             onClick={handleConfirmDelete}
-                            className={`
-                p-1 rounded
-                text-[var(--vscode-errorForeground)]
-                hover:bg-[var(--vscode-toolbar-hoverBackground)]
-                transition-colors
-              `}
-                            title="Confirm delete"
-                            aria-label="Confirm delete"
+                            className="p-1 text-red-400 hover:text-red-300"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                            <Trash2 size={14} />
                         </button>
                         <button
                             onClick={handleCancelDelete}
-                            className={`
-                p-1 rounded
-                text-[var(--vscode-descriptionForeground)]
-                hover:bg-[var(--vscode-toolbar-hoverBackground)]
-                transition-colors
-              `}
-                            title="Cancel"
-                            aria-label="Cancel delete"
+                            className="p-1 text-zinc-400 hover:text-zinc-300"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
+                            <div className="text-[10px]">Cancel</div>
                         </button>
                     </div>
                 ) : (
-                    <button
-                        onClick={handleDeleteClick}
-                        className={`
-              p-1 rounded
-              opacity-0 group-hover:opacity-100
-              text-[var(--vscode-descriptionForeground)]
-              hover:text-[var(--vscode-errorForeground)]
-              hover:bg-[var(--vscode-toolbar-hoverBackground)]
-              transition-all
-            `}
-                        title="Delete conversation"
-                        aria-label="Delete conversation"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                    <div className="flex flex-col items-end gap-2">
+                        {/* Delete button (always visible, prominent red) */}
+                        <button
+                            onClick={handleDeleteClick}
+                            className="text-[#ef4444] hover:text-red-400 transition-colors"
+                            title="Delete conversation"
                         >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
-                        </svg>
-                    </button>
+                            <Trash2 size={15} />
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
