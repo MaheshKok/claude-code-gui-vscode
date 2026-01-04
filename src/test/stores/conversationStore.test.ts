@@ -213,19 +213,17 @@ describe("conversationStore", () => {
     describe("searchConversations", () => {
         beforeEach(() => {
             useConversationStore.getState().saveConversation(mockMessages, "First Chat");
-            useConversationStore
-                .getState()
-                .saveConversation(
-                    [
-                        {
-                            id: "1",
-                            type: "user",
-                            content: "Python tutorial",
-                            timestamp: Date.now(),
-                        } as ChatMessage,
-                    ],
-                    "Python Chat",
-                );
+            useConversationStore.getState().saveConversation(
+                [
+                    {
+                        id: "1",
+                        type: "user",
+                        content: "Python tutorial",
+                        timestamp: Date.now(),
+                    } as ChatMessage,
+                ],
+                "Python Chat",
+            );
         });
 
         it("should search by title", () => {
