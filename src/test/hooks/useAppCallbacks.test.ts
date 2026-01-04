@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAppCallbacks, type AppCallbackDeps } from "../../webview/hooks/useAppCallbacks";
 import { MessageType, ThinkingIntensity } from "../../shared/constants";
+import { useMCPStore } from "../../webview/stores/mcpStore";
 
 describe("useAppCallbacks", () => {
     const mockPostMessage = vi.fn();
@@ -304,7 +305,7 @@ describe("useAppCallbacks", () => {
     });
 
     describe("handleMcpAction", () => {
-        it("should open MCP modal", () => {
+        it("should open MCP modal and load servers", () => {
             const deps = createMockDeps();
             const { result } = renderHook(() => useAppCallbacks(deps));
 
@@ -312,7 +313,228 @@ describe("useAppCallbacks", () => {
                 result.current.handleMcpAction();
             });
 
+            expect(mockPostMessage).toHaveBeenCalledWith({ type: "loadMCPServers" });
             expect(mockOpenModal).toHaveBeenCalledWith("mcp");
+        });
+    });
+
+    describe("MCP callbacks", () => {
+        beforeEach(() => {
+            // Reset MCP store before each test
+            useMCPStore.setState({ servers: [], selectedServerId: null });
+        });
+
+        describe("mcpServers", () => {
+            it("should return empty array when no servers", () => {
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                expect(result.current.mcpServers).toEqual([]);
+            });
+
+            it("should return servers from store", () => {
+                // Add a server to the store
+                useMCPStore.getState().addServer({
+                    id: "test-server",
+                    name: "Test Server",
+                    command: "npx",
+                    args: ["-y", "test-mcp"],
+                    enabled: true,
+                });
+
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                expect(result.current.mcpServers).toHaveLength(1);
+                expect(result.current.mcpServers[0]).toMatchObject({
+                    id: "test-server",
+                    name: "Test Server",
+                    type: "stdio",
+                    enabled: true,
+                    command: "npx",
+                    args: ["-y", "test-mcp"],
+                });
+            });
+        });
+
+        describe("handleMcpLoadServers", () => {
+            it("should post loadMCPServers message", () => {
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                act(() => {
+                    result.current.handleMcpLoadServers();
+                });
+
+                expect(mockPostMessage).toHaveBeenCalledWith({ type: "loadMCPServers" });
+            });
+        });
+
+        describe("handleMcpAddServer", () => {
+            it("should add server to store and post save message", () => {
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                act(() => {
+                    result.current.handleMcpAddServer({
+                        name: "new-server",
+                        type: "stdio",
+                        enabled: true,
+                        command: "/usr/bin/server",
+                        args: ["--arg1"],
+                        env: { API_KEY: "secret" },
+                    });
+                });
+
+                // Check store was updated
+                const servers = useMCPStore.getState().servers;
+                expect(servers).toHaveLength(1);
+                expect(servers[0].config.name).toBe("new-server");
+                expect(servers[0].config.command).toBe("/usr/bin/server");
+                expect(servers[0].config.args).toEqual(["--arg1"]);
+                expect(servers[0].config.env).toEqual({ API_KEY: "secret" });
+
+                // Check message was posted
+                expect(mockPostMessage).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        type: "saveMCPServer",
+                        name: "new-server",
+                        config: expect.objectContaining({
+                            type: "stdio",
+                            command: "/usr/bin/server",
+                            args: ["--arg1"],
+                            env: { API_KEY: "secret" },
+                        }),
+                    }),
+                );
+
+                // Check success notification
+                expect(mockShowSuccess).toHaveBeenCalledWith(
+                    "MCP Server Added",
+                    "Added server: new-server",
+                );
+            });
+
+            it("should handle server without optional fields", () => {
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                act(() => {
+                    result.current.handleMcpAddServer({
+                        name: "simple-server",
+                        type: "http",
+                        enabled: true,
+                        url: "https://example.com",
+                    });
+                });
+
+                const servers = useMCPStore.getState().servers;
+                expect(servers).toHaveLength(1);
+                expect(servers[0].config.name).toBe("simple-server");
+            });
+        });
+
+        describe("handleMcpDeleteServer", () => {
+            it("should delete server from store and post delete message", () => {
+                // Add a server first
+                useMCPStore.getState().addServer({
+                    id: "server-to-delete",
+                    name: "Delete Me",
+                    command: "npx",
+                    enabled: true,
+                });
+
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                expect(useMCPStore.getState().servers).toHaveLength(1);
+
+                act(() => {
+                    result.current.handleMcpDeleteServer("server-to-delete");
+                });
+
+                // Check store was updated
+                expect(useMCPStore.getState().servers).toHaveLength(0);
+
+                // Check message was posted
+                expect(mockPostMessage).toHaveBeenCalledWith({
+                    type: "deleteMCPServer",
+                    name: "Delete Me",
+                });
+
+                // Check success notification
+                expect(mockShowSuccess).toHaveBeenCalledWith(
+                    "MCP Server Deleted",
+                    "Removed server: Delete Me",
+                );
+            });
+
+            it("should do nothing if server not found", () => {
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                act(() => {
+                    result.current.handleMcpDeleteServer("non-existent");
+                });
+
+                expect(mockPostMessage).not.toHaveBeenCalledWith(
+                    expect.objectContaining({ type: "deleteMCPServer" }),
+                );
+            });
+        });
+
+        describe("handleMcpToggleServer", () => {
+            it("should toggle server enabled state", () => {
+                // Add a server first
+                useMCPStore.getState().addServer({
+                    id: "toggle-server",
+                    name: "Toggle Me",
+                    command: "npx",
+                    enabled: true,
+                });
+
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                // Server is enabled
+                expect(useMCPStore.getState().servers[0].config.enabled).toBe(true);
+
+                act(() => {
+                    result.current.handleMcpToggleServer("toggle-server", false);
+                });
+
+                // Server should now be disabled
+                expect(useMCPStore.getState().servers[0].config.enabled).toBe(false);
+
+                // Check success notification
+                expect(mockShowSuccess).toHaveBeenCalledWith(
+                    "MCP Server Updated",
+                    "Toggle Me is now disabled",
+                );
+            });
+
+            it("should toggle server from disabled to enabled", () => {
+                // Add a disabled server
+                useMCPStore.getState().addServer({
+                    id: "toggle-server",
+                    name: "Toggle Me",
+                    command: "npx",
+                    enabled: false,
+                });
+
+                const deps = createMockDeps();
+                const { result } = renderHook(() => useAppCallbacks(deps));
+
+                act(() => {
+                    result.current.handleMcpToggleServer("toggle-server", true);
+                });
+
+                expect(useMCPStore.getState().servers[0].config.enabled).toBe(true);
+                expect(mockShowSuccess).toHaveBeenCalledWith(
+                    "MCP Server Updated",
+                    "Toggle Me is now enabled",
+                );
+            });
         });
     });
 

@@ -197,7 +197,14 @@ export const App: React.FC = () => {
             />
 
             {ui.activeModal === "mcp" && (
-                <MCPModal isOpen={true} onClose={state.uiActions.closeModal} />
+                <MCPModal
+                    isOpen={true}
+                    onClose={state.uiActions.closeModal}
+                    servers={callbacks.mcpServers}
+                    onAddServer={callbacks.handleMcpAddServer}
+                    onDeleteServer={callbacks.handleMcpDeleteServer}
+                    onToggleServer={callbacks.handleMcpToggleServer}
+                />
             )}
 
             {ui.activeModal === "model" && (

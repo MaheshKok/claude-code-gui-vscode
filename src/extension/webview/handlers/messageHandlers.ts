@@ -293,16 +293,27 @@ const handleSaveMCPServer = async (
 ): Promise<void> => {
     const config = message.config as
         | {
-              command: string;
+              type?: "http" | "sse" | "stdio";
+              command?: string;
               args?: string[];
               env?: Record<string, string>;
               cwd?: string;
+              url?: string;
+              headers?: Record<string, string>;
           }
         | undefined;
-    if (config && typeof config.command === "string") {
-        await context.mcpService.saveServer(message.name as string, config);
-        await context.loadMCPServers();
+    if (!config) {
+        return;
     }
+
+    const hasCommand = typeof config.command === "string" && config.command.length > 0;
+    const hasUrl = typeof config.url === "string" && config.url.length > 0;
+    if (!hasCommand && !hasUrl) {
+        return;
+    }
+
+    await context.mcpService.saveServer(message.name as string, config);
+    await context.loadMCPServers();
 };
 
 const handleDeleteMCPServer = async (

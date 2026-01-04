@@ -9,6 +9,7 @@ import {
     useUIStore,
     usePermissionStore,
     useUsageStore,
+    useMCPStore,
 } from "../stores";
 import { MessageType, ToolExecutionStatus } from "../../shared/constants";
 import type { ChatMessage, PermissionRequest, TokenUsage } from "../types";
@@ -453,6 +454,43 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
             usageData: (msg: unknown) => {
                 const data = msg as { data: UsageData };
                 useUsageStore.getState().setUsageData(data.data);
+            },
+
+            mcpServers: (msg: unknown) => {
+                const message = msg as {
+                    data: Record<
+                        string,
+                        {
+                            type?: "http" | "sse" | "stdio";
+                            command?: string;
+                            args?: string[];
+                            env?: Record<string, string>;
+                            cwd?: string;
+                            url?: string;
+                            headers?: Record<string, string>;
+                        }
+                    >;
+                };
+                // Import servers into the MCP store
+                const mcpStore = useMCPStore.getState();
+                const servers = message.data || {};
+
+                // Convert extension server format to MCP store format and import
+                const serverConfigs = Object.entries(servers).map(([name, config]) => ({
+                    id: name,
+                    name,
+                    type: config.type ?? (config.url ? "http" : "stdio"),
+                    command: config.command,
+                    args: config.args,
+                    env: config.env,
+                    cwd: config.cwd,
+                    url: config.url,
+                    headers: config.headers,
+                    enabled: true,
+                }));
+
+                // Import servers (only adds new ones, doesn't duplicate)
+                mcpStore.importServers(serverConfigs);
             },
         };
 

@@ -5,11 +5,16 @@ import { convertToWSLPath as convertToWSLPathUtil } from "../utils";
 /**
  * MCP server configuration
  */
+export type MCPServerType = "http" | "sse" | "stdio";
+
 export interface MCPServerConfig {
-    command: string;
+    type?: MCPServerType;
+    command?: string;
     args?: string[];
     env?: Record<string, string>;
     cwd?: string;
+    url?: string;
+    headers?: Record<string, string>;
 }
 
 /**

@@ -23,19 +23,27 @@ export type MCPServerStatus = "disconnected" | "connecting" | "connected" | "err
 /**
  * MCP server configuration
  */
+export type MCPServerType = "http" | "sse" | "stdio";
+
 export interface MCPServerConfig {
     /** Unique server identifier */
     id: string;
     /** Display name */
     name: string;
+    /** Server type */
+    type?: MCPServerType;
     /** Server command to execute */
-    command: string;
+    command?: string;
     /** Command arguments */
     args?: string[];
     /** Environment variables */
     env?: Record<string, string>;
     /** Working directory */
     cwd?: string;
+    /** HTTP/SSE server URL */
+    url?: string;
+    /** HTTP/SSE headers */
+    headers?: Record<string, string>;
     /** Whether the server is enabled */
     enabled: boolean;
     /** Server description */
@@ -128,12 +136,19 @@ const initialState: MCPState = {
 /**
  * Create initial server state from config
  */
-const createServerState = (config: MCPServerConfig): MCPServerState => ({
-    config,
-    status: config.enabled ? "disconnected" : "disabled",
-    tools: [],
-    retryCount: 0,
-});
+const createServerState = (config: MCPServerConfig): MCPServerState => {
+    const normalizedConfig = {
+        ...config,
+        type: config.type ?? "stdio",
+    };
+
+    return {
+        config: normalizedConfig,
+        status: normalizedConfig.enabled ? "disconnected" : "disabled",
+        tools: [],
+        retryCount: 0,
+    };
+};
 
 // ============================================================================
 // Store

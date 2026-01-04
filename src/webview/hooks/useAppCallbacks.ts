@@ -7,6 +7,8 @@ import { MessageType, ThinkingIntensity } from "../../shared/constants";
 import type { ChatMessage, PermissionDecision } from "../types";
 import type { UseAppStateReturn } from "./useAppState";
 import type { UseVSCodeReturn } from "./useVSCode";
+import { useMCPStore, type MCPServerConfig } from "../stores/mcpStore";
+import type { MCPServer } from "../components/Modals/MCPModal";
 
 export interface AppCallbackDeps {
     state: UseAppStateReturn;
@@ -30,6 +32,12 @@ export interface UseAppCallbacksReturn {
     handleMcpAction: () => void;
     handlePermissionResponse: (requestId: string, decision: PermissionDecision) => void;
     handleWSLConfigure: () => void;
+    // MCP callbacks
+    mcpServers: MCPServer[];
+    handleMcpAddServer: (server: Omit<MCPServer, "id">) => void;
+    handleMcpDeleteServer: (id: string) => void;
+    handleMcpToggleServer: (id: string, enabled: boolean) => void;
+    handleMcpLoadServers: () => void;
 }
 
 export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
@@ -152,8 +160,103 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
     }, [uiActions]);
 
     const handleMcpAction = useCallback(() => {
+        // Load MCP servers when opening the modal
+        postMessage({ type: "loadMCPServers" });
         uiActions.openModal("mcp");
-    }, [uiActions]);
+    }, [uiActions, postMessage]);
+
+    // MCP store state and actions
+    const mcpStoreServers = useMCPStore((s) => s.servers);
+    const addMcpServer = useMCPStore((s) => s.addServer);
+    const deleteMcpServer = useMCPStore((s) => s.deleteServer);
+    const toggleMcpServer = useMCPStore((s) => s.toggleServer);
+
+    // Convert MCP store servers to the format expected by MCPModal
+    const mcpServers: MCPServer[] = mcpStoreServers.map((s) => ({
+        id: s.config.id,
+        name: s.config.name,
+        type: s.config.type ?? "stdio",
+        enabled: s.config.enabled,
+        command: s.config.command,
+        args: s.config.args,
+        env: s.config.env,
+        url: s.config.url,
+        headers: s.config.headers,
+    }));
+
+    const handleMcpLoadServers = useCallback(() => {
+        postMessage({ type: "loadMCPServers" });
+    }, [postMessage]);
+
+    const handleMcpAddServer = useCallback(
+        (server: Omit<MCPServer, "id">) => {
+            // Use server name as ID for consistency with extension storage
+            const id = server.name;
+            const config: MCPServerConfig = {
+                id,
+                name: server.name,
+                type: server.type,
+                command: server.command,
+                args: server.args,
+                env: server.env,
+                url: server.url,
+                headers: server.headers,
+                enabled: server.enabled,
+            };
+            addMcpServer(config);
+
+            // Save to extension
+            postMessage({
+                type: "saveMCPServer",
+                name: server.name,
+                config: {
+                    type: server.type,
+                    command: server.command,
+                    args: server.args,
+                    env: server.env,
+                    url: server.url,
+                    headers: server.headers,
+                },
+            });
+
+            uiActions.showSuccess("MCP Server Added", `Added server: ${server.name}`);
+        },
+        [addMcpServer, postMessage, uiActions],
+    );
+
+    const handleMcpDeleteServer = useCallback(
+        (id: string) => {
+            const server = mcpStoreServers.find((s) => s.config.id === id);
+            if (server) {
+                deleteMcpServer(id);
+                postMessage({
+                    type: "deleteMCPServer",
+                    name: server.config.name,
+                });
+                uiActions.showSuccess(
+                    "MCP Server Deleted",
+                    `Removed server: ${server.config.name}`,
+                );
+            }
+        },
+        [deleteMcpServer, mcpStoreServers, postMessage, uiActions],
+    );
+
+    const handleMcpToggleServer = useCallback(
+        (id: string, _enabled: boolean) => {
+            toggleMcpServer(id);
+            const server = mcpStoreServers.find((s) => s.config.id === id);
+            if (server) {
+                // The toggle already happened, so the new state is the opposite of what we received
+                const newEnabled = !server.config.enabled;
+                uiActions.showSuccess(
+                    "MCP Server Updated",
+                    `${server.config.name} is now ${newEnabled ? "enabled" : "disabled"}`,
+                );
+            }
+        },
+        [toggleMcpServer, mcpStoreServers, uiActions],
+    );
 
     const handlePermissionResponse = useCallback(
         (requestId: string, decision: PermissionDecision) => {
@@ -190,5 +293,11 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
         handleMcpAction,
         handlePermissionResponse,
         handleWSLConfigure,
+        // MCP callbacks
+        mcpServers,
+        handleMcpAddServer,
+        handleMcpDeleteServer,
+        handleMcpToggleServer,
+        handleMcpLoadServers,
     };
 }

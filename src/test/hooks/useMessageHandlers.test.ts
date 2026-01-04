@@ -6,6 +6,7 @@ import { useSettingsStore } from "../../webview/stores/settingsStore";
 import { useUIStore } from "../../webview/stores/uiStore";
 import { usePermissionStore } from "../../webview/stores/permissionStore";
 import { useUsageStore } from "../../webview/stores/usageStore";
+import { useMCPStore } from "../../webview/stores/mcpStore";
 import { MessageType, ToolExecutionStatus } from "../../shared/constants";
 
 describe("useMessageHandlers", () => {
@@ -762,6 +763,133 @@ describe("useMessageHandlers", () => {
             });
 
             expect(true).toBe(true);
+        });
+    });
+
+    describe("mcpServers handler", () => {
+        beforeEach(() => {
+            // Reset MCP store before each test
+            useMCPStore.setState({ servers: [], selectedServerId: null });
+        });
+
+        it("should have mcpServers handler defined", () => {
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            expect(result.current.handlers.mcpServers).toBeDefined();
+            expect(typeof result.current.handlers.mcpServers).toBe("function");
+        });
+
+        it("should add servers from extension data to MCP store", () => {
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            act(() => {
+                result.current.handlers.mcpServers({
+                    data: {
+                        "test-server": {
+                            command: "npx",
+                            args: ["-y", "test-server"],
+                            env: { NODE_ENV: "test" },
+                            cwd: "/test/path",
+                        },
+                        "another-server": {
+                            command: "node",
+                            args: ["server.js"],
+                        },
+                    },
+                });
+            });
+
+            const servers = useMCPStore.getState().servers;
+            expect(servers).toHaveLength(2);
+            expect(servers[0].config.id).toBe("test-server");
+            expect(servers[0].config.name).toBe("test-server");
+            expect(servers[0].config.command).toBe("npx");
+            expect(servers[0].config.args).toEqual(["-y", "test-server"]);
+            expect(servers[0].config.env).toEqual({ NODE_ENV: "test" });
+            expect(servers[0].config.cwd).toBe("/test/path");
+            expect(servers[0].config.enabled).toBe(true);
+            expect(servers[1].config.id).toBe("another-server");
+        });
+
+        it("should not add duplicate servers", () => {
+            // First add a server directly to the store
+            useMCPStore.getState().addServer({
+                id: "existing-server",
+                name: "existing-server",
+                command: "node",
+                args: ["old.js"],
+                enabled: true,
+            });
+
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            act(() => {
+                result.current.handlers.mcpServers({
+                    data: {
+                        "existing-server": {
+                            command: "node",
+                            args: ["new.js"],
+                        },
+                        "new-server": {
+                            command: "npx",
+                            args: ["new-server"],
+                        },
+                    },
+                });
+            });
+
+            const servers = useMCPStore.getState().servers;
+            expect(servers).toHaveLength(2);
+            // Existing server should retain its original configuration
+            expect(servers[0].config.args).toEqual(["old.js"]);
+            // New server should be added
+            expect(servers[1].config.id).toBe("new-server");
+        });
+
+        it("should handle empty data gracefully", () => {
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            act(() => {
+                result.current.handlers.mcpServers({
+                    data: {},
+                });
+            });
+
+            const servers = useMCPStore.getState().servers;
+            expect(servers).toHaveLength(0);
+        });
+
+        it("should handle undefined data gracefully", () => {
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            act(() => {
+                result.current.handlers.mcpServers({});
+            });
+
+            const servers = useMCPStore.getState().servers;
+            expect(servers).toHaveLength(0);
+        });
+
+        it("should handle servers without optional fields", () => {
+            const { result } = renderHook(() => useMessageHandlers(mockDeps));
+
+            act(() => {
+                result.current.handlers.mcpServers({
+                    data: {
+                        "minimal-server": {
+                            command: "npx",
+                        },
+                    },
+                });
+            });
+
+            const servers = useMCPStore.getState().servers;
+            expect(servers).toHaveLength(1);
+            expect(servers[0].config.id).toBe("minimal-server");
+            expect(servers[0].config.command).toBe("npx");
+            expect(servers[0].config.args).toBeUndefined();
+            expect(servers[0].config.env).toBeUndefined();
+            expect(servers[0].config.cwd).toBeUndefined();
         });
     });
 });

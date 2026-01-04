@@ -49,7 +49,9 @@ export type ExtensionToWebviewMessageType =
     | "themeUpdate"
     | "restoreState"
     | "conversationList"
-    | "conversationDeleted";
+    | "conversationDeleted"
+    | "mcpServers"
+    | "usageData";
 
 /**
  * Union type of all extension to webview messages
@@ -413,7 +415,10 @@ export type WebviewToExtensionMessageType =
     | "getConversationList"
     | "loadConversation"
     | "deleteConversation"
-    | "refreshUsage";
+    | "refreshUsage"
+    | "loadMCPServers"
+    | "saveMCPServer"
+    | "deleteMCPServer";
 
 /**
  * Union type of all webview to extension messages
@@ -445,7 +450,10 @@ export type WebviewToExtensionMessage =
     | GetConversationListRequest
     | LoadConversationRequest
     | DeleteConversationRequest
-    | RefreshUsageRequest;
+    | RefreshUsageRequest
+    | LoadMCPServersRequest
+    | SaveMCPServerRequest
+    | DeleteMCPServerRequest;
 
 /**
  * Base interface for webview to extension messages
@@ -628,6 +636,41 @@ export interface DeleteConversationRequest extends BaseWebviewMessage {
  */
 export interface RefreshUsageRequest extends BaseWebviewMessage {
     type: "refreshUsage";
+}
+
+/**
+ * Load MCP servers request - loads configured MCP servers
+ */
+export interface LoadMCPServersRequest extends BaseWebviewMessage {
+    type: "loadMCPServers";
+}
+
+/**
+ * Save MCP server request - saves an MCP server configuration
+ */
+export interface SaveMCPServerRequest extends BaseWebviewMessage {
+    type: "saveMCPServer";
+    /** Server name */
+    name: string;
+    /** Server configuration */
+    config: {
+        type?: "http" | "sse" | "stdio";
+        command?: string;
+        args?: string[];
+        env?: Record<string, string>;
+        cwd?: string;
+        url?: string;
+        headers?: Record<string, string>;
+    };
+}
+
+/**
+ * Delete MCP server request - deletes an MCP server configuration
+ */
+export interface DeleteMCPServerRequest extends BaseWebviewMessage {
+    type: "deleteMCPServer";
+    /** Server name to delete */
+    name: string;
 }
 
 /**
