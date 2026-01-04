@@ -655,6 +655,7 @@ export class UsageService implements vscode.Disposable {
     }
 
     private _formatResetCountdown(resetEpochSeconds: number): string {
+        const resetDate = new Date(resetEpochSeconds * 1000);
         const msRemaining = resetEpochSeconds * 1000 - Date.now();
         const totalMinutes = Math.max(0, Math.floor(msRemaining / 60000));
         const hours = Math.floor(totalMinutes / 60);
@@ -669,14 +670,28 @@ export class UsageService implements vscode.Disposable {
             parts.push(`${minutes} min`);
         }
 
-        return parts.join(" ");
+        // Format the actual reset time
+        const resetTime = resetDate.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+        });
+
+        return `${parts.join(" ")} @ ${resetTime}`;
     }
 
     private _formatResetAt(resetEpochSeconds: number): string {
         const date = new Date(resetEpochSeconds * 1000);
-        const day = date.toLocaleDateString("en-US", { weekday: "short" });
-        const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-        return `${day} ${time}`;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // Format: "Jan 8 at 4:59 PM"
+        const month = date.toLocaleDateString("en-US", { month: "short" });
+        const day = date.getDate();
+        const time = date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+        });
+
+        return `${month} ${day} at ${time} (${timezone})`;
     }
 
     private _clampUsage(value?: number): number {

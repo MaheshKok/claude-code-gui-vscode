@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react";
-import { RefreshCw } from "lucide-react";
+import React, { useCallback, useMemo, useEffect } from "react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { useUsageStore } from "../stores/usageStore";
 import { useVSCode } from "../hooks/useVSCode";
 
@@ -37,6 +37,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     );
 };
 
+const LoadingState: React.FC = () => (
+    <div className="w-full text-sm flex flex-col items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 text-white/40 animate-spin mb-3" />
+        <p className="text-white/40 text-xs">Loading usage data...</p>
+    </div>
+);
+
 const formatTimeAgo = (date: Date | null): string => {
     if (!date) return "never";
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -56,9 +63,20 @@ export const UsageData: React.FC = () => {
         postMessage({ type: "refreshUsage" });
     }, [setRefreshing, postMessage]);
 
+    // Auto-refresh on mount if no cached data
+    useEffect(() => {
+        if (!data && !isRefreshing) {
+            console.log("[UsageData] No cached data, triggering refresh");
+            handleRefresh();
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const timeAgo = useMemo(() => formatTimeAgo(lastUpdatedAt), [lastUpdatedAt]);
 
-    if (!data) return null;
+    // Show loading state if no data
+    if (!data) {
+        return <LoadingState />;
+    }
 
     return (
         <div className="w-full text-sm">
