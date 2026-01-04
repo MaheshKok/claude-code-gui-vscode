@@ -48,6 +48,7 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
 
     const handleSendMessage = useCallback(
         (content: string, attachments?: unknown[]) => {
+            chatActions.clearTodos();
             const userMessage = {
                 id: `user-${Date.now()}`,
                 type: MessageType.User,

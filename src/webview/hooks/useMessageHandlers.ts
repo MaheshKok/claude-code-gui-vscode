@@ -55,6 +55,7 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
     } = deps;
 
     const pendingUsageRef = useRef<TokenUsage | null>(null);
+    const didUpdateTodosRef = useRef(false);
 
     const addMessage = useChatStore((s) => s.addMessage);
     const updateMessage = useChatStore((s) => s.updateMessage);
@@ -176,8 +177,11 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                 finalizeStreamingMessage();
                 if (data.toolName === "TodoWrite") {
                     const nextTodos = extractTodosFromInput(data.rawInput);
+                    didUpdateTodosRef.current = true;
                     if (nextTodos.length > 0) {
                         setTodos(nextTodos);
+                    } else {
+                        clearTodos();
                     }
                 }
 
@@ -333,11 +337,15 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                 setProcessing(data.isProcessing);
                 if (data.isProcessing) {
                     startRequestTiming();
+                    didUpdateTodosRef.current = false;
                 } else {
                     stopRequestTiming();
                 }
                 if (!data.isProcessing) {
                     setStreamingMessageId(null);
+                    if (!didUpdateTodosRef.current) {
+                        clearTodos();
+                    }
                 }
             },
 
