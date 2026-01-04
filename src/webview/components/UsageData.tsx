@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
+import { RefreshCw } from "lucide-react";
 import { useUsageStore } from "../stores/usageStore";
+import { useVSCode } from "../hooks/useVSCode";
 
 interface ProgressBarProps {
     value: number; // 0 to 1
@@ -35,8 +37,26 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     );
 };
 
+const formatTimeAgo = (date: Date | null): string => {
+    if (!date) return "never";
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+};
+
 export const UsageData: React.FC = () => {
-    const { data } = useUsageStore();
+    const { data, lastUpdatedAt, isRefreshing, setRefreshing } = useUsageStore();
+    const { postMessage } = useVSCode();
+
+    const handleRefresh = useCallback(() => {
+        setRefreshing(true);
+        postMessage({ type: "refreshUsage" });
+    }, [setRefreshing, postMessage]);
+
+    const timeAgo = useMemo(() => formatTimeAgo(lastUpdatedAt), [lastUpdatedAt]);
 
     if (!data) return null;
 
@@ -80,8 +100,17 @@ export const UsageData: React.FC = () => {
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-xs text-white/30">
-                <span>Last updated: 4 minutes ago</span>
-                {/* <RefreshCw className="w-3 h-3 cursor-pointer hover:text-white/50" /> */}
+                <span>Last updated: {timeAgo}</span>
+                <button
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="p-1 rounded hover:bg-white/10 transition-colors disabled:opacity-50"
+                    title="Refresh usage data"
+                >
+                    <RefreshCw
+                        className={`w-3 h-3 cursor-pointer hover:text-white/50 ${isRefreshing ? "animate-spin" : ""}`}
+                    />
+                </button>
             </div>
         </div>
     );

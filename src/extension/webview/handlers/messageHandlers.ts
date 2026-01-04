@@ -384,6 +384,13 @@ const handleGetClipboardText = async (
     await context.getClipboardText();
 };
 
+const handleRefreshUsage = async (
+    _message: WebviewMessage,
+    context: MessageHandlerContext,
+): Promise<void> => {
+    await context.refreshUsage();
+};
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -459,6 +466,7 @@ export const messageHandlers: MessageHandlerMap = {
     saveInputText: handleSaveInputText,
     enableYoloMode: handleEnableYoloMode,
     getClipboardText: handleGetClipboardText,
+    refreshUsage: handleRefreshUsage,
 };
 
 /**

@@ -12,6 +12,7 @@ import { ClaudeService } from "../../services/ClaudeService";
 import { ConversationService } from "../../services/ConversationService";
 import { PermissionService } from "../../services/PermissionService";
 import { MCPService } from "../../services/MCPService";
+import { UsageService } from "../../services/UsageService";
 
 // ============================================================================
 // Message Types
@@ -34,6 +35,7 @@ export interface MessageHandlerContext {
     conversationService: ConversationService;
     permissionService: PermissionService;
     mcpService: MCPService;
+    usageService: UsageService;
 
     // Extension context
     extensionContext: vscode.ExtensionContext;
@@ -69,6 +71,9 @@ export interface MessageHandlerContext {
     enableYoloMode: () => Promise<void>;
     getClipboardText: () => Promise<void>;
     setSelectedModel: (model: string) => void;
+
+    // Usage tracking
+    refreshUsage: () => Promise<void>;
 }
 
 /**

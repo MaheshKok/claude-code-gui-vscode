@@ -174,6 +174,16 @@ export class PanelProvider {
             });
         }
     }
+
+    private async _refreshUsage(): Promise<void> {
+        console.log("[PanelProvider] Refreshing usage data...");
+        try {
+            await this._usageService.fetchUsageData();
+            this._sendUsageData();
+        } catch (error) {
+            console.error("[PanelProvider] Failed to refresh usage:", error);
+        }
+    }
     /**
      * Show the panel in the editor area
      */
@@ -484,6 +494,7 @@ export class PanelProvider {
             conversationService: this._conversationService,
             permissionService: this._permissionService,
             mcpService: this._mcpService,
+            usageService: this._usageService,
 
             // Extension context
             extensionContext: this._context,
@@ -522,6 +533,9 @@ export class PanelProvider {
             enableYoloMode: () => this._enableYoloMode(),
             getClipboardText: () => this._getClipboardText(),
             setSelectedModel: (model: string) => this._setSelectedModel(model),
+
+            // Usage tracking
+            refreshUsage: () => this._refreshUsage(),
         };
     }
 

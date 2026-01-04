@@ -21,14 +21,33 @@ export { storeDiffContent, getDiffContent };
  * Main extension activation point
  */
 export function activate(context: vscode.ExtensionContext): void {
-    console.log("Claude Code GUI extension is being activated!");
+    // Create output channel FIRST and show it immediately
+    const outputChannel = vscode.window.createOutputChannel("Claude Code GUI");
+    outputChannel.show(true); // Show the output channel immediately
+    outputChannel.appendLine("╔════════════════════════════════════════════╗");
+    outputChannel.appendLine("║   CLAUDE CODE GUI EXTENSION ACTIVATED      ║");
+    outputChannel.appendLine("╚════════════════════════════════════════════╝");
+    outputChannel.appendLine(`Timestamp: ${new Date().toISOString()}`);
+    outputChannel.appendLine("");
+
+    console.log("=== CLAUDE CODE GUI EXTENSION ACTIVATING ===");
+    console.log("[Extension] Timestamp:", new Date().toISOString());
 
     // Initialize services
+    outputChannel.appendLine("[Extension] Initializing ClaudeService...");
     const claudeService = new ClaudeService(context);
+
+    outputChannel.appendLine("[Extension] Initializing ConversationService...");
     const conversationService = new ConversationService(context);
+
+    outputChannel.appendLine("[Extension] Initializing PermissionService...");
     const permissionService = new PermissionService(context);
+
+    outputChannel.appendLine("[Extension] Initializing MCPService...");
     const mcpService = new MCPService(context);
-    const usageService = new UsageService(claudeService);
+
+    outputChannel.appendLine("[Extension] Initializing UsageService...");
+    const usageService = new UsageService(claudeService, outputChannel);
 
     // Create the main panel provider (for editor area)
     const panelProvider = new PanelProvider(
@@ -118,7 +137,16 @@ export function activate(context: vscode.ExtensionContext): void {
         usageService,
     );
 
+    outputChannel.appendLine("");
+    outputChannel.appendLine("[Extension] ✅ All services initialized");
+    outputChannel.appendLine("[Extension] ✅ Commands registered");
+    outputChannel.appendLine("[Extension] ✅ Extension ready!");
+    outputChannel.appendLine("");
+
     console.log("Claude Code GUI extension activation completed successfully!");
+
+    // Show a notification so user knows extension is active
+    vscode.window.showInformationMessage("Claude Code GUI extension activated. Check 'Claude Code GUI' output channel for logs.");
 }
 
 /**

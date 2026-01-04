@@ -27,9 +27,29 @@ export class UsageService implements vscode.Disposable {
     private _dataEmitter = new EventEmitter();
     private _fetchInFlight = false;
 
-    constructor(private readonly _claudeService: ClaudeService) {
+    constructor(
+        private readonly _claudeService: ClaudeService,
+        private readonly _outputChannel?: vscode.OutputChannel,
+    ) {
+        this._log("╔════════════════════════════════════════════╗");
+        this._log("║   USAGE SERVICE INITIALIZING               ║");
+        this._log("╚════════════════════════════════════════════╝");
         // Start polling
         this.startPolling();
+        this._log("✅ Polling started (5-minute intervals)");
+    }
+
+    private _log(message: string, data?: unknown): void {
+        const formatted = `[UsageService] ${message}`;
+        if (data !== undefined) {
+            console.log(formatted, data);
+        } else {
+            console.log(formatted);
+        }
+        if (this._outputChannel) {
+            const logLine = data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
+            this._outputChannel.appendLine(logLine);
+        }
     }
 
     public onUsageUpdate(callback: (data: UsageData) => void): void {
@@ -58,26 +78,44 @@ export class UsageService implements vscode.Disposable {
 
     public async fetchUsageData(): Promise<void> {
         if (this._fetchInFlight) {
+            this._log("⏭️  Fetch already in flight, skipping");
             return;
         }
 
         this._fetchInFlight = true;
+        this._log("");
+        this._log("🔄 ═══════════════════════════════════════════");
+        this._log("🔄 FETCHING USAGE DATA...");
+        this._log("🔄 ═══════════════════════════════════════════");
 
         try {
             const rateLimitUsage = await this._fetchUsageFromRateLimits();
             if (rateLimitUsage) {
+                this._log("");
+                this._log("✅ ═══════════════════════════════════════════");
+                this._log("✅ GOT USAGE DATA FROM RATE LIMITS:");
+                this._log(`   📊 Session: ${(rateLimitUsage.currentSession.usageCost * 100).toFixed(1)}% used`);
+                this._log(`   📊 Weekly:  ${(rateLimitUsage.weekly.costLikely * 100).toFixed(1)}% used`);
+                this._log(`   ⏱️  Session resets in: ${rateLimitUsage.currentSession.resetsIn}`);
+                this._log(`   ⏱️  Weekly resets at: ${rateLimitUsage.weekly.resetsAt}`);
+                this._log("✅ ═══════════════════════════════════════════");
+                this._log("");
                 this._usageData = rateLimitUsage;
                 this._dataEmitter.emit("update", this._usageData);
                 return;
             }
 
+            this._log("⚠️  Rate limit fetch returned null, trying stats cache...");
             const statsUsage = await this._fetchUsageFromStatsCache();
             if (statsUsage) {
+                this._log("✅ Got usage data from stats cache");
                 this._usageData = statsUsage;
                 this._dataEmitter.emit("update", this._usageData);
+            } else {
+                this._log("❌ Both rate limit and stats cache failed");
             }
         } catch (error) {
-            console.error("Failed to fetch usage data:", error);
+            this._log("❌ Failed to fetch usage data:", error);
         } finally {
             this._fetchInFlight = false;
         }
@@ -85,18 +123,26 @@ export class UsageService implements vscode.Disposable {
 
     private async _fetchUsageFromRateLimits(): Promise<UsageData | null> {
         try {
+            this._log("📡 Running quota command...");
             const output = await this._runQuotaCommand();
             if (!output) {
+                this._log("❌ Quota command returned no output");
                 return null;
             }
+            this._log(`📄 Quota command output: ${output.length} chars`);
 
             const headers = this._parseRateLimitHeaders(output);
-            return this._buildUsageDataFromRateLimits(headers);
+            const usageData = this._buildUsageDataFromRateLimits(headers);
+
+            if (usageData) {
+                this._log("Successfully built usage data from rate limits");
+            } else {
+                this._log("Could not build usage data from rate limits");
+            }
+
+            return usageData;
         } catch (error) {
-            console.warn(
-                "[UsageService] Rate-limit usage fetch failed:",
-                error instanceof Error ? error.message : error,
-            );
+            this._log("Rate-limit usage fetch failed:", error instanceof Error ? error.message : error);
             return null;
         }
     }
@@ -119,7 +165,7 @@ export class UsageService implements vscode.Disposable {
         }
 
         if (!statsPath) {
-            console.warn("[UsageService] Could not find stats-cache.json");
+            this._log("Could not find stats-cache.json");
             return null;
         }
 
@@ -134,9 +180,7 @@ export class UsageService implements vscode.Disposable {
 
         if (Object.keys(dailyModelTokens).length === 0 && stats.dailyModelTokens?.length > 0) {
             const latest = stats.dailyModelTokens[stats.dailyModelTokens.length - 1];
-            console.log(
-                `[UsageService] No data for ${today}, utilizing latest available data from ${latest.date}`,
-            );
+            this._log(`No data for ${today}, utilizing latest available data from ${latest.date}`);
             dailyModelTokens = latest.tokensByModel || {};
         }
 
@@ -210,10 +254,14 @@ export class UsageService implements vscode.Disposable {
     }
 
     private async _runQuotaCommand(): Promise<string> {
-        const timeoutMs = 120_000;
+        const timeoutMs = 15_000; // 15 seconds should be plenty for a quota check
         const maxBuffer = 10 * 1024 * 1024;
         const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd();
+        // Non-interactive mode - stdin is already closed via spawn
         const args = ["-p", "--output-format", "json", "--no-session-persistence", "quota"];
+
+        this._log(`⏱️  Command timeout: ${timeoutMs / 1000}s`);
+        this._log(`📂 Working directory: ${cwd}`);
         const wslConfig = getWSLConfig();
 
         if (process.platform === "win32" && wslConfig.enabled) {
@@ -233,14 +281,176 @@ export class UsageService implements vscode.Disposable {
             return this._execCommand("wsl", wslArgs, { cwd, timeout: timeoutMs, maxBuffer });
         }
 
-        return this._execCommand("claude", args, {
+        // Find claude binary - try direct path first
+        const homeDir = os.homedir();
+        const localBin = path.join(homeDir, ".local", "bin");
+        const claudeLocalPath = path.join(localBin, "claude");
+
+        this._log(`🏠 Home directory: ${homeDir}`);
+        this._log(`📁 Local bin path: ${localBin}`);
+        this._log(`   Local bin exists: ${fs.existsSync(localBin) ? "✅ YES" : "❌ NO"}`);
+        this._log(`📍 Claude path: ${claudeLocalPath}`);
+        this._log(`   Claude exists: ${fs.existsSync(claudeLocalPath) ? "✅ YES" : "❌ NO"}`);
+
+        // Use the full path to claude if it exists, otherwise fall back to PATH lookup
+        const claudeCommand = fs.existsSync(claudeLocalPath) ? claudeLocalPath : "claude";
+        this._log(`🚀 Using claude command: ${claudeCommand}`);
+
+        // Enhance PATH for any child processes that claude might spawn
+        const enhancedPath = this._getEnhancedPath();
+        this._log(`🔧 Enhanced PATH (first 200 chars): ${enhancedPath.substring(0, 200)}...`);
+
+        // Use spawn for better control over stdin
+        return this._execCommandWithSpawn(claudeCommand, args, {
             cwd,
             timeout: timeoutMs,
             maxBuffer,
             env: {
                 ...process.env,
+                PATH: enhancedPath,
                 ANTHROPIC_LOG: "debug",
+                // Ensure fully non-interactive mode
+                CI: "true",
+                NO_COLOR: "1",
             },
+        });
+    }
+
+    private _getEnhancedPath(): string {
+        const homeDir = os.homedir();
+        const currentPath = process.env.PATH || "";
+
+        // Common paths where claude might be installed
+        const additionalPaths = [
+            // Local bin (where pipx/claude-code installs)
+            path.join(homeDir, ".local", "bin"),
+            // NVM paths
+            path.join(homeDir, ".nvm", "versions", "node"),
+            // Global npm
+            "/usr/local/bin",
+            path.join(homeDir, ".npm-global", "bin"),
+            path.join(homeDir, ".npm", "bin"),
+            // Volta
+            path.join(homeDir, ".volta", "bin"),
+            // pnpm
+            path.join(homeDir, ".local", "share", "pnpm"),
+            // Brew
+            "/opt/homebrew/bin",
+            "/usr/local/Homebrew/bin",
+        ];
+
+        // Find NVM current node version if NVM_DIR is set
+        const nvmDir = process.env.NVM_DIR || path.join(homeDir, ".nvm");
+        const nvmBin = this._findNvmCurrentBin(nvmDir);
+        if (nvmBin) {
+            additionalPaths.unshift(nvmBin);
+        }
+
+        // Combine paths, removing duplicates
+        const allPaths = [...additionalPaths, ...currentPath.split(path.delimiter)];
+        const uniquePaths = [...new Set(allPaths)].filter(Boolean);
+
+        return uniquePaths.join(path.delimiter);
+    }
+
+    private _findNvmCurrentBin(nvmDir: string): string | null {
+        try {
+            // Check for NVM default alias
+            const aliasPath = path.join(nvmDir, "alias", "default");
+            if (fs.existsSync(aliasPath)) {
+                const version = fs.readFileSync(aliasPath, "utf-8").trim();
+                // Handle aliases like "lts/*" or "node" or direct version
+                const nodePath = version.startsWith("v")
+                    ? path.join(nvmDir, "versions", "node", version, "bin")
+                    : null;
+                if (nodePath && fs.existsSync(nodePath)) {
+                    return nodePath;
+                }
+            }
+
+            // Fall back to checking versions directory
+            const versionsDir = path.join(nvmDir, "versions", "node");
+            if (fs.existsSync(versionsDir)) {
+                const versions = fs.readdirSync(versionsDir).filter((v) => v.startsWith("v"));
+                if (versions.length > 0) {
+                    // Use the latest version
+                    versions.sort().reverse();
+                    const binPath = path.join(versionsDir, versions[0], "bin");
+                    if (fs.existsSync(binPath)) {
+                        return binPath;
+                    }
+                }
+            }
+        } catch {
+            // Ignore errors, fall back to current PATH
+        }
+        return null;
+    }
+
+    private async _execCommandWithSpawn(
+        command: string,
+        args: string[],
+        options: { cwd: string; timeout: number; maxBuffer: number; env: NodeJS.ProcessEnv },
+    ): Promise<string> {
+        this._log(`⚡ Executing (spawn): ${command} ${args.join(" ")}`);
+        const startTime = Date.now();
+
+        return new Promise((resolve, reject) => {
+            const child = cp.spawn(command, args, {
+                cwd: options.cwd,
+                env: options.env,
+                stdio: ["ignore", "pipe", "pipe"], // Close stdin immediately
+            });
+
+            let stdout = "";
+            let stderr = "";
+
+            child.stdout?.on("data", (data: Buffer) => {
+                stdout += data.toString("utf8");
+            });
+
+            child.stderr?.on("data", (data: Buffer) => {
+                stderr += data.toString("utf8");
+            });
+
+            const timeoutId = setTimeout(() => {
+                child.kill("SIGTERM");
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                this._log(`⏰ Command timed out after ${elapsed}s`);
+                // Return whatever output we have so far
+                const output = `${stdout}\n${stderr}`;
+                if (output.trim()) {
+                    this._log(`ℹ️  Partial output (${output.length} chars)`);
+                    resolve(output);
+                } else {
+                    reject(new Error(`Command timed out after ${options.timeout}ms`));
+                }
+            }, options.timeout);
+
+            child.on("close", (code) => {
+                clearTimeout(timeoutId);
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                const output = `${stdout}\n${stderr}`;
+
+                if (code === 0) {
+                    this._log(`✅ Command succeeded in ${elapsed}s (${output.length} chars)`);
+                } else {
+                    this._log(`⚠️  Command exited with code ${code} after ${elapsed}s`);
+                }
+
+                if (output.length > 0) {
+                    this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+                }
+
+                resolve(output);
+            });
+
+            child.on("error", (error) => {
+                clearTimeout(timeoutId);
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                this._log(`❌ Command error after ${elapsed}s: ${error.message}`);
+                reject(error);
+            });
         });
     }
 
@@ -249,29 +459,69 @@ export class UsageService implements vscode.Disposable {
         args: string[],
         options: cp.ExecFileOptions,
     ): Promise<string> {
+        this._log(`⚡ Executing: ${command} ${args.join(" ")}`);
+        const startTime = Date.now();
+
+        // Ensure we get strings, not Buffers
+        const execOptions: cp.ExecFileOptions = {
+            ...options,
+            encoding: "utf8" as BufferEncoding,
+        };
+
         try {
-            const { stdout, stderr } = await execFileAsync(command, args, options);
-            return `${stdout}\n${stderr}`;
+            const { stdout, stderr } = await execFileAsync(command, args, execOptions);
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            const output = `${stdout || ""}\n${stderr || ""}`;
+            this._log(`✅ Command succeeded in ${elapsed}s (${output.length} chars)`);
+            // Log first 200 chars to see if we got anything useful
+            if (output.length > 0) {
+                this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+            }
+            return output;
         } catch (error) {
             const execError = error as cp.ExecException & {
-                stdout?: string;
-                stderr?: string;
+                stdout?: string | Buffer;
+                stderr?: string | Buffer;
             };
-            const stdout = typeof execError.stdout === "string" ? execError.stdout : "";
-            const stderr = typeof execError.stderr === "string" ? execError.stderr : "";
+
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            this._log(`⚠️  Command error after ${elapsed}s: ${execError.message}`);
+
+            // Handle both string and Buffer outputs
+            const stdout = execError.stdout
+                ? Buffer.isBuffer(execError.stdout)
+                    ? execError.stdout.toString("utf8")
+                    : String(execError.stdout)
+                : "";
+            const stderr = execError.stderr
+                ? Buffer.isBuffer(execError.stderr)
+                    ? execError.stderr.toString("utf8")
+                    : String(execError.stderr)
+                : "";
+
+            const output = `${stdout}\n${stderr}`;
 
             if (stdout || stderr) {
-                return `${stdout}\n${stderr}`;
+                this._log(`ℹ️  Command failed but has output (${output.length} chars)`);
+                this._log(`📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`);
+                return output;
             }
 
+            this._log("❌ Command failed with no output");
             throw error;
         }
     }
 
     private _parseRateLimitHeaders(output: string): Record<string, string> {
         const headers: Record<string, string> = {};
+
+        this._log("🔍 Parsing rate limit headers from output...");
+
+        // Match both quoted (JSON) and unquoted formats:
+        // Quoted:   "anthropic-ratelimit-unified-5h-utilization": "0.714"
+        // Unquoted: anthropic-ratelimit-unified-5h-utilization: 0.714
         const headerRegex =
-            /(anthropic-ratelimit-unified-[a-z0-9_.-]+-(?:utilization|reset))[^0-9]*([0-9.]+(?:e[+-]?\d+)?)/gi;
+            /"?(anthropic-ratelimit-unified-[a-z0-9_.-]+-(?:utilization|reset))"?\s*:\s*"?([0-9.]+(?:e[+-]?\d+)?)"?/gi;
         let match: RegExpExecArray | null = null;
 
         while ((match = headerRegex.exec(output)) !== null) {
@@ -279,7 +529,25 @@ export class UsageService implements vscode.Disposable {
             const value = match[2];
             if (key && value) {
                 headers[key] = value;
+                this._log(`   Found: ${key} = ${value}`);
             }
+        }
+
+        if (Object.keys(headers).length > 0) {
+            this._log(`✅ Found ${Object.keys(headers).length} rate limit headers`);
+        } else {
+            this._log("⚠️  No rate limit headers found in output");
+            // Check if output contains any anthropic references at all
+            if (output.includes("anthropic")) {
+                this._log("   Output contains 'anthropic' string but no matching headers");
+                // Log sample around 'anthropic' to help debug
+                const idx = output.indexOf("anthropic");
+                this._log(`   Sample around 'anthropic': ${output.substring(Math.max(0, idx - 20), idx + 80)}`);
+            } else {
+                this._log("   Output does not contain 'anthropic' string");
+            }
+            // Log a sample of the output
+            this._log(`   Output sample (first 300 chars): ${output.substring(0, 300).replace(/\n/g, "\\n")}`);
         }
 
         return headers;
@@ -316,12 +584,18 @@ export class UsageService implements vscode.Disposable {
 
     private _buildUsageDataFromRateLimits(headers: Record<string, string>): UsageData | null {
         const claims = this._extractRateLimitClaims(headers);
+        this._log("Extracted claims:", Array.from(claims.keys()));
+
         const sessionClaim =
             this._selectClaim(claims, ["5h", "five_hour"]) ?? this._selectClaim(claims, ["5hr"]);
         const weeklyClaim =
             this._selectClaim(claims, ["7d", "seven_day"]) ?? this._selectClaim(claims, ["7day"]);
 
+        this._log("Session claim:", sessionClaim);
+        this._log("Weekly claim:", weeklyClaim);
+
         if (!sessionClaim && !weeklyClaim) {
+            this._log("No valid claims found, returning null");
             return null;
         }
 
