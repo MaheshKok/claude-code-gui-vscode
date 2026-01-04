@@ -102,25 +102,23 @@ const ServerCard: React.FC<{
     return (
         <div
             className={`
-                relative rounded-xl border transition-all duration-300 overflow-hidden
+                relative rounded-lg border transition-all duration-300 overflow-hidden
                 ${
                     server.enabled
-                        ? "border-blue-500/50 bg-gradient-to-br from-blue-500/10 to-blue-600/5"
+                        ? "border-blue-500/40 bg-gradient-to-br from-blue-500/5 to-blue-600/5"
                         : "border-white/10 bg-white/5"
                 }
-                hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/10
+                hover:border-blue-400/60
             `}
         >
-            <div className="p-4 space-y-3">
+            <div className="p-2.5 space-y-1.5">
                 {/* Header Row */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="text-base font-semibold text-white truncate">
-                            {server.name}
-                        </h3>
+                        <h3 className="text-sm font-semibold text-white truncate">{server.name}</h3>
                         <span
                             className={`
-                                px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider
+                                px-1.5 py-0.5 text-[9px] font-bold uppercase rounded tracking-wider
                                 ${
                                     isStdio
                                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
@@ -132,8 +130,8 @@ const ServerCard: React.FC<{
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        <label className="relative inline-flex items-center cursor-pointer">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <label className="relative inline-flex items-center cursor-pointer scale-[0.85]">
                             <input
                                 type="checkbox"
                                 checked={server.enabled}
@@ -142,72 +140,52 @@ const ServerCard: React.FC<{
                             />
                             <div
                                 className={`
-                                w-9 h-5 rounded-full transition-all duration-300
+                                w-8 h-4.5 rounded-full transition-all duration-300
                                 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-blue-600
                                 bg-white/10
                                 after:content-[''] after:absolute after:top-0.5 after:left-0.5
-                                after:bg-white after:rounded-full after:h-4 after:w-4
+                                after:bg-white after:rounded-full after:h-3.5 after:w-3.5
                                 after:transition-all after:duration-300 after:shadow-lg
-                                peer-checked:after:translate-x-4
+                                peer-checked:after:translate-x-3.5
                             `}
                             />
                         </label>
                         <button
                             onClick={() => onDelete(server.id)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                            className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                             title="Delete Server"
                         >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>
 
                 {/* Details Body */}
-                <div className="space-y-2 text-xs">
+                <div className="space-y-1 text-[11px]">
                     {isStdio ? (
                         <>
                             <div className="flex gap-2 items-baseline">
-                                <span className="text-white/40 w-16 flex-shrink-0">Command:</span>
-                                <code className="text-emerald-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                                <span className="text-white/30 w-14 flex-shrink-0">Command:</span>
+                                <code className="text-emerald-400/90 font-mono bg-white/5 px-1 py-0.5 rounded">
                                     {server.command}
                                 </code>
                             </div>
                             {server.args && server.args.length > 0 && (
                                 <div className="flex gap-2 items-baseline">
-                                    <span className="text-white/40 w-16 flex-shrink-0">Args:</span>
-                                    <code className="text-orange-400 font-mono break-all bg-white/5 px-1.5 py-0.5 rounded">
+                                    <span className="text-white/30 w-14 flex-shrink-0">Args:</span>
+                                    <code className="text-orange-400/90 font-mono break-all bg-white/5 px-1 py-0.5 rounded leading-tight">
                                         {server.args.join(" ")}
-                                    </code>
-                                </div>
-                            )}
-                            {server.env && Object.keys(server.env).length > 0 && (
-                                <div className="flex gap-2 items-baseline">
-                                    <span className="text-white/40 w-16 flex-shrink-0">Env:</span>
-                                    <code className="text-purple-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
-                                        {Object.keys(server.env).join(", ")}
                                     </code>
                                 </div>
                             )}
                         </>
                     ) : (
-                        <>
-                            <div className="flex gap-2 items-baseline">
-                                <span className="text-white/40 w-16 flex-shrink-0">URL:</span>
-                                <code className="text-blue-400 font-mono break-all bg-white/5 px-1.5 py-0.5 rounded">
-                                    {server.url}
-                                </code>
-                            </div>
-                            {server.headers && Object.keys(server.headers).length > 0 && (
-                                <div className="flex gap-2 items-baseline">
-                                    <span className="text-white/40 w-16 flex-shrink-0">
-                                        Headers:
-                                    </span>
-                                    <code className="text-purple-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
-                                        {Object.keys(server.headers).join(", ")}
-                                    </code>
-                                </div>
-                            )}
-                        </>
+                        <div className="flex gap-2 items-baseline">
+                            <span className="text-white/30 w-14 flex-shrink-0">URL:</span>
+                            <code className="text-blue-400/90 font-mono break-all bg-white/5 px-1 py-0.5 rounded leading-tight">
+                                {server.url}
+                            </code>
+                        </div>
                     )}
                 </div>
             </div>
@@ -314,19 +292,16 @@ export const MCPModal: React.FC<MCPModalProps> = ({
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="MCP Servers" width="lg">
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {/* Server List */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {servers.length === 0 ? (
-                        <div className="p-8 text-center rounded-xl border border-dashed border-white/20 bg-white/5">
-                            <Terminal className="w-8 h-8 mx-auto mb-3 text-white/30" />
-                            <p className="text-sm text-white/50">No MCP servers configured</p>
-                            <p className="text-xs text-white/30 mt-1">
-                                Add a server below to get started
-                            </p>
+                        <div className="p-6 text-center rounded-xl border border-dashed border-white/20 bg-white/5">
+                            <Terminal className="w-6 h-6 mx-auto mb-2 text-white/30" />
+                            <p className="text-xs text-white/50">No MCP servers configured</p>
                         </div>
                     ) : (
-                        <div className="grid gap-3">
+                        <div className="grid gap-2">
                             {servers.map((server) => (
                                 <ServerCard
                                     key={server.id}
@@ -341,20 +316,20 @@ export const MCPModal: React.FC<MCPModalProps> = ({
 
                 {/* Add Server Form */}
                 {showAddForm ? (
-                    <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-4">
+                    <div className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-3">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-semibold text-white">Add New Server</h4>
+                            <h4 className="text-xs font-semibold text-white">Add New Server</h4>
                             <button
                                 onClick={resetForm}
-                                className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/60"
+                                className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white/60"
                             >
-                                <X className="w-4 h-4" />
+                                <X className="w-3.5 h-3.5" />
                             </button>
                         </div>
 
-                        <div className="grid gap-4">
+                        <div className="grid gap-3">
                             <div>
-                                <label className="block text-xs text-white/50 mb-1.5">
+                                <label className="block text-[10px] text-white/50 mb-1">
                                     Server Name
                                 </label>
                                 <input
@@ -364,17 +339,16 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                         setFormData((prev) => ({ ...prev, name: e.target.value }))
                                     }
                                     placeholder="my-server"
-                                    className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
-                                        focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
-                                        placeholder:text-white/20"
+                                    className="w-full px-2.5 py-1.5 text-xs rounded bg-black/30 border border-white/10
+                                        focus:border-blue-500/50 focus:outline-none placeholder:text-white/20"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs text-white/50 mb-1.5">
+                                <label className="block text-[10px] text-white/50 mb-1">
                                     Server Type
                                 </label>
-                                <div className="flex gap-2">
+                                <div className="flex gap-1.5">
                                     {(["stdio", "http", "sse"] as const).map((type) => (
                                         <button
                                             key={type}
@@ -382,7 +356,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                                 setFormData((prev) => ({ ...prev, type }))
                                             }
                                             className={`
-                                                px-4 py-2 text-xs font-medium uppercase rounded-lg transition-all
+                                                px-3 py-1 text-[10px] font-medium uppercase rounded transition-all
                                                 ${
                                                     formData.type === type
                                                         ? "bg-blue-500 text-white"
@@ -399,7 +373,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                             {isStdio ? (
                                 <>
                                     <div>
-                                        <label className="block text-xs text-white/50 mb-1.5">
+                                        <label className="block text-[10px] text-white/50 mb-1">
                                             Command
                                         </label>
                                         <input
@@ -411,15 +385,14 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                                     command: e.target.value,
                                                 }))
                                             }
-                                            placeholder="/path/to/server or npx"
-                                            className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
-                                                focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
-                                                placeholder:text-white/20 font-mono"
+                                            placeholder="npx"
+                                            className="w-full px-2.5 py-1.5 text-xs rounded bg-black/30 border border-white/10
+                                        focus:border-blue-500/50 focus:outline-none font-mono placeholder:text-white/20"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-white/50 mb-1.5">
-                                            Arguments (one per line)
+                                        <label className="block text-[10px] text-white/50 mb-1">
+                                            Arguments
                                         </label>
                                         <textarea
                                             value={formData.args}
@@ -429,17 +402,16 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                                     args: e.target.value,
                                                 }))
                                             }
-                                            placeholder="-y&#10;@package/name"
+                                            placeholder="-y @package/name"
                                             rows={2}
-                                            className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
-                                                focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
-                                                placeholder:text-white/20 font-mono resize-none"
+                                            className="w-full px-2.5 py-1.5 text-xs rounded bg-black/30 border border-white/10
+                                        focus:border-blue-500/50 focus:outline-none font-mono resize-none placeholder:text-white/20"
                                         />
                                     </div>
                                 </>
                             ) : (
                                 <div>
-                                    <label className="block text-xs text-white/50 mb-1.5">
+                                    <label className="block text-[10px] text-white/50 mb-1">
                                         Server URL
                                     </label>
                                     <input
@@ -452,34 +424,33 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                             }))
                                         }
                                         placeholder="https://example.com/mcp"
-                                        className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
-                                            focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
-                                            placeholder:text-white/20"
+                                        className="w-full px-2.5 py-1.5 text-xs rounded bg-black/30 border border-white/10
+                                            focus:border-blue-500/50 focus:outline-none placeholder:text-white/20"
                                     />
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-2 pt-1">
                             <button
                                 onClick={handleSubmit}
                                 disabled={!canSubmit}
                                 className={`
-                                    flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all
+                                    flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-all
                                     ${
                                         canSubmit
-                                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg hover:shadow-blue-500/25"
+                                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                                             : "bg-white/10 text-white/30 cursor-not-allowed"
                                     }
                                 `}
                             >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-3.5 h-3.5" />
                                 Add Server
                             </button>
                             <button
                                 onClick={resetForm}
-                                className="px-4 py-2 text-sm font-medium rounded-lg bg-white/5 text-white/60
-                                    hover:bg-white/10 hover:text-white/80 transition-all"
+                                className="px-3 py-1.5 text-xs font-medium rounded bg-white/5 text-white/60
+                                    hover:bg-white/10 transition-all"
                             >
                                 Cancel
                             </button>
@@ -488,11 +459,11 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                 ) : (
                     <button
                         onClick={() => setShowAddForm(true)}
-                        className="w-full py-3 text-sm font-medium rounded-xl border-2 border-dashed
-                            border-white/20 hover:border-blue-500/50 text-white/50 hover:text-blue-400
-                            transition-all hover:bg-blue-500/5 flex items-center justify-center gap-2"
+                        className="w-full py-2 text-xs font-medium rounded-lg border-2 border-dashed
+                            border-white/10 hover:border-blue-500/30 text-white/40 hover:text-blue-400/80
+                            transition-all hover:bg-blue-500/5 flex items-center justify-center gap-1.5"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3.5 h-3.5" />
                         Add Custom MCP Server
                     </button>
                 )}
@@ -500,26 +471,26 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                 {/* Popular Servers */}
                 {availablePopularServers.length > 0 && (
                     <div>
-                        <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                            <span className="text-base">⚡</span>
-                            Quick Add Popular Servers
+                        <h4 className="text-[11px] font-semibold text-white/70 mb-2 flex items-center gap-1.5">
+                            <span className="text-xs">⚡</span>
+                            Quick Add
                         </h4>
                         <div className="grid grid-cols-2 gap-2">
                             {availablePopularServers.map((server) => (
                                 <button
                                     key={server.name}
                                     onClick={() => handleAddPopular(server)}
-                                    className="flex items-start gap-3 p-3 text-left rounded-xl border transition-all
-                                        border-white/10 bg-white/5 hover:border-blue-500/50 hover:bg-blue-500/10"
+                                    className="flex items-center gap-2.5 p-2 text-left rounded-lg border transition-all
+                                        border-white/5 bg-white/5 hover:border-blue-500/30 hover:bg-blue-500/5"
                                 >
-                                    <span className="text-xl flex-shrink-0">{server.icon}</span>
+                                    <span className="text-base flex-shrink-0">{server.icon}</span>
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-white truncate">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[11px] font-medium text-white/90 truncate">
                                                 {server.name}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-white/40 line-clamp-1 mt-0.5">
+                                        <p className="text-[10px] text-white/30 line-clamp-1">
                                             {server.description}
                                         </p>
                                     </div>
