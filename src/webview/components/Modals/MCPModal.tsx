@@ -103,11 +103,7 @@ const ServerCard: React.FC<{
         <div
             className={`
                 relative rounded-lg border transition-all duration-300 overflow-hidden
-                ${
-                    server.enabled
-                        ? "border-blue-500/40 bg-gradient-to-br from-blue-500/5 to-blue-600/5"
-                        : "border-white/10 bg-white/5"
-                }
+                ${server.enabled ? "border-blue-500/40" : "border-white/10"}
                 hover:border-blue-400/60
             `}
         >
@@ -152,7 +148,7 @@ const ServerCard: React.FC<{
                         </label>
                         <button
                             onClick={() => onDelete(server.id)}
-                            className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                            className="p-1 rounded text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                             title="Delete Server"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -166,14 +162,14 @@ const ServerCard: React.FC<{
                         <>
                             <div className="flex gap-2 items-baseline">
                                 <span className="text-white/30 w-14 flex-shrink-0">Command:</span>
-                                <code className="text-emerald-400/90 font-mono bg-white/5 px-1 py-0.5 rounded">
+                                <code className="text-emerald-400/90 font-mono py-0.5 rounded">
                                     {server.command}
                                 </code>
                             </div>
                             {server.args && server.args.length > 0 && (
                                 <div className="flex gap-2 items-baseline">
                                     <span className="text-white/30 w-14 flex-shrink-0">Args:</span>
-                                    <code className="text-orange-400/90 font-mono break-all bg-white/5 px-1 py-0.5 rounded leading-tight">
+                                    <code className="text-orange-400/90 font-mono break-all py-0.5 rounded leading-tight">
                                         {server.args.join(" ")}
                                     </code>
                                 </div>
@@ -182,7 +178,7 @@ const ServerCard: React.FC<{
                     ) : (
                         <div className="flex gap-2 items-baseline">
                             <span className="text-white/30 w-14 flex-shrink-0">URL:</span>
-                            <code className="text-blue-400/90 font-mono break-all bg-white/5 px-1 py-0.5 rounded leading-tight">
+                            <code className="text-blue-400/90 font-mono break-all py-0.5 rounded leading-tight">
                                 {server.url}
                             </code>
                         </div>
@@ -296,7 +292,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                 {/* Server List */}
                 <div className="space-y-2">
                     {servers.length === 0 ? (
-                        <div className="p-6 text-center rounded-xl border border-dashed border-white/20 bg-white/5">
+                        <div className="p-6 text-center rounded-xl border border-dashed border-white/20">
                             <Terminal className="w-6 h-6 mx-auto mb-2 text-white/30" />
                             <p className="text-xs text-white/50">No MCP servers configured</p>
                         </div>
@@ -316,7 +312,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
 
                 {/* Add Server Form */}
                 {showAddForm ? (
-                    <div className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-3">
+                    <div className="p-3 rounded-lg border border-blue-500/30 space-y-3">
                         <div className="flex items-center justify-between">
                             <h4 className="text-xs font-semibold text-white">Add New Server</h4>
                             <button
@@ -481,7 +477,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                     key={server.name}
                                     onClick={() => handleAddPopular(server)}
                                     className="flex items-center gap-2.5 p-2 text-left rounded-lg border transition-all
-                                        border-white/5 bg-white/5 hover:border-blue-500/30 hover:bg-blue-500/5"
+                                        border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5"
                                 >
                                     <span className="text-base flex-shrink-0">{server.icon}</span>
                                     <div className="min-w-0 flex-1">
