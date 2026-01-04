@@ -480,4 +480,267 @@ describe("MessageInput", () => {
             expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue("Session draft");
         });
     });
+
+    describe("attachments", () => {
+        beforeEach(() => {
+            localStorage.clear();
+        });
+
+        it("should render paperclip button", () => {
+            render(<MessageInput {...defaultProps} />);
+
+            expect(screen.getByTitle("Attach file or image")).toBeInTheDocument();
+        });
+
+        it("should show attachment menu when paperclip is clicked", () => {
+            render(<MessageInput {...defaultProps} />);
+
+            fireEvent.click(screen.getByTitle("Attach file or image"));
+
+            expect(screen.getByText("Upload File")).toBeInTheDocument();
+            expect(screen.getByText("Upload Image")).toBeInTheDocument();
+        });
+
+        it("should close attachment menu when clicking outside", () => {
+            render(<MessageInput {...defaultProps} />);
+
+            fireEvent.click(screen.getByTitle("Attach file or image"));
+            expect(screen.getByText("Upload File")).toBeInTheDocument();
+
+            fireEvent.mouseDown(document.body);
+
+            expect(screen.queryByText("Upload File")).not.toBeInTheDocument();
+        });
+
+        it("should store attachments in localStorage per session", () => {
+            const mockAttachments = [
+                {
+                    id: "test-1",
+                    type: "file" as const,
+                    name: "test.txt",
+                    size: 100,
+                    dataUrl: "data:text/plain;base64,dGVzdA==",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-session-test",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId="session-test" />);
+
+            // Check that attachment is displayed
+            expect(screen.getByText("test.txt")).toBeInTheDocument();
+        });
+
+        it("should display attachment with file icon for files", () => {
+            const mockAttachments = [
+                {
+                    id: "test-1",
+                    type: "file" as const,
+                    name: "document.pdf",
+                    size: 1024,
+                    dataUrl: "data:application/pdf;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-global",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId={null} />);
+
+            expect(screen.getByText("document.pdf")).toBeInTheDocument();
+            expect(screen.getByText("1.0 KB")).toBeInTheDocument();
+        });
+
+        it("should display attachment with image preview for images", () => {
+            const mockAttachments = [
+                {
+                    id: "test-img",
+                    type: "image" as const,
+                    name: "photo.png",
+                    size: 2048,
+                    dataUrl: "data:image/png;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-global",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId={null} />);
+
+            expect(screen.getByText("photo.png")).toBeInTheDocument();
+            expect(screen.getByAltText("photo.png")).toBeInTheDocument();
+        });
+
+        it("should remove attachment when X button is clicked", () => {
+            const mockAttachments = [
+                {
+                    id: "remove-test",
+                    type: "file" as const,
+                    name: "removeme.txt",
+                    size: 50,
+                    dataUrl: "data:text/plain;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-global",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId={null} />);
+
+            expect(screen.getByText("removeme.txt")).toBeInTheDocument();
+
+            fireEvent.click(screen.getByTitle("Remove attachment"));
+
+            expect(screen.queryByText("removeme.txt")).not.toBeInTheDocument();
+            expect(localStorage.getItem("claude-code-gui-attachments-global")).toBeNull();
+        });
+
+        it("should clear attachments when message is sent", () => {
+            const mockAttachments = [
+                {
+                    id: "send-test",
+                    type: "file" as const,
+                    name: "sendme.txt",
+                    size: 50,
+                    dataUrl: "data:text/plain;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-session-send",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId="session-send" />);
+
+            expect(screen.getByText("sendme.txt")).toBeInTheDocument();
+
+            // Type and send message
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+            fireEvent.change(textarea, { target: { value: "Send with attachment" } });
+            fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
+
+            // Attachments should be cleared
+            expect(screen.queryByText("sendme.txt")).not.toBeInTheDocument();
+            expect(localStorage.getItem("claude-code-gui-attachments-session-send")).toBeNull();
+        });
+
+        it("should allow sending with only attachments (no text)", () => {
+            const onSendMessage = vi.fn();
+            const mockAttachments = [
+                {
+                    id: "only-attach",
+                    type: "image" as const,
+                    name: "image.jpg",
+                    size: 500,
+                    dataUrl: "data:image/jpeg;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-global",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(
+                <MessageInput {...defaultProps} sessionId={null} onSendMessage={onSendMessage} />,
+            );
+
+            expect(screen.getByText("image.jpg")).toBeInTheDocument();
+
+            // Send button should NOT be disabled even without text
+            const buttons = screen.getAllByRole("button");
+            const sendButton = buttons[buttons.length - 1];
+            expect(sendButton).not.toHaveClass("cursor-not-allowed");
+
+            // Click send
+            fireEvent.click(sendButton);
+
+            expect(onSendMessage).toHaveBeenCalledWith("");
+        });
+
+        it("should load different attachments when switching sessions", () => {
+            const attachmentsA = [
+                {
+                    id: "a-1",
+                    type: "file" as const,
+                    name: "fileA.txt",
+                    size: 100,
+                    dataUrl: "data:text/plain;base64,a",
+                },
+            ];
+            const attachmentsB = [
+                {
+                    id: "b-1",
+                    type: "image" as const,
+                    name: "imageB.png",
+                    size: 200,
+                    dataUrl: "data:image/png;base64,b",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-session-A",
+                JSON.stringify(attachmentsA),
+            );
+            localStorage.setItem(
+                "claude-code-gui-attachments-session-B",
+                JSON.stringify(attachmentsB),
+            );
+
+            const { rerender } = render(<MessageInput {...defaultProps} sessionId="session-A" />);
+            expect(screen.getByText("fileA.txt")).toBeInTheDocument();
+            expect(screen.queryByText("imageB.png")).not.toBeInTheDocument();
+
+            rerender(<MessageInput {...defaultProps} sessionId="session-B" />);
+            expect(screen.getByText("imageB.png")).toBeInTheDocument();
+            expect(screen.queryByText("fileA.txt")).not.toBeInTheDocument();
+        });
+
+        it("should format file sizes correctly", () => {
+            const mockAttachments = [
+                {
+                    id: "size-bytes",
+                    type: "file" as const,
+                    name: "tiny.txt",
+                    size: 500,
+                    dataUrl: "data:text/plain;base64,test",
+                },
+                {
+                    id: "size-kb",
+                    type: "file" as const,
+                    name: "small.txt",
+                    size: 5120,
+                    dataUrl: "data:text/plain;base64,test",
+                },
+                {
+                    id: "size-mb",
+                    type: "file" as const,
+                    name: "big.txt",
+                    size: 2097152,
+                    dataUrl: "data:text/plain;base64,test",
+                },
+            ];
+
+            localStorage.setItem(
+                "claude-code-gui-attachments-global",
+                JSON.stringify(mockAttachments),
+            );
+
+            render(<MessageInput {...defaultProps} sessionId={null} />);
+
+            expect(screen.getByText("500 B")).toBeInTheDocument();
+            expect(screen.getByText("5.0 KB")).toBeInTheDocument();
+            expect(screen.getByText("2.0 MB")).toBeInTheDocument();
+        });
+    });
 });

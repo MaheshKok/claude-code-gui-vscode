@@ -8,8 +8,22 @@ import {
     AlertTriangle,
     Command,
     Box,
+    Paperclip,
+    File,
+    Image,
+    X,
 } from "lucide-react";
 import { ThinkingIntensity } from "../../../shared/constants";
+
+/** Attachment interface for files and images */
+export interface Attachment {
+    id: string;
+    type: "file" | "image";
+    name: string;
+    size: number;
+    /** Base64 data URL for preview (images) or just stored reference */
+    dataUrl?: string;
+}
 
 interface MessageInputProps {
     disabled: boolean;
@@ -112,9 +126,28 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     });
     const [showModelSelector, setShowModelSelector] = useState(false);
     const [showThinkingSelector, setShowThinkingSelector] = useState(false);
+    const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const modelSelectorRef = useRef<HTMLDivElement>(null);
     const thinkingSelectorRef = useRef<HTMLDivElement>(null);
+    const attachmentMenuRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+
+    // Attachment storage key
+    const ATTACHMENT_STORAGE_KEY = sessionId
+        ? `claude-code-gui-attachments-${sessionId}`
+        : "claude-code-gui-attachments-global";
+
+    // Initialize attachments from localStorage
+    const [attachments, setAttachments] = useState<Attachment[]>(() => {
+        try {
+            const saved = localStorage.getItem(ATTACHMENT_STORAGE_KEY);
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
 
     // Track previous storage key to detect session changes
     const prevStorageKeyRef = useRef<string>(DRAFT_STORAGE_KEY);
@@ -126,12 +159,29 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             try {
                 const savedContent = localStorage.getItem(DRAFT_STORAGE_KEY) || "";
                 setContent(savedContent);
+                // Also load attachments for the new session
+                const savedAttachments = localStorage.getItem(ATTACHMENT_STORAGE_KEY);
+                setAttachments(savedAttachments ? JSON.parse(savedAttachments) : []);
             } catch {
                 setContent("");
+                setAttachments([]);
             }
             prevStorageKeyRef.current = DRAFT_STORAGE_KEY;
         }
-    }, [DRAFT_STORAGE_KEY]);
+    }, [DRAFT_STORAGE_KEY, ATTACHMENT_STORAGE_KEY]);
+
+    // Save attachments to localStorage whenever they change
+    useEffect(() => {
+        try {
+            if (attachments.length > 0) {
+                localStorage.setItem(ATTACHMENT_STORAGE_KEY, JSON.stringify(attachments));
+            } else {
+                localStorage.removeItem(ATTACHMENT_STORAGE_KEY);
+            }
+        } catch {
+            // Ignore localStorage errors
+        }
+    }, [attachments, ATTACHMENT_STORAGE_KEY]);
 
     // Save content to localStorage whenever it changes
     useEffect(() => {
@@ -169,6 +219,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             ) {
                 setShowThinkingSelector(false);
             }
+            if (
+                attachmentMenuRef.current &&
+                !attachmentMenuRef.current.contains(event.target as Node)
+            ) {
+                setShowAttachmentMenu(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -176,12 +232,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
     const handleSubmit = useCallback(() => {
         const trimmedContent = content.trim();
-        if (trimmedContent && !disabled) {
+        if ((trimmedContent || attachments.length > 0) && !disabled) {
             onSendMessage(trimmedContent);
             setContent("");
-            // Clear the draft from localStorage
+            setAttachments([]);
+            // Clear the draft and attachments from localStorage
             try {
                 localStorage.removeItem(DRAFT_STORAGE_KEY);
+                localStorage.removeItem(ATTACHMENT_STORAGE_KEY);
             } catch {
                 // Ignore localStorage errors
             }
@@ -189,7 +247,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 textareaRef.current.style.height = "auto";
             }
         }
-    }, [content, disabled, onSendMessage, DRAFT_STORAGE_KEY]);
+    }, [content, attachments, disabled, onSendMessage, DRAFT_STORAGE_KEY, ATTACHMENT_STORAGE_KEY]);
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -218,12 +276,124 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         [onThinkingIntensityChange, thinkingMode, onThinkingModeToggle],
     );
 
+    // File/Image attachment handlers
+    const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const newAttachment: Attachment = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    type: "file",
+                    name: file.name,
+                    size: file.size,
+                    dataUrl: reader.result as string,
+                };
+                setAttachments((prev) => [...prev, newAttachment]);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Reset file input
+        event.target.value = "";
+        setShowAttachmentMenu(false);
+    }, []);
+
+    const handleImageSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const newAttachment: Attachment = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    type: "image",
+                    name: file.name,
+                    size: file.size,
+                    dataUrl: reader.result as string,
+                };
+                setAttachments((prev) => [...prev, newAttachment]);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Reset file input
+        event.target.value = "";
+        setShowAttachmentMenu(false);
+    }, []);
+
+    const handleRemoveAttachment = useCallback((id: string) => {
+        setAttachments((prev) => prev.filter((a) => a.id !== id));
+    }, []);
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
     const currentModelName = MODELS.find((m) => m.id === currentModel)?.shortName || "Model";
     const currentThinkingMode =
         THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
     return (
         <div className="glass rounded-2xl shadow-2xl !border-orange-500/60 overflow-visible transition-all duration-300 focus-within:!border-orange-500 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.25)]">
+            {/* Hidden file inputs */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileSelect}
+                multiple
+                accept=".txt,.md,.json,.js,.ts,.tsx,.jsx,.py,.css,.html,.xml,.yaml,.yml,.csv,.log"
+            />
+            <input
+                ref={imageInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleImageSelect}
+                multiple
+                accept="image/*"
+            />
+
+            {/* Attachments Preview */}
+            {attachments.length > 0 && (
+                <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2">
+                    {attachments.map((attachment) => (
+                        <div
+                            key={attachment.id}
+                            className="flex items-center gap-2 px-2 py-1 bg-white/10 rounded-lg border border-white/10 group"
+                        >
+                            {attachment.type === "image" && attachment.dataUrl ? (
+                                <img
+                                    src={attachment.dataUrl}
+                                    alt={attachment.name}
+                                    className="w-6 h-6 rounded object-cover"
+                                />
+                            ) : (
+                                <File className="w-4 h-4 text-blue-400" />
+                            )}
+                            <span className="text-xs text-white/70 max-w-[100px] truncate">
+                                {attachment.name}
+                            </span>
+                            <span className="text-[10px] text-white/40">
+                                {formatFileSize(attachment.size)}
+                            </span>
+                            <button
+                                onClick={() => handleRemoveAttachment(attachment.id)}
+                                className="p-0.5 rounded hover:bg-white/20 text-white/40 hover:text-white transition-colors"
+                                title="Remove attachment"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Input Area */}
             <div className="p-3">
                 <textarea
@@ -380,6 +550,36 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Attachment Button */}
+                    <div className="relative" ref={attachmentMenuRef}>
+                        <button
+                            className="btn-icon"
+                            onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                            title="Attach file or image"
+                        >
+                            <Paperclip className="w-4 h-4" />
+                        </button>
+
+                        {showAttachmentMenu && (
+                            <div className="absolute bottom-full right-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[160px] overflow-hidden animate-slide-up backdrop-blur-xl">
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
+                                >
+                                    <File className="w-4 h-4 text-blue-400" />
+                                    <span>Upload File</span>
+                                </button>
+                                <button
+                                    onClick={() => imageInputRef.current?.click()}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
+                                >
+                                    <Image className="w-4 h-4 text-green-400" />
+                                    <span>Upload Image</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
                     </button>
@@ -388,10 +588,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={disabled || !content.trim()}
+                        disabled={disabled || (!content.trim() && attachments.length === 0)}
                         className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300
                     ${
-                        disabled || !content.trim()
+                        disabled || (!content.trim() && attachments.length === 0)
                             ? "opacity-50 cursor-not-allowed bg-white/5 text-white/30"
                             : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/30 hover:scale-110 active:scale-95 hover:shadow-orange-500/50"
                     }
