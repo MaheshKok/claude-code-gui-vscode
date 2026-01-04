@@ -173,6 +173,7 @@ export const App: React.FC = () => {
                 thinkingMode={settings.thinkingMode}
                 thinkingIntensity={settings.thinkingIntensity}
                 yoloMode={settings.yoloMode}
+                sessionId={useChatStore.getState().currentSessionId}
                 onSendMessage={callbacks.handleSendMessage}
                 onModelChange={callbacks.handleModelChange}
                 onPlanModeToggle={callbacks.handlePlanModeToggle}

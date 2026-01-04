@@ -18,6 +18,7 @@ interface MessageInputProps {
     thinkingMode: boolean;
     thinkingIntensity: ThinkingIntensity;
     yoloMode: boolean;
+    sessionId?: string | null;
     onSendMessage: (content: string) => void;
     onModelChange: (model: string) => void;
     onPlanModeToggle: () => void;
@@ -94,13 +95,56 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     onYoloModeToggle,
     onSlashCommand,
     onMcpAction,
+    sessionId,
 }) => {
-    const [content, setContent] = useState("");
+    // Build session-specific storage key
+    const DRAFT_STORAGE_KEY = sessionId
+        ? `claude-code-gui-draft-${sessionId}`
+        : "claude-code-gui-draft-global";
+
+    // Initialize content from localStorage
+    const [content, setContent] = useState(() => {
+        try {
+            return localStorage.getItem(DRAFT_STORAGE_KEY) || "";
+        } catch {
+            return "";
+        }
+    });
     const [showModelSelector, setShowModelSelector] = useState(false);
     const [showThinkingSelector, setShowThinkingSelector] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const modelSelectorRef = useRef<HTMLDivElement>(null);
     const thinkingSelectorRef = useRef<HTMLDivElement>(null);
+
+    // Track previous storage key to detect session changes
+    const prevStorageKeyRef = useRef<string>(DRAFT_STORAGE_KEY);
+
+    // Reload content when sessionId/storage key changes
+    useEffect(() => {
+        if (prevStorageKeyRef.current !== DRAFT_STORAGE_KEY) {
+            // Session changed - load content for the new session
+            try {
+                const savedContent = localStorage.getItem(DRAFT_STORAGE_KEY) || "";
+                setContent(savedContent);
+            } catch {
+                setContent("");
+            }
+            prevStorageKeyRef.current = DRAFT_STORAGE_KEY;
+        }
+    }, [DRAFT_STORAGE_KEY]);
+
+    // Save content to localStorage whenever it changes
+    useEffect(() => {
+        try {
+            if (content) {
+                localStorage.setItem(DRAFT_STORAGE_KEY, content);
+            } else {
+                localStorage.removeItem(DRAFT_STORAGE_KEY);
+            }
+        } catch {
+            // Ignore localStorage errors
+        }
+    }, [content, DRAFT_STORAGE_KEY]);
 
     // Auto-resize textarea
     useEffect(() => {
@@ -135,11 +179,17 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         if (trimmedContent && !disabled) {
             onSendMessage(trimmedContent);
             setContent("");
+            // Clear the draft from localStorage
+            try {
+                localStorage.removeItem(DRAFT_STORAGE_KEY);
+            } catch {
+                // Ignore localStorage errors
+            }
             if (textareaRef.current) {
                 textareaRef.current.style.height = "auto";
             }
         }
-    }, [content, disabled, onSendMessage]);
+    }, [content, disabled, onSendMessage, DRAFT_STORAGE_KEY]);
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

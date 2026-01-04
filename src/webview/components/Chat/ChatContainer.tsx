@@ -15,6 +15,7 @@ interface ChatContainerProps {
     thinkingMode: boolean;
     thinkingIntensity: ThinkingIntensity;
     yoloMode: boolean;
+    sessionId?: string | null;
     onSendMessage: (content: string) => void;
     onModelChange: (model: string) => void;
     onPlanModeToggle: () => void;
@@ -42,6 +43,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     onYoloModeToggle,
     onSlashCommand,
     onMcpAction,
+    sessionId,
 }) => {
     const showEmptyState = messages.length === 0;
 
@@ -77,6 +79,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         onYoloModeToggle={onYoloModeToggle}
                         onSlashCommand={onSlashCommand}
                         onMcpAction={onMcpAction}
+                        sessionId={sessionId}
                     />
                 </div>
             </div>

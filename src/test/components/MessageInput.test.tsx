@@ -380,4 +380,104 @@ describe("MessageInput", () => {
             expect(screen.queryByText("Ultrathink")).not.toBeInTheDocument();
         });
     });
+
+    describe("draft persistence", () => {
+        beforeEach(() => {
+            // Clear localStorage before each test
+            localStorage.clear();
+        });
+
+        it("should save draft to localStorage when typing", () => {
+            render(<MessageInput {...defaultProps} sessionId="session-123" />);
+
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+            fireEvent.change(textarea, { target: { value: "My draft message" } });
+
+            expect(localStorage.getItem("claude-code-gui-draft-session-123")).toBe(
+                "My draft message",
+            );
+        });
+
+        it("should use global key when no sessionId provided", () => {
+            render(<MessageInput {...defaultProps} sessionId={null} />);
+
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+            fireEvent.change(textarea, { target: { value: "Global draft" } });
+
+            expect(localStorage.getItem("claude-code-gui-draft-global")).toBe("Global draft");
+        });
+
+        it("should restore draft from localStorage on mount", () => {
+            localStorage.setItem("claude-code-gui-draft-session-456", "Saved draft text");
+
+            render(<MessageInput {...defaultProps} sessionId="session-456" />);
+
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+            expect(textarea).toHaveValue("Saved draft text");
+        });
+
+        it("should keep separate drafts for different sessions", () => {
+            // Save two different drafts
+            localStorage.setItem("claude-code-gui-draft-session-A", "Draft for session A");
+            localStorage.setItem("claude-code-gui-draft-session-B", "Draft for session B");
+
+            // Render with session A
+            const { rerender } = render(<MessageInput {...defaultProps} sessionId="session-A" />);
+            expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue(
+                "Draft for session A",
+            );
+
+            // Switch to session B
+            rerender(<MessageInput {...defaultProps} sessionId="session-B" />);
+            expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue(
+                "Draft for session B",
+            );
+
+            // Switch back to session A
+            rerender(<MessageInput {...defaultProps} sessionId="session-A" />);
+            expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue(
+                "Draft for session A",
+            );
+        });
+
+        it("should clear draft from localStorage when message is sent", () => {
+            localStorage.setItem("claude-code-gui-draft-session-789", "Draft to send");
+
+            render(<MessageInput {...defaultProps} sessionId="session-789" />);
+
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+            expect(textarea).toHaveValue("Draft to send");
+
+            // Send the message
+            fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
+
+            // Draft should be cleared
+            expect(localStorage.getItem("claude-code-gui-draft-session-789")).toBeNull();
+        });
+
+        it("should remove localStorage entry when content is cleared", () => {
+            render(<MessageInput {...defaultProps} sessionId="session-clear" />);
+
+            const textarea = screen.getByPlaceholderText("How can I help you?");
+
+            // Type something
+            fireEvent.change(textarea, { target: { value: "Some text" } });
+            expect(localStorage.getItem("claude-code-gui-draft-session-clear")).toBe("Some text");
+
+            // Clear the text
+            fireEvent.change(textarea, { target: { value: "" } });
+            expect(localStorage.getItem("claude-code-gui-draft-session-clear")).toBeNull();
+        });
+
+        it("should load correct draft when switching from null session to specific session", () => {
+            localStorage.setItem("claude-code-gui-draft-global", "Global draft");
+            localStorage.setItem("claude-code-gui-draft-session-new", "Session draft");
+
+            const { rerender } = render(<MessageInput {...defaultProps} sessionId={null} />);
+            expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue("Global draft");
+
+            rerender(<MessageInput {...defaultProps} sessionId="session-new" />);
+            expect(screen.getByPlaceholderText("How can I help you?")).toHaveValue("Session draft");
+        });
+    });
 });
