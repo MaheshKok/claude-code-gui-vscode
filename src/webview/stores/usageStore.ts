@@ -31,7 +31,7 @@ interface UsageActions {
 }
 
 export const useUsageStore = create<UsageState & UsageActions>((set) => ({
-    data: null,
+    data: defaultUsageData,
     isVisible: false,
     setUsageData: (data) => set({ data }),
     toggleVisibility: () => set((state) => ({ isVisible: !state.isVisible })),

@@ -1,6 +1,7 @@
 import React from "react";
 import type { SessionInfo } from "../App";
-import { MessageSquarePlus, Settings, History, X, Cpu } from "lucide-react";
+import { MessageSquarePlus, History, X, Cpu, PieChart } from "lucide-react";
+import { useUsageStore } from "../../stores/usageStore";
 
 // ============================================================================
 // Constants
@@ -15,6 +16,7 @@ const HEADER_CONSTANTS = {
         CLOSE_HISTORY: "Close History",
         SETTINGS: "Settings",
         NEW_CHAT: "New Chat",
+        USAGE: "Usage Data",
     },
 } as const;
 
@@ -29,6 +31,7 @@ export interface HeaderProps {
     onNewChat: ButtonClickHandler;
     onToggleHistory: ButtonClickHandler;
     isHistoryOpen?: boolean;
+    onOpenUsage?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -36,8 +39,10 @@ export const Header: React.FC<HeaderProps> = ({
     onNewChat,
     onToggleHistory,
     isHistoryOpen = false,
+    onOpenUsage,
 }): React.JSX.Element => {
     const { APP_NAME, ICON_SIZE, LOGO_ICON_SIZE, TOOLTIPS } = HEADER_CONSTANTS;
+    const usageData = useUsageStore((state) => state.data);
 
     return (
         <header className="relative z-50 flex flex-col glass border-b border-white/5 backdrop-blur-xl">
@@ -62,6 +67,43 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {usageData && (
+                        <div className="hidden md:flex items-center gap-3 mr-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                            <div className="flex flex-col items-end leading-none">
+                                <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider">
+                                    Session
+                                </span>
+                                <span className="text-xs font-semibold text-white/90">
+                                    {Math.round(
+                                        (usageData.currentSession.usageCost /
+                                            usageData.currentSession.costLimit) *
+                                            100,
+                                    )}
+                                    %
+                                </span>
+                            </div>
+                            <div className="w-px h-6 bg-white/10" />
+                            <div className="flex flex-col items-start leading-none">
+                                <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider">
+                                    Resets
+                                </span>
+                                <span className="text-xs text-white/70">
+                                    {usageData.currentSession.resetsIn}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {onOpenUsage && (
+                        <button
+                            onClick={onOpenUsage}
+                            className="btn-icon text-white/50 hover:text-white"
+                            title={TOOLTIPS.USAGE}
+                        >
+                            <PieChart className={ICON_SIZE} />
+                        </button>
+                    )}
+
                     <button
                         onClick={onToggleHistory}
                         className={`btn-icon ${isHistoryOpen ? "bg-white/10 text-white" : ""}`}

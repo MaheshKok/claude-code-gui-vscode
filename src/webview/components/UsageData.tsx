@@ -1,6 +1,5 @@
 import React from "react";
 import { useUsageStore } from "../stores/usageStore";
-// import { Clock, Info } from "lucide-react"; // Assuming lucide-react is available
 
 interface ProgressBarProps {
     value: number; // 0 to 1
@@ -15,7 +14,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     label,
     subLabel,
     rightLabel,
-    colorClass = "bg-blue-500",
+    colorClass = "bg-orange-500",
 }) => {
     return (
         <div className="mb-4">
@@ -42,7 +41,7 @@ export const UsageData: React.FC = () => {
     if (!data) return null;
 
     return (
-        <div className="bg-[#1e1e1e] rounded-lg p-5 max-w-md w-full border border-white/10 text-sm">
+        <div className="w-full text-sm">
             <h2 className="text-white font-semibold mb-6">Plan usage limits</h2>
 
             <div className="mb-8 border-b border-white/5 pb-6">

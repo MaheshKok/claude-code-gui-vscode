@@ -151,6 +151,7 @@ export const App: React.FC = () => {
                 onNewChat={callbacks.handleNewChat}
                 onToggleHistory={callbacks.handleToggleHistory}
                 isHistoryOpen={isHistoryOpen}
+                onOpenUsage={() => state.uiActions.openModal("usage")}
             />
 
             <ConversationHistory
@@ -192,7 +193,6 @@ export const App: React.FC = () => {
                 lastDurationMs={local.lastDurationMs}
                 requestStartTime={chat.requestStartTime}
                 subscriptionType={local.subscriptionType}
-                onUsageClick={() => state.uiActions.openModal("usage")}
             />
 
             {ui.activeModal === "mcp" && (
