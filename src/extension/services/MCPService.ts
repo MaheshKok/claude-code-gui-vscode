@@ -15,6 +15,7 @@ export interface MCPServerConfig {
     cwd?: string;
     url?: string;
     headers?: Record<string, string>;
+    enabled?: boolean;
 }
 
 /**
@@ -72,7 +73,47 @@ export class MCPService implements vscode.Disposable {
                 mcpConfig = JSON.parse(new TextDecoder().decode(existingContent));
                 console.log("Loaded existing MCP config");
             } catch {
-                console.log("No existing MCP config found, creating new one");
+                console.log("No existing MCP config found, creating new one with default servers");
+                // Seed with popular servers by default
+                mcpConfig = {
+                    mcpServers: {
+                        context7: {
+                            type: "http",
+                            url: "https://context7.liam.sh/mcp",
+                            enabled: true,
+                        },
+                        "sequential-thinking": {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+                            enabled: true,
+                        },
+                        memory: {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@modelcontextprotocol/server-memory"],
+                            enabled: true,
+                        },
+                        puppeteer: {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@modelcontextprotocol/server-puppeteer"],
+                            enabled: true,
+                        },
+                        fetch: {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@modelcontextprotocol/server-fetch"],
+                            enabled: true,
+                        },
+                        filesystem: {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@modelcontextprotocol/server-filesystem"],
+                            enabled: true,
+                        },
+                    },
+                };
             }
 
             // Ensure mcpServers exists

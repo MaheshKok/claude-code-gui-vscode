@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Modal } from "./Modal";
+import { Trash2, Terminal, Plus, X } from "lucide-react";
 
 export type MCPServerType = "http" | "sse" | "stdio";
 
@@ -25,13 +26,13 @@ export interface PopularServer {
 const POPULAR_SERVERS: PopularServer[] = [
     {
         name: "Context7",
-        icon: "\uD83D\uDCDA",
+        icon: "📚",
         description: "Up-to-date Code Docs For Any Prompt",
         config: { type: "http", url: "https://context7.liam.sh/mcp" },
     },
     {
         name: "Sequential Thinking",
-        icon: "\uD83D\uDD17",
+        icon: "🔗",
         description: "Step-by-step reasoning capabilities",
         config: {
             type: "stdio",
@@ -41,7 +42,7 @@ const POPULAR_SERVERS: PopularServer[] = [
     },
     {
         name: "Memory",
-        icon: "\uD83E\uDDE0",
+        icon: "🧠",
         description: "Knowledge graph storage",
         config: {
             type: "stdio",
@@ -51,7 +52,7 @@ const POPULAR_SERVERS: PopularServer[] = [
     },
     {
         name: "Puppeteer",
-        icon: "\uD83C\uDFAD",
+        icon: "🎭",
         description: "Browser automation",
         config: {
             type: "stdio",
@@ -61,7 +62,7 @@ const POPULAR_SERVERS: PopularServer[] = [
     },
     {
         name: "Fetch",
-        icon: "\uD83C\uDF10",
+        icon: "🌐",
         description: "HTTP requests & web scraping",
         config: {
             type: "stdio",
@@ -71,7 +72,7 @@ const POPULAR_SERVERS: PopularServer[] = [
     },
     {
         name: "Filesystem",
-        icon: "\uD83D\uDCC1",
+        icon: "📁",
         description: "File operations & management",
         config: {
             type: "stdio",
@@ -89,6 +90,130 @@ export interface MCPModalProps {
     onDeleteServer?: (id: string) => void;
     onAddServer?: (server: Omit<MCPServer, "id">) => void;
 }
+
+// Server Card Component
+const ServerCard: React.FC<{
+    server: MCPServer;
+    onToggle: (id: string, enabled: boolean) => void;
+    onDelete: (id: string) => void;
+}> = ({ server, onToggle, onDelete }) => {
+    const isStdio = server.type === "stdio";
+
+    return (
+        <div
+            className={`
+                relative rounded-xl border transition-all duration-300 overflow-hidden
+                ${
+                    server.enabled
+                        ? "border-blue-500/50 bg-gradient-to-br from-blue-500/10 to-blue-600/5"
+                        : "border-white/10 bg-white/5"
+                }
+                hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/10
+            `}
+        >
+            <div className="p-4 space-y-3">
+                {/* Header Row */}
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="text-base font-semibold text-white truncate">
+                            {server.name}
+                        </h3>
+                        <span
+                            className={`
+                                px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider
+                                ${
+                                    isStdio
+                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                        : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                }
+                            `}
+                        >
+                            {server.type}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={server.enabled}
+                                onChange={(e) => onToggle(server.id, e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div
+                                className={`
+                                w-9 h-5 rounded-full transition-all duration-300
+                                peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-blue-600
+                                bg-white/10
+                                after:content-[''] after:absolute after:top-0.5 after:left-0.5
+                                after:bg-white after:rounded-full after:h-4 after:w-4
+                                after:transition-all after:duration-300 after:shadow-lg
+                                peer-checked:after:translate-x-4
+                            `}
+                            />
+                        </label>
+                        <button
+                            onClick={() => onDelete(server.id)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                            title="Delete Server"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Details Body */}
+                <div className="space-y-2 text-xs">
+                    {isStdio ? (
+                        <>
+                            <div className="flex gap-2 items-baseline">
+                                <span className="text-white/40 w-16 flex-shrink-0">Command:</span>
+                                <code className="text-emerald-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                                    {server.command}
+                                </code>
+                            </div>
+                            {server.args && server.args.length > 0 && (
+                                <div className="flex gap-2 items-baseline">
+                                    <span className="text-white/40 w-16 flex-shrink-0">Args:</span>
+                                    <code className="text-orange-400 font-mono break-all bg-white/5 px-1.5 py-0.5 rounded">
+                                        {server.args.join(" ")}
+                                    </code>
+                                </div>
+                            )}
+                            {server.env && Object.keys(server.env).length > 0 && (
+                                <div className="flex gap-2 items-baseline">
+                                    <span className="text-white/40 w-16 flex-shrink-0">Env:</span>
+                                    <code className="text-purple-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                                        {Object.keys(server.env).join(", ")}
+                                    </code>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex gap-2 items-baseline">
+                                <span className="text-white/40 w-16 flex-shrink-0">URL:</span>
+                                <code className="text-blue-400 font-mono break-all bg-white/5 px-1.5 py-0.5 rounded">
+                                    {server.url}
+                                </code>
+                            </div>
+                            {server.headers && Object.keys(server.headers).length > 0 && (
+                                <div className="flex gap-2 items-baseline">
+                                    <span className="text-white/40 w-16 flex-shrink-0">
+                                        Headers:
+                                    </span>
+                                    <code className="text-purple-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                                        {Object.keys(server.headers).join(", ")}
+                                    </code>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export const MCPModal: React.FC<MCPModalProps> = ({
     isOpen,
@@ -109,7 +234,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
         headers: string;
     }>({
         name: "",
-        type: "http",
+        type: "stdio",
         url: "",
         command: "",
         args: "",
@@ -120,7 +245,7 @@ export const MCPModal: React.FC<MCPModalProps> = ({
     const resetForm = useCallback(() => {
         setFormData({
             name: "",
-            type: "http",
+            type: "stdio",
             url: "",
             command: "",
             args: "",
@@ -182,199 +307,142 @@ export const MCPModal: React.FC<MCPModalProps> = ({
     const isStdio = formData.type === "stdio";
     const canSubmit = formData.name && (isStdio ? formData.command : formData.url);
 
+    // Filter available popular servers (exclude ones that are already added)
+    const availablePopularServers = POPULAR_SERVERS.filter((server) => {
+        return !servers.some((s) => s.name === server.name.toLowerCase().replace(/\s+/g, "-"));
+    });
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="MCP Servers" width="lg">
-            <div className="space-y-4">
+            <div className="space-y-6">
                 {/* Server List */}
-                <div className="border border-[var(--vscode-editorWidget-border)] rounded-md overflow-hidden">
+                <div className="space-y-3">
                     {servers.length === 0 ? (
-                        <div className="p-6 text-center text-sm text-[var(--vscode-descriptionForeground)]">
-                            No MCP servers configured
+                        <div className="p-8 text-center rounded-xl border border-dashed border-white/20 bg-white/5">
+                            <Terminal className="w-8 h-8 mx-auto mb-3 text-white/30" />
+                            <p className="text-sm text-white/50">No MCP servers configured</p>
+                            <p className="text-xs text-white/30 mt-1">
+                                Add a server below to get started
+                            </p>
                         </div>
                     ) : (
-                        <ul className="divide-y divide-[var(--vscode-editorWidget-border)]">
+                        <div className="grid gap-3">
                             {servers.map((server) => (
-                                <li
+                                <ServerCard
                                     key={server.id}
-                                    className="flex items-center justify-between px-3 py-2 hover:bg-[var(--vscode-list-hoverBackground)]"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={server.enabled}
-                                                onChange={(e) =>
-                                                    onToggleServer(server.id, e.target.checked)
-                                                }
-                                                className="sr-only peer"
-                                            />
-                                            <div className="w-9 h-5 bg-[var(--vscode-input-background)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--vscode-progressBar-background)]"></div>
-                                        </label>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">
-                                                    {server.name}
-                                                </span>
-                                                <span className="badge text-xs">{server.type}</span>
-                                            </div>
-                                            <span className="text-xs text-[var(--vscode-descriptionForeground)]">
-                                                {server.type === "stdio"
-                                                    ? server.command
-                                                    : server.url}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => onDeleteServer(server.id)}
-                                        className="p-1 rounded hover:bg-[var(--vscode-toolbar-hoverBackground)] text-[var(--vscode-errorForeground)]"
-                                        aria-label="Delete server"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <polyline points="3 6 5 6 21 6" />
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                        </svg>
-                                    </button>
-                                </li>
+                                    server={server}
+                                    onToggle={onToggleServer}
+                                    onDelete={onDeleteServer}
+                                />
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </div>
 
                 {/* Add Server Form */}
                 {showAddForm ? (
-                    <div className="space-y-3 p-4 border border-[var(--vscode-editorWidget-border)] rounded-md">
-                        <div>
-                            <label
-                                htmlFor="server-name"
-                                className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
+                    <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold text-white">Add New Server</h4>
+                            <button
+                                onClick={resetForm}
+                                className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/60"
                             >
-                                Server Name
-                            </label>
-                            <input
-                                id="server-name"
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                                }
-                                placeholder="my-server"
-                                className="input"
-                            />
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        <div>
-                            <label
-                                htmlFor="server-type"
-                                className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                            >
-                                Server Type
-                            </label>
-                            <select
-                                id="server-type"
-                                value={formData.type}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        type: e.target.value as MCPServerType,
-                                    }))
-                                }
-                                className="input"
-                            >
-                                <option value="http">HTTP</option>
-                                <option value="sse">SSE</option>
-                                <option value="stdio">stdio</option>
-                            </select>
-                        </div>
+                        <div className="grid gap-4">
+                            <div>
+                                <label className="block text-xs text-white/50 mb-1.5">
+                                    Server Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({ ...prev, name: e.target.value }))
+                                    }
+                                    placeholder="my-server"
+                                    className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
+                                        focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
+                                        placeholder:text-white/20"
+                                />
+                            </div>
 
-                        {isStdio ? (
-                            <>
+                            <div>
+                                <label className="block text-xs text-white/50 mb-1.5">
+                                    Server Type
+                                </label>
+                                <div className="flex gap-2">
+                                    {(["stdio", "http", "sse"] as const).map((type) => (
+                                        <button
+                                            key={type}
+                                            onClick={() =>
+                                                setFormData((prev) => ({ ...prev, type }))
+                                            }
+                                            className={`
+                                                px-4 py-2 text-xs font-medium uppercase rounded-lg transition-all
+                                                ${
+                                                    formData.type === type
+                                                        ? "bg-blue-500 text-white"
+                                                        : "bg-white/5 text-white/50 hover:bg-white/10"
+                                                }
+                                            `}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {isStdio ? (
+                                <>
+                                    <div>
+                                        <label className="block text-xs text-white/50 mb-1.5">
+                                            Command
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.command}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    command: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="/path/to/server or npx"
+                                            className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
+                                                focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
+                                                placeholder:text-white/20 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-white/50 mb-1.5">
+                                            Arguments (one per line)
+                                        </label>
+                                        <textarea
+                                            value={formData.args}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    args: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="-y&#10;@package/name"
+                                            rows={2}
+                                            className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
+                                                focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
+                                                placeholder:text-white/20 font-mono resize-none"
+                                        />
+                                    </div>
+                                </>
+                            ) : (
                                 <div>
-                                    <label
-                                        htmlFor="server-command"
-                                        className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                                    >
-                                        Command
+                                    <label className="block text-xs text-white/50 mb-1.5">
+                                        Server URL
                                     </label>
                                     <input
-                                        id="server-command"
-                                        type="text"
-                                        value={formData.command}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                command: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="/path/to/server"
-                                        className="input"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label
-                                        htmlFor="server-args"
-                                        className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                                    >
-                                        Arguments (one per line)
-                                    </label>
-                                    <textarea
-                                        id="server-args"
-                                        value={formData.args}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                args: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="--api-key&#10;abc123"
-                                        rows={3}
-                                        className="textarea"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label
-                                        htmlFor="server-env"
-                                        className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                                    >
-                                        Environment Variables (KEY=value, one per line)
-                                    </label>
-                                    <textarea
-                                        id="server-env"
-                                        value={formData.env}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                env: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="API_KEY=123&#10;CACHE_DIR=/tmp"
-                                        rows={3}
-                                        className="textarea"
-                                    />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div>
-                                    <label
-                                        htmlFor="server-url"
-                                        className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                                    >
-                                        URL
-                                    </label>
-                                    <input
-                                        id="server-url"
                                         type="text"
                                         value={formData.url}
                                         onChange={(e) =>
@@ -384,49 +452,34 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                                             }))
                                         }
                                         placeholder="https://example.com/mcp"
-                                        className="input"
+                                        className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10
+                                            focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20
+                                            placeholder:text-white/20"
                                     />
                                 </div>
-
-                                <div>
-                                    <label
-                                        htmlFor="server-headers"
-                                        className="block text-xs text-[var(--vscode-descriptionForeground)] mb-1"
-                                    >
-                                        Headers (KEY=value, one per line)
-                                    </label>
-                                    <textarea
-                                        id="server-headers"
-                                        value={formData.headers}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                headers: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="Authorization=Bearer token&#10;X-API-Key=key"
-                                        rows={3}
-                                        className="textarea"
-                                    />
-                                </div>
-                            </>
-                        )}
+                            )}
+                        </div>
 
                         <div className="flex gap-2 pt-2">
                             <button
                                 onClick={handleSubmit}
                                 disabled={!canSubmit}
-                                className="btn text-sm"
+                                className={`
+                                    flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all
+                                    ${
+                                        canSubmit
+                                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg hover:shadow-blue-500/25"
+                                            : "bg-white/10 text-white/30 cursor-not-allowed"
+                                    }
+                                `}
                             >
+                                <Plus className="w-4 h-4" />
                                 Add Server
                             </button>
                             <button
                                 onClick={resetForm}
-                                className="btn-secondary px-3 py-1.5 text-sm rounded"
-                                style={{
-                                    backgroundColor: "var(--vscode-button-secondaryBackground)",
-                                    color: "var(--vscode-button-secondaryForeground)",
-                                }}
+                                className="px-4 py-2 text-sm font-medium rounded-lg bg-white/5 text-white/60
+                                    hover:bg-white/10 hover:text-white/80 transition-all"
                             >
                                 Cancel
                             </button>
@@ -435,44 +488,47 @@ export const MCPModal: React.FC<MCPModalProps> = ({
                 ) : (
                     <button
                         onClick={() => setShowAddForm(true)}
-                        className="btn-secondary w-full py-2 text-sm rounded border border-dashed border-[var(--vscode-editorWidget-border)] hover:border-[var(--vscode-focusBorder)]"
-                        style={{
-                            backgroundColor: "transparent",
-                            color: "var(--vscode-foreground)",
-                        }}
+                        className="w-full py-3 text-sm font-medium rounded-xl border-2 border-dashed
+                            border-white/20 hover:border-blue-500/50 text-white/50 hover:text-blue-400
+                            transition-all hover:bg-blue-500/5 flex items-center justify-center gap-2"
                     >
-                        + Add MCP Server
+                        <Plus className="w-4 h-4" />
+                        Add Custom MCP Server
                     </button>
                 )}
 
                 {/* Popular Servers */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-3 text-[var(--vscode-foreground)]">
-                        Popular MCP Servers
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                        {POPULAR_SERVERS.map((server) => (
-                            <button
-                                key={server.name}
-                                onClick={() => handleAddPopular(server)}
-                                className="flex items-start gap-3 p-3 text-left rounded-md border border-[var(--vscode-editorWidget-border)] hover:bg-[var(--vscode-list-hoverBackground)] transition-colors"
-                            >
-                                <span className="text-xl flex-shrink-0">{server.icon}</span>
-                                <div className="min-w-0">
-                                    <div className="text-sm font-medium truncate">
-                                        {server.name}
+                {availablePopularServers.length > 0 && (
+                    <div>
+                        <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                            <span className="text-base">⚡</span>
+                            Quick Add Popular Servers
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                            {availablePopularServers.map((server) => (
+                                <button
+                                    key={server.name}
+                                    onClick={() => handleAddPopular(server)}
+                                    className="flex items-start gap-3 p-3 text-left rounded-xl border transition-all
+                                        border-white/10 bg-white/5 hover:border-blue-500/50 hover:bg-blue-500/10"
+                                >
+                                    <span className="text-xl flex-shrink-0">{server.icon}</span>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-white truncate">
+                                                {server.name}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-white/40 line-clamp-1 mt-0.5">
+                                            {server.description}
+                                        </p>
                                     </div>
-                                    <div className="text-xs text-[var(--vscode-descriptionForeground)] line-clamp-2">
-                                        {server.description}
-                                    </div>
-                                </div>
-                            </button>
-                        ))}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </Modal>
     );
 };
-
-export default MCPModal;
