@@ -443,6 +443,35 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                             </div>
                         )}
                     </div>
+                    {/* Attachment Button */}
+                    <div className="relative" ref={attachmentMenuRef}>
+                        <button
+                            className="btn-icon"
+                            onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                            title="Attach file or image"
+                        >
+                            <Paperclip className="w-4 h-4" />
+                        </button>
+
+                        {showAttachmentMenu && (
+                            <div className="absolute bottom-full left-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[160px] overflow-hidden animate-slide-up backdrop-blur-xl">
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
+                                >
+                                    <File className="w-4 h-4 text-blue-400" />
+                                    <span>Upload File</span>
+                                </button>
+                                <button
+                                    onClick={() => imageInputRef.current?.click()}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
+                                >
+                                    <Image className="w-4 h-4 text-green-400" />
+                                    <span>Upload Image</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="w-px h-4 bg-white/10 mx-1" />
 
@@ -550,36 +579,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Attachment Button */}
-                    <div className="relative" ref={attachmentMenuRef}>
-                        <button
-                            className="btn-icon"
-                            onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                            title="Attach file or image"
-                        >
-                            <Paperclip className="w-4 h-4" />
-                        </button>
-
-                        {showAttachmentMenu && (
-                            <div className="absolute bottom-full right-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[160px] overflow-hidden animate-slide-up backdrop-blur-xl">
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
-                                >
-                                    <File className="w-4 h-4 text-blue-400" />
-                                    <span>Upload File</span>
-                                </button>
-                                <button
-                                    onClick={() => imageInputRef.current?.click()}
-                                    className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-3"
-                                >
-                                    <Image className="w-4 h-4 text-green-400" />
-                                    <span>Upload Image</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
                     </button>
