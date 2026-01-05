@@ -25,6 +25,16 @@ export interface PopularServer {
 
 const POPULAR_SERVERS: PopularServer[] = [
     {
+        name: "Chrome",
+        icon: "🌐",
+        description: "Browser debugging & automation",
+        config: {
+            type: "stdio",
+            command: "npx",
+            args: ["-y", "@anthropics/mcp-server-chrome"],
+        },
+    },
+    {
         name: "Context7",
         icon: "📚",
         description: "Up-to-date Code Docs For Any Prompt",
@@ -62,7 +72,7 @@ const POPULAR_SERVERS: PopularServer[] = [
     },
     {
         name: "Fetch",
-        icon: "🌐",
+        icon: "📡",
         description: "HTTP requests & web scraping",
         config: {
             type: "stdio",

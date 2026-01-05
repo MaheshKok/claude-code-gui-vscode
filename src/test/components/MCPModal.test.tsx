@@ -288,6 +288,7 @@ describe("MCPModal", () => {
             render(<MCPModal {...defaultProps} />);
 
             expect(screen.getByText("Context7")).toBeInTheDocument();
+            expect(screen.getByText("Chrome")).toBeInTheDocument();
             expect(screen.getByText("Sequential Thinking")).toBeInTheDocument();
             expect(screen.getByText("Memory")).toBeInTheDocument();
             expect(screen.getByText("Puppeteer")).toBeInTheDocument();

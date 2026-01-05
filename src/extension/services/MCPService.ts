@@ -77,6 +77,12 @@ export class MCPService implements vscode.Disposable {
                 // Seed with popular servers by default
                 mcpConfig = {
                     mcpServers: {
+                        chrome: {
+                            type: "stdio",
+                            command: "npx",
+                            args: ["-y", "@anthropics/mcp-server-chrome"],
+                            enabled: true,
+                        },
                         context7: {
                             type: "http",
                             url: "https://context7.liam.sh/mcp",
