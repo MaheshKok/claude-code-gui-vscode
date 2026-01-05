@@ -435,6 +435,9 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                     const restoredTodos = findTodosInLastTurn(restoredMessages);
                     if (restoredTodos.length > 0) {
                         setTodos(restoredTodos);
+                        // Mark that we've set todos during restore to prevent
+                        // setProcessing(false) from clearing them
+                        didUpdateTodosRef.current = true;
                     } else {
                         clearTodos();
                     }
