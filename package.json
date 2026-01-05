@@ -2,7 +2,7 @@
     "name": "claude-code-gui",
     "displayName": "Claude Code GUI",
     "description": "Modern AI-Powered GUI Interface for Claude Code CLI",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "publisher": "MaheshKok",
     "author": "Mahesh Kokare",
     "repository": {
