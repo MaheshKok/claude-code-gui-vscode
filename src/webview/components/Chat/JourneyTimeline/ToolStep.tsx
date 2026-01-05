@@ -130,8 +130,8 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                             defaultCollapsed={false}
                         />
                     ) : (
-                        <>
-                            {/* Tool Use Card */}
+                        <div className="space-y-4">
+                            {/* Tool Use Section */}
                             {step.toolUse && (
                                 <ToolUseCard
                                     toolName={toolName}
@@ -144,10 +144,17 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                                     fileContentAfter={step.toolUse.fileContentAfter}
                                     startLine={step.toolUse.startLine}
                                     startLines={step.toolUse.startLines}
+                                    variant="embedded"
+                                    label="Input"
                                 />
                             )}
 
-                            {/* Tool Result Card */}
+                            {/* Divider if both exist */}
+                            {step.toolUse && step.toolResult && (
+                                <div className="h-px bg-white/5 w-full" />
+                            )}
+
+                            {/* Tool Result Section */}
                             {step.toolResult && step.toolResult.content && (
                                 <ToolResultCard
                                     content={step.toolResult.content}
@@ -156,9 +163,11 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                                     duration={step.toolResult.duration}
                                     tokens={step.toolResult.tokens}
                                     defaultCollapsed={false}
+                                    variant="embedded"
+                                    label="Output"
                                 />
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
             )}

@@ -28,6 +28,8 @@ export interface ToolResultCardProps {
     duration?: number;
     tokens?: number;
     defaultCollapsed?: boolean;
+    variant?: "card" | "embedded";
+    label?: string;
 }
 
 /** Format tokens for display - uses formatTokensCompact utility */
@@ -159,6 +161,8 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
         duration,
         tokens,
         defaultCollapsed = true,
+        variant = "card",
+        label,
     }) => {
         const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
         const [isExpanded, setIsExpanded] = useState(false);
@@ -205,6 +209,94 @@ export const ToolResultCard: React.FC<ToolResultCardProps> = memo(
         }, [postMessage, renderSource, showPreview, toolName]);
 
         const displayContent = isExpanded ? renderSource : truncated;
+
+        if (variant === "embedded") {
+            return (
+                <div className="w-full">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                            {label && (
+                                <span className="text-[10px] uppercase tracking-wider text-white/30 font-semibold select-none">
+                                    {label}
+                                </span>
+                            )}
+                            {isError && (
+                                <span className="text-xs font-semibold text-red-400 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    Error
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                            {showPreview && (
+                                <button
+                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-[10px]"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePreview();
+                                    }}
+                                    title="Open markdown preview"
+                                >
+                                    <Eye className="w-3 h-3" />
+                                    <span>Preview</span>
+                                </button>
+                            )}
+                            <button
+                                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors text-[10px]"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCopy();
+                                }}
+                                title="Copy to clipboard"
+                            >
+                                {copyState === "copied" ? (
+                                    <>
+                                        <Check className="w-3 h-3 text-green-400" />
+                                        <span className="text-green-400">Copied</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-3 h-3" />
+                                        <span>Copy</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-black/20 rounded border border-white/5 p-3">
+                        <div
+                            className={`text-sm leading-relaxed message-content whitespace-pre-wrap break-words ${isError ? "text-red-200" : "text-white/80"}`}
+                        >
+                            <ResultContent content={displayContent} />
+                        </div>
+
+                        {isTruncated && (
+                            <button
+                                className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-orange-400 hover:text-orange-300 hover:underline pt-2 border-t border-white/5 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleExpanded();
+                                }}
+                            >
+                                {isExpanded ? (
+                                    <>
+                                        <ChevronUp className="w-3 h-3" />
+                                        Show less
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="w-3 h-3" />
+                                        Show {hiddenCount} more lines
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
 
         return (
             <div

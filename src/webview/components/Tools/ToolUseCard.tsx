@@ -27,6 +27,8 @@ export interface ToolUseCardProps {
     fileContentAfter?: string;
     startLine?: number;
     startLines?: number[];
+    label?: string;
+    variant?: "card" | "embedded";
 }
 
 const formatFilePath = (filePath: string): string => {
@@ -75,6 +77,8 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
         fileContentAfter,
         startLine,
         startLines,
+        variant = "card",
+        label,
     }) => {
         const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
         const [isExpanded, setIsExpanded] = useState(false);
@@ -240,6 +244,134 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
         const toolOrigin = getToolOriginInfo(toolName, input);
         const originLabel = toolOrigin.origin !== "core" ? toolOrigin.label : undefined;
         const originDetail = toolOrigin.detail;
+
+        // If variant is 'embedded', we render content directly without collapsible header
+        if (variant === "embedded") {
+            return (
+                <div className="w-full">
+                    {/* Header Row: Label + Actions */}
+                    {(label || (diffData && diffData.filePath)) && (
+                        <div className="flex items-center justify-between mb-2">
+                            {label && (
+                                <span className="text-[10px] uppercase tracking-wider text-white/30 font-semibold select-none">
+                                    {label}
+                                </span>
+                            )}
+
+                            {diffData && diffData.filePath && (
+                                <button
+                                    className="text-xs px-2 py-0.5 rounded border border-white/10 text-orange-400 hover:bg-white/5 flex items-center gap-1 transition-colors"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleOpenDiff();
+                                    }}
+                                    title="Open diff"
+                                >
+                                    <FileDiff className="w-3 h-3" />
+                                    Diff
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {hasContent && (
+                        <div className="space-y-1 mb-3 text-xs">
+                            {inputEntries.map(([key, value]) => (
+                                <div key={key} className="flex gap-2 p-1 rounded hover:bg-white/5">
+                                    <span className="text-white/40 font-mono shrink-0 select-none">
+                                        {key}:
+                                    </span>
+                                    <div className="flex-1 break-all">
+                                        {renderInputValue(key, value)}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {diffSections.length > 0 && (
+                        <div className="rounded-lg border border-white/10 overflow-hidden bg-black/40 shadow-inner mt-2">
+                            <div className="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
+                                <div className="text-[10px] text-white/50 uppercase tracking-widest font-semibold flex items-center gap-2">
+                                    <FileDiff className="w-3 h-3" />
+                                    Diff Preview
+                                </div>
+                                {filePath && (
+                                    <span
+                                        className="text-[10px] text-orange-400 hover:underline cursor-pointer font-mono"
+                                        onClick={() => handleFileClick(filePath)}
+                                        title={filePath}
+                                    >
+                                        {formatFilePath(filePath)}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="divide-y divide-white/5">
+                                {diffSections.map((section) => {
+                                    return (
+                                        <div key={section.id}>
+                                            {section.title && (
+                                                <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-white/30 bg-white/5">
+                                                    {section.title}
+                                                </div>
+                                            )}
+
+                                            <div className="font-mono text-xs overflow-x-auto">
+                                                <div className="grid grid-cols-[auto_auto_auto_1fr] min-w-full">
+                                                    {section.diff.lines.map((line, index) => {
+                                                        const isInsert = line.type === "insert";
+                                                        const isDelete = line.type === "delete";
+                                                        const lineClass = isInsert
+                                                            ? "bg-green-500/10 text-green-200"
+                                                            : isDelete
+                                                              ? "bg-red-500/10 text-red-200"
+                                                              : "text-white/50";
+                                                        const prefix = isInsert
+                                                            ? "+"
+                                                            : isDelete
+                                                              ? "-"
+                                                              : " ";
+
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                className={`contents hover:bg-white/5 group`}
+                                                            >
+                                                                <div
+                                                                    className={`px-2 py-0.5 text-right select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                                                >
+                                                                    {line.oldLineNumber || ""}
+                                                                </div>
+                                                                <div
+                                                                    className={`px-2 py-0.5 text-right select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                                                >
+                                                                    {line.newLineNumber || ""}
+                                                                </div>
+                                                                <div
+                                                                    className={`px-2 py-0.5 text-center select-none opacity-50 border-r border-white/5 ${lineClass}`}
+                                                                >
+                                                                    {prefix}
+                                                                </div>
+                                                                <div
+                                                                    className={`px-2 py-0.5 whitespace-pre-wrap break-all ${lineClass}`}
+                                                                >
+                                                                    {line.content}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
         return (
             <div className="glass-panel rounded-lg overflow-hidden border border-white/5 bg-black/10">
