@@ -19,9 +19,9 @@ describe("Header", () => {
     };
 
     // Helper to mock store with correct selector structure
-    const mockUsageStore = (data: any) => {
+    const mockUsageStore = (data: any, isRefreshing = false) => {
         vi.mocked(useUsageStore).mockImplementation((selector) => {
-            const state = { data };
+            const state = { data, isRefreshing };
             return selector ? selector(state) : state;
         });
     };

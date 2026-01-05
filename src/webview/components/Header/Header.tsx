@@ -1,6 +1,6 @@
 import React from "react";
 import type { SessionInfo } from "../App";
-import { MessageSquarePlus, History, X } from "lucide-react";
+import { MessageSquarePlus, History, X, Loader2 } from "lucide-react";
 import { useUsageStore } from "../../stores/usageStore";
 import logoImage from "../../assets/logo.png";
 
@@ -43,6 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
 }): React.JSX.Element => {
     const { APP_NAME, ICON_SIZE, TOOLTIPS } = HEADER_CONSTANTS;
     const usageData = useUsageStore((state) => state.data);
+    const isRefreshing = useUsageStore((state) => state.isRefreshing);
 
     // Calculate usage percentage
     const usagePercentage = usageData
@@ -50,6 +51,9 @@ export const Header: React.FC<HeaderProps> = ({
               (usageData.currentSession.usageCost / usageData.currentSession.costLimit) * 100,
           )
         : 0;
+
+    // Show loading state if refreshing or if no data has been loaded yet
+    const isLoading = isRefreshing || (!usageData && isRefreshing !== false);
 
     return (
         <header className="relative z-50 flex flex-col glass border-b border-white/5 backdrop-blur-xl">
@@ -75,8 +79,18 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                     </div>
 
+                    {/* Loading spinner - shown while fetching usage data */}
+                    {isLoading && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+                            <span className="text-xs text-blue-400 font-medium">
+                                Loading usage...
+                            </span>
+                        </div>
+                    )}
+
                     {/* Usage Progress Bar - clickable with hover effects */}
-                    {usageData && (
+                    {!isLoading && usageData && (
                         <div
                             className="flex flex-col gap-0.5 cursor-pointer group"
                             onClick={onOpenUsage}
