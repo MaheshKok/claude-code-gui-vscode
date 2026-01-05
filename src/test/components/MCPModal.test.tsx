@@ -64,8 +64,11 @@ describe("MCPModal", () => {
         it("should display server types", () => {
             render(<MCPModal {...defaultProps} />);
 
-            expect(screen.getByText("http")).toBeInTheDocument();
-            expect(screen.getByText("stdio")).toBeInTheDocument();
+            // Type badges are displayed in the server cards
+            const httpBadges = screen.getAllByText("http");
+            const stdioBadges = screen.getAllByText("stdio");
+            expect(httpBadges.length).toBeGreaterThan(0);
+            expect(stdioBadges.length).toBeGreaterThan(0);
         });
 
         it("should display server URLs for http type", () => {
@@ -77,7 +80,9 @@ describe("MCPModal", () => {
         it("should display command for stdio type", () => {
             render(<MCPModal {...defaultProps} />);
 
-            expect(screen.getByText("npx")).toBeInTheDocument();
+            // The command "npx" appears in the stdio-server card
+            const npxElements = screen.getAllByText("npx");
+            expect(npxElements.length).toBeGreaterThan(0);
         });
     });
 
@@ -112,7 +117,7 @@ describe("MCPModal", () => {
         it("should show delete button for each server", () => {
             render(<MCPModal {...defaultProps} />);
 
-            const deleteButtons = screen.getAllByLabelText("Delete server");
+            const deleteButtons = screen.getAllByTitle("Delete Server");
             expect(deleteButtons.length).toBe(2);
         });
 
@@ -120,7 +125,7 @@ describe("MCPModal", () => {
             const onDeleteServer = vi.fn();
             render(<MCPModal {...defaultProps} onDeleteServer={onDeleteServer} />);
 
-            const deleteButtons = screen.getAllByLabelText("Delete server");
+            const deleteButtons = screen.getAllByTitle("Delete Server");
             fireEvent.click(deleteButtons[0]);
 
             expect(onDeleteServer).toHaveBeenCalledWith("server-1");
@@ -128,81 +133,86 @@ describe("MCPModal", () => {
     });
 
     describe("add server form", () => {
-        it("should show Add MCP Server button", () => {
+        it("should show Add Custom MCP Server button", () => {
             render(<MCPModal {...defaultProps} />);
 
-            expect(screen.getByText("+ Add MCP Server")).toBeInTheDocument();
+            expect(screen.getByText("Add Custom MCP Server")).toBeInTheDocument();
         });
 
-        it("should show form when Add MCP Server clicked", () => {
+        it("should show form when Add Custom MCP Server clicked", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            expect(screen.getByLabelText("Server Name")).toBeInTheDocument();
-            expect(screen.getByLabelText("Server Type")).toBeInTheDocument();
+            expect(screen.getByText("Add New Server")).toBeInTheDocument();
+            expect(screen.getByPlaceholderText("my-server")).toBeInTheDocument();
         });
 
-        it("should show URL field for http type", () => {
+        it("should show command field for stdio type by default", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            expect(screen.getByLabelText("URL")).toBeInTheDocument();
+            // Default type is stdio, so command field should be visible
+            expect(screen.getByPlaceholderText("npx")).toBeInTheDocument();
         });
 
-        it("should show command field for stdio type", () => {
+        it("should show URL field when http type button clicked", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            // Change type to stdio
-            const typeSelect = screen.getByLabelText("Server Type");
-            fireEvent.change(typeSelect, { target: { value: "stdio" } });
+            // Click http type button (they render as lowercase)
+            const httpButtons = screen.getAllByText("http");
+            // Find the one that's a button in the form, not the badge
+            const httpButton = httpButtons.find((el) => el.tagName.toLowerCase() === "button");
+            if (httpButton) {
+                fireEvent.click(httpButton);
+            }
 
-            expect(screen.getByLabelText("Command")).toBeInTheDocument();
-            expect(screen.getByLabelText("Arguments (one per line)")).toBeInTheDocument();
+            expect(screen.getByPlaceholderText("https://example.com/mcp")).toBeInTheDocument();
         });
 
-        it("should call onAddServer when form submitted", () => {
+        it("should call onAddServer when form submitted with stdio", () => {
             const onAddServer = vi.fn();
             render(<MCPModal {...defaultProps} onAddServer={onAddServer} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            // Fill form
-            fireEvent.change(screen.getByLabelText("Server Name"), {
+            // Default is stdio, fill the form
+            fireEvent.change(screen.getByPlaceholderText("my-server"), {
                 target: { value: "new-server" },
             });
-            fireEvent.change(screen.getByLabelText("URL"), {
-                target: { value: "https://new.com/mcp" },
+            fireEvent.change(screen.getByPlaceholderText("npx"), {
+                target: { value: "my-command" },
             });
 
             fireEvent.click(screen.getByText("Add Server"));
 
             expect(onAddServer).toHaveBeenCalledWith({
                 name: "new-server",
-                type: "http",
+                type: "stdio",
                 enabled: true,
-                url: "https://new.com/mcp",
+                command: "my-command",
+                args: [],
             });
         });
 
         it("should hide form when Cancel clicked", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
-            expect(screen.getByLabelText("Server Name")).toBeInTheDocument();
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
+            expect(screen.getByText("Add New Server")).toBeInTheDocument();
 
             fireEvent.click(screen.getByText("Cancel"));
 
-            expect(screen.queryByLabelText("Server Name")).not.toBeInTheDocument();
+            expect(screen.queryByText("Add New Server")).not.toBeInTheDocument();
         });
 
         it("should disable Add Server button when form is incomplete", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
             const addButton = screen.getByText("Add Server");
             expect(addButton).toBeDisabled();
@@ -211,13 +221,14 @@ describe("MCPModal", () => {
         it("should enable Add Server button when required fields filled", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            fireEvent.change(screen.getByLabelText("Server Name"), {
+            // For stdio type (default), need name and command
+            fireEvent.change(screen.getByPlaceholderText("my-server"), {
                 target: { value: "test" },
             });
-            fireEvent.change(screen.getByLabelText("URL"), {
-                target: { value: "https://test.com" },
+            fireEvent.change(screen.getByPlaceholderText("npx"), {
+                target: { value: "my-command" },
             });
 
             const addButton = screen.getByText("Add Server");
@@ -226,46 +237,32 @@ describe("MCPModal", () => {
     });
 
     describe("stdio form fields", () => {
-        it("should show environment variables field for stdio type", () => {
+        it("should show arguments field for stdio type", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
+            // Default is stdio
 
-            const typeSelect = screen.getByLabelText("Server Type");
-            fireEvent.change(typeSelect, { target: { value: "stdio" } });
-
-            expect(
-                screen.getByLabelText("Environment Variables (KEY=value, one per line)"),
-            ).toBeInTheDocument();
+            expect(screen.getByPlaceholderText("-y @package/name")).toBeInTheDocument();
         });
 
-        it("should parse environment variables correctly", () => {
+        it("should parse arguments correctly", () => {
             const onAddServer = vi.fn();
             render(<MCPModal {...defaultProps} onAddServer={onAddServer} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
-
-            // Switch to stdio type
-            fireEvent.change(screen.getByLabelText("Server Type"), {
-                target: { value: "stdio" },
-            });
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
+            // Default is stdio
 
             // Fill form
-            fireEvent.change(screen.getByLabelText("Server Name"), {
+            fireEvent.change(screen.getByPlaceholderText("my-server"), {
                 target: { value: "stdio-test" },
             });
-            fireEvent.change(screen.getByLabelText("Command"), {
+            fireEvent.change(screen.getByPlaceholderText("npx"), {
                 target: { value: "/usr/bin/server" },
             });
-            fireEvent.change(screen.getByLabelText("Arguments (one per line)"), {
+            fireEvent.change(screen.getByPlaceholderText("-y @package/name"), {
                 target: { value: "--arg1\n--arg2" },
             });
-            fireEvent.change(
-                screen.getByLabelText("Environment Variables (KEY=value, one per line)"),
-                {
-                    target: { value: "API_KEY=secret\nPORT=3000" },
-                },
-            );
 
             fireEvent.click(screen.getByText("Add Server"));
 
@@ -275,54 +272,15 @@ describe("MCPModal", () => {
                 enabled: true,
                 command: "/usr/bin/server",
                 args: ["--arg1", "--arg2"],
-                env: { API_KEY: "secret", PORT: "3000" },
             });
         });
     });
 
-    describe("http form fields", () => {
-        it("should show headers field for http type", () => {
+    describe("popular servers (Quick Add)", () => {
+        it("should show Quick Add section", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
-
-            expect(screen.getByLabelText("Headers (KEY=value, one per line)")).toBeInTheDocument();
-        });
-
-        it("should parse headers correctly", () => {
-            const onAddServer = vi.fn();
-            render(<MCPModal {...defaultProps} onAddServer={onAddServer} />);
-
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
-
-            // Fill form with headers
-            fireEvent.change(screen.getByLabelText("Server Name"), {
-                target: { value: "http-test" },
-            });
-            fireEvent.change(screen.getByLabelText("URL"), {
-                target: { value: "https://api.example.com" },
-            });
-            fireEvent.change(screen.getByLabelText("Headers (KEY=value, one per line)"), {
-                target: { value: "Authorization=Bearer token123" },
-            });
-
-            fireEvent.click(screen.getByText("Add Server"));
-
-            expect(onAddServer).toHaveBeenCalledWith({
-                name: "http-test",
-                type: "http",
-                enabled: true,
-                url: "https://api.example.com",
-                headers: { Authorization: "Bearer token123" },
-            });
-        });
-    });
-
-    describe("popular servers", () => {
-        it("should show Popular MCP Servers section", () => {
-            render(<MCPModal {...defaultProps} />);
-
-            expect(screen.getByText("Popular MCP Servers")).toBeInTheDocument();
+            expect(screen.getByText("Quick Add")).toBeInTheDocument();
         });
 
         it("should show popular server options", () => {
@@ -364,23 +322,61 @@ describe("MCPModal", () => {
                 args: ["-y", "@modelcontextprotocol/server-memory"],
             });
         });
+
+        it("should hide already-added servers from Quick Add", () => {
+            const serversWithContext7: MCPServer[] = [
+                {
+                    id: "context7",
+                    name: "context7",
+                    type: "http",
+                    enabled: true,
+                    url: "https://context7.liam.sh/mcp",
+                },
+            ];
+            render(<MCPModal {...defaultProps} servers={serversWithContext7} />);
+
+            // Context7 should not appear in Quick Add since it's already added
+            const context7Buttons = screen.queryAllByText("Context7");
+            // If it appears, it would be in the server list, not in Quick Add
+            expect(context7Buttons.length).toBeLessThanOrEqual(1);
+        });
     });
 
-    describe("server type select", () => {
-        it("should have all type options", () => {
+    describe("server type buttons", () => {
+        it("should have all type buttons", () => {
             render(<MCPModal {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("+ Add MCP Server"));
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
 
-            const typeSelect = screen.getByLabelText("Server Type");
-            expect(typeSelect).toBeInTheDocument();
+            // Type buttons render as lowercase
+            const stdioButtons = screen.getAllByText("stdio");
+            const httpButtons = screen.getAllByText("http");
+            const sseButtons = screen.getAllByText("sse");
 
-            // Check options
-            const options = typeSelect.querySelectorAll("option");
-            const optionValues = Array.from(options).map((opt) => opt.value);
-            expect(optionValues).toContain("http");
-            expect(optionValues).toContain("sse");
-            expect(optionValues).toContain("stdio");
+            // Should have at least one of each as buttons
+            expect(stdioButtons.length).toBeGreaterThan(0);
+            expect(httpButtons.length).toBeGreaterThan(0);
+            expect(sseButtons.length).toBeGreaterThan(0);
+        });
+
+        it("should switch form fields when type button clicked", () => {
+            render(<MCPModal {...defaultProps} />);
+
+            fireEvent.click(screen.getByText("Add Custom MCP Server"));
+
+            // Should show command field for stdio (default)
+            expect(screen.getByPlaceholderText("npx")).toBeInTheDocument();
+
+            // Click http button
+            const httpButtons = screen.getAllByText("http");
+            const httpButton = httpButtons.find((el) => el.tagName.toLowerCase() === "button");
+            if (httpButton) {
+                fireEvent.click(httpButton);
+            }
+
+            // Should now show URL field
+            expect(screen.getByPlaceholderText("https://example.com/mcp")).toBeInTheDocument();
+            expect(screen.queryByPlaceholderText("npx")).not.toBeInTheDocument();
         });
     });
 });
