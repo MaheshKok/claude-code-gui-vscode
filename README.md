@@ -42,9 +42,75 @@
 
 ## ✨ Why Claude Code GUI?
 
+**You deserve to see what's happening.** When you can watch Claude work in real-time, you're not just trusting — you're _understanding_. This extension gives you a front-row seat to AI-powered coding.
+
 Transform your VS Code into a powerful AI coding companion. Claude Code GUI brings the intelligence of Anthropic's Claude directly into your editor with a **beautiful, modern interface** designed for developers who demand excellence.
 
 > 💡 **Built for productivity** — Real-time streaming, keyboard shortcuts, and seamless VS Code integration make coding with AI feel natural.
+
+---
+
+## 🎯 Why Should You Install This?
+
+<table>
+<tr>
+<td>
+
+### 🗺️ **Finally See the Journey, Not Just the Destination**
+
+You know what Claude concluded, but do you know _how_ it got there? Stop flying blind. **Watch every step** Claude takes, understand its reasoning, and learn how it solves problems. You'll never look at AI the same way again.
+
+</td>
+</tr>
+
+<tr> 
+<td>
+
+### 📋 **Your Live Progress Dashboard**
+
+No more wondering "what is Claude doing right now?" Watch your task list update **in real-time** as Claude works. See checkmarks appear, track progress instantly, and stay in sync with your AI pair programmer.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 📊 **Your Usage Always Visible**
+
+Why should you dig through commands to find your token usage? You shouldn't. **See your costs and consumption right in the header** — always visible, always current. Plan smarter, budget better, stay in control.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 🔌 **Pre-Configured MCPs **
+
+Skip the setup headaches. **Context7, Sequential Thinking, Puppeteer, Memory** your essential MCP servers come pre-configured and ready to use. Just start coding.
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🎛️ **Toggle Modes in One Click**
+
+Want to enable YOLO mode? One click. Switch thinking intensity? One click. Toggle Plan mode? **One. Click.** Your workflow, your way with zero friction.
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔍 **Know Exactly Where Your Tokens Go**
+
+Ever wondered which tool is eating all your tokens? Now you'll know. **See per-tool token consumption** and optimize your prompts with real data, not guesswork.
+
+</td>
+</tr>
+</table>
 
 ---
 
