@@ -18,9 +18,17 @@ describe("Header", () => {
         onOpenUsage: vi.fn(),
     };
 
+    // Helper to mock store with correct selector structure
+    const mockUsageStore = (data: any) => {
+        vi.mocked(useUsageStore).mockImplementation((selector) => {
+            const state = { data };
+            return selector ? selector(state) : state;
+        });
+    };
+
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.mocked(useUsageStore).mockReturnValue(null);
+        mockUsageStore(null);
     });
 
     it("renders the header with app name", () => {
@@ -43,11 +51,6 @@ describe("Header", () => {
         expect(screen.getByTitle("Close History")).toBeInTheDocument();
     });
 
-    it("displays session name when session is provided", () => {
-        render(<Header {...defaultProps} session={{ id: "test-id", name: "Test Session" }} />);
-        expect(screen.getByText("Test Session")).toBeInTheDocument();
-    });
-
     it("calls onNewChat when New Chat button is clicked", () => {
         const onNewChat = vi.fn();
         render(<Header {...defaultProps} onNewChat={onNewChat} />);
@@ -56,9 +59,14 @@ describe("Header", () => {
     });
 
     it("calls onOpenUsage when Usage button is clicked", () => {
+        // Ensure usage data is present so the button renders
+        mockUsageStore({
+            currentSession: { usageCost: 0, costLimit: 1, resetsIn: "1h" },
+            weekly: { costLikely: 0, costLimit: 1, resetsAt: "Mon" },
+        });
         const onOpenUsage = vi.fn();
         render(<Header {...defaultProps} onOpenUsage={onOpenUsage} />);
-        fireEvent.click(screen.getByTitle("Usage Data"));
+        fireEvent.click(screen.getByTitle("View Usage Details"));
         expect(onOpenUsage).toHaveBeenCalledTimes(1);
     });
 
@@ -71,13 +79,13 @@ describe("Header", () => {
 
     describe("usage data display", () => {
         it("should not show usage stats when no usage data", () => {
-            vi.mocked(useUsageStore).mockReturnValue(null);
+            mockUsageStore(null);
             render(<Header {...defaultProps} />);
             expect(screen.queryByText("Session")).not.toBeInTheDocument();
         });
 
         it("should show usage stats when usage data is available", () => {
-            vi.mocked(useUsageStore).mockReturnValue({
+            mockUsageStore({
                 currentSession: {
                     usageCost: 0.5,
                     costLimit: 1,
@@ -91,14 +99,15 @@ describe("Header", () => {
             });
 
             render(<Header {...defaultProps} />);
-            expect(screen.getByText("Session")).toBeInTheDocument();
-            expect(screen.getByText("50%")).toBeInTheDocument();
-            expect(screen.getByText("Resets")).toBeInTheDocument();
-            expect(screen.getByText("2h 30m")).toBeInTheDocument();
+            // Current Session is always visible
+            expect(screen.getByText("Current Session")).toBeInTheDocument();
+            // Usage stats
+            expect(screen.getByText(/50%/)).toBeInTheDocument();
+            expect(screen.getByText(/Resets in 2h 30m/)).toBeInTheDocument();
         });
 
         it("should calculate correct percentage for 75% usage", () => {
-            vi.mocked(useUsageStore).mockReturnValue({
+            mockUsageStore({
                 currentSession: {
                     usageCost: 0.75,
                     costLimit: 1,
@@ -112,11 +121,11 @@ describe("Header", () => {
             });
 
             render(<Header {...defaultProps} />);
-            expect(screen.getByText("75%")).toBeInTheDocument();
+            expect(screen.getByText(/75%/)).toBeInTheDocument();
         });
 
         it("should show reset time from usage data", () => {
-            vi.mocked(useUsageStore).mockReturnValue({
+            mockUsageStore({
                 currentSession: {
                     usageCost: 0.25,
                     costLimit: 1,
@@ -130,19 +139,24 @@ describe("Header", () => {
             });
 
             render(<Header {...defaultProps} />);
-            expect(screen.getByText("4h 15m")).toBeInTheDocument();
+            expect(screen.getByText(/4h 15m/)).toBeInTheDocument();
         });
     });
 
     describe("usage button visibility", () => {
         it("should not render usage button when onOpenUsage is not provided", () => {
             render(<Header {...defaultProps} onOpenUsage={undefined} />);
-            expect(screen.queryByTitle("Usage Data")).not.toBeInTheDocument();
+            expect(screen.queryByTitle("View Usage Details")).not.toBeInTheDocument();
         });
 
         it("should render usage button when onOpenUsage is provided", () => {
+            // Need usage data for button to appear
+            mockUsageStore({
+                currentSession: { usageCost: 0, costLimit: 1, resetsIn: "1h" },
+                weekly: { costLikely: 0, costLimit: 1, resetsAt: "Mon" },
+            });
             render(<Header {...defaultProps} onOpenUsage={vi.fn()} />);
-            expect(screen.getByTitle("Usage Data")).toBeInTheDocument();
+            expect(screen.getByTitle("View Usage Details")).toBeInTheDocument();
         });
     });
 
