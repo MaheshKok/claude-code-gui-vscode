@@ -7,14 +7,24 @@
  */
 
 import React from "react";
-import { Search, Bug, Type, RefreshCw } from "lucide-react";
+import { Search, Bug, Type, RefreshCw, Zap, Shield } from "lucide-react";
 import { QuickAction } from "./QuickAction";
 import logoImage from "../../../assets/logo.png";
+
+interface EmptyStateProps {
+    onAction?: (prompt: string) => void;
+}
 
 /**
  * Empty state component shown when no messages exist
  */
-export const EmptyState: React.FC = () => {
+export const EmptyState: React.FC<EmptyStateProps> = ({ onAction }) => {
+    const handleAction = (prompt: string) => {
+        if (onAction) {
+            onAction(prompt);
+        }
+    };
+
     return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center animate-fade-in relative z-10">
             <div className="mb-8 relative group cursor-default">
@@ -33,10 +43,44 @@ export const EmptyState: React.FC = () => {
                 ask or use a template below.
             </p>
             <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
-                <QuickAction label="Explain Code" icon={<Search className="w-4 h-4" />} />
-                <QuickAction label="Fix Bugs" icon={<Bug className="w-4 h-4" />} />
-                <QuickAction label="Write Tests" icon={<Type className="w-4 h-4" />} />
-                <QuickAction label="Refactor" icon={<RefreshCw className="w-4 h-4" />} />
+                <QuickAction
+                    label="Explain Code"
+                    icon={<Search className="w-4 h-4" />}
+                    onClick={() => handleAction("Explain how this code works in detail")}
+                />
+                <QuickAction
+                    label="Fix Bugs"
+                    icon={<Bug className="w-4 h-4" />}
+                    onClick={() => handleAction("Help me fix this bug in my code")}
+                />
+                <QuickAction
+                    label="Write Tests"
+                    icon={<Type className="w-4 h-4" />}
+                    onClick={() => handleAction("Generate comprehensive tests for this code")}
+                />
+                <QuickAction
+                    label="Refactor"
+                    icon={<RefreshCw className="w-4 h-4" />}
+                    onClick={() =>
+                        handleAction(
+                            "Refactor this code to improve readability and maintainability",
+                        )
+                    }
+                />
+                <QuickAction
+                    label="Performance"
+                    icon={<Zap className="w-4 h-4" />}
+                    onClick={() =>
+                        handleAction(
+                            "Analyze this code for performance issues and suggest optimizations",
+                        )
+                    }
+                />
+                <QuickAction
+                    label="Security"
+                    icon={<Shield className="w-4 h-4" />}
+                    onClick={() => handleAction("Review this code for security vulnerabilities")}
+                />
             </div>
         </div>
     );

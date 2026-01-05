@@ -54,6 +54,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     messages={messages}
                     isProcessing={isProcessing}
                     showEmptyState={showEmptyState}
+                    onAction={onSendMessage}
                 />
             </div>
 

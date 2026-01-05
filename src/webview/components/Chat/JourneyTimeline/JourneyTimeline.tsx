@@ -148,6 +148,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     messages,
     isProcessing,
     showEmptyState = true,
+    onAction,
 }) => {
     const [collapsedPlans, setCollapsedPlans] = useState<Record<string, boolean>>({});
     const [collapsedSteps, setCollapsedSteps] = useState<Record<string, boolean>>({});
@@ -196,7 +197,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     );
 
     if (items.length === 0 && showEmptyState) {
-        return <EmptyState />;
+        return <EmptyState onAction={onAction} />;
     }
 
     return (

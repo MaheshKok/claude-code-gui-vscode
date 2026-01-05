@@ -50,6 +50,7 @@ export interface JourneyTimelineProps {
     messages: Message[];
     isProcessing: boolean;
     showEmptyState?: boolean;
+    onAction?: (prompt: string) => void;
 }
 
 /**
@@ -70,9 +71,6 @@ export interface StatusIconProps {
     className?: string;
 }
 
-/**
- * Props for the CollapsibleReasoning component
- */
 export interface CollapsibleReasoningProps {
     content: string;
 }
@@ -83,6 +81,7 @@ export interface CollapsibleReasoningProps {
 export interface QuickActionProps {
     label: string;
     icon: React.ReactNode;
+    onClick?: () => void;
 }
 
 /**
