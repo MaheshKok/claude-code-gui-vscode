@@ -336,6 +336,7 @@ export {
     // Main functions
     buildChatMessages,
     findLatestTodos,
+    findTodosInLastTurn,
     mapConversationList,
 } from "./conversationRestore";
 

@@ -4,6 +4,7 @@ import {
     toStringContent,
     buildChatMessages,
     findLatestTodos,
+    findTodosInLastTurn,
     mapConversationList,
     type StoredConversationMessage,
 } from "../../webview/utils/conversationRestore";
@@ -588,6 +589,186 @@ describe("conversationRestore utils", () => {
                 },
             ];
             const todos = findLatestTodos(messages);
+            expect(todos.length).toBe(1);
+            expect(todos[0].content).toBe("Task");
+        });
+    });
+
+    describe("findTodosInLastTurn", () => {
+        it("should return empty array when no messages", () => {
+            const messages: ChatMessage[] = [];
+            expect(findTodosInLastTurn(messages)).toEqual([]);
+        });
+
+        it("should return empty array when no user messages", () => {
+            const messages: ChatMessage[] = [
+                {
+                    id: "1",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "Task 1", status: "pending" }] },
+                    timestamp: Date.now(),
+                },
+            ];
+            expect(findTodosInLastTurn(messages)).toEqual([]);
+        });
+
+        it("should find todos in the last user turn", () => {
+            const messages: ChatMessage[] = [
+                { id: "1", type: MessageType.User, content: "Create tasks", timestamp: Date.now() },
+                {
+                    id: "2",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: {
+                        todos: [
+                            { content: "Task 1", status: "pending" },
+                            { content: "Task 2", status: "completed" },
+                        ],
+                    },
+                    timestamp: Date.now(),
+                },
+            ];
+            const todos = findTodosInLastTurn(messages);
+            expect(todos.length).toBe(2);
+            expect(todos[0].content).toBe("Task 1");
+        });
+
+        it("should NOT find todos from previous user turns", () => {
+            const messages: ChatMessage[] = [
+                // First user turn - has todos
+                {
+                    id: "1",
+                    type: MessageType.User,
+                    content: "Create tasks",
+                    timestamp: Date.now() - 2000,
+                },
+                {
+                    id: "2",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "Old Task", status: "pending" }] },
+                    timestamp: Date.now() - 1900,
+                },
+                {
+                    id: "3",
+                    type: MessageType.Assistant,
+                    content: "Created tasks",
+                    timestamp: Date.now() - 1800,
+                    isStreaming: false,
+                },
+                // Second user turn - no todos
+                {
+                    id: "4",
+                    type: MessageType.User,
+                    content: "What time is it?",
+                    timestamp: Date.now() - 1000,
+                },
+                {
+                    id: "5",
+                    type: MessageType.Assistant,
+                    content: "It is 10:00 AM",
+                    timestamp: Date.now() - 900,
+                    isStreaming: false,
+                },
+            ];
+            const todos = findTodosInLastTurn(messages);
+            // Should return empty because the last user turn (message 4) has no TodoWrite
+            expect(todos).toEqual([]);
+        });
+
+        it("should find todos when they are in the most recent user turn", () => {
+            const messages: ChatMessage[] = [
+                // First user turn - no todos
+                { id: "1", type: MessageType.User, content: "Hello", timestamp: Date.now() - 2000 },
+                {
+                    id: "2",
+                    type: MessageType.Assistant,
+                    content: "Hi there!",
+                    timestamp: Date.now() - 1900,
+                    isStreaming: false,
+                },
+                // Second user turn - has todos
+                {
+                    id: "3",
+                    type: MessageType.User,
+                    content: "Create tasks",
+                    timestamp: Date.now() - 1000,
+                },
+                {
+                    id: "4",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "New Task", status: "pending" }] },
+                    timestamp: Date.now() - 900,
+                },
+            ];
+            const todos = findTodosInLastTurn(messages);
+            expect(todos.length).toBe(1);
+            expect(todos[0].content).toBe("New Task");
+        });
+
+        it("should return the latest TodoWrite in the current turn", () => {
+            const messages: ChatMessage[] = [
+                {
+                    id: "1",
+                    type: MessageType.User,
+                    content: "Create tasks",
+                    timestamp: Date.now() - 1000,
+                },
+                {
+                    id: "2",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "First", status: "pending" }] },
+                    timestamp: Date.now() - 900,
+                },
+                {
+                    id: "3",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-2",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "Second", status: "pending" }] },
+                    timestamp: Date.now() - 800,
+                },
+            ];
+            const todos = findTodosInLastTurn(messages);
+            expect(todos.length).toBe(1);
+            expect(todos[0].content).toBe("Second");
+        });
+
+        it("should skip empty todo lists and find non-empty ones", () => {
+            const messages: ChatMessage[] = [
+                {
+                    id: "1",
+                    type: MessageType.User,
+                    content: "Clear tasks",
+                    timestamp: Date.now() - 1000,
+                },
+                {
+                    id: "2",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-1",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [{ content: "Task", status: "pending" }] },
+                    timestamp: Date.now() - 900,
+                },
+                {
+                    id: "3",
+                    type: MessageType.ToolUse,
+                    toolUseId: "tool-2",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
+                    timestamp: Date.now() - 800,
+                },
+            ];
+            const todos = findTodosInLastTurn(messages);
+            // Should return the non-empty one since we skip empty todo lists
             expect(todos.length).toBe(1);
             expect(todos[0].content).toBe("Task");
         });

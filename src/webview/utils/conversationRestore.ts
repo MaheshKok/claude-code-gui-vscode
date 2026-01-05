@@ -450,6 +450,40 @@ export const findLatestTodos = (messages: ChatMessage[]): TodoItem[] => {
 };
 
 /**
+ * Find TodoWrite message only in the last user turn (from last user message to end).
+ * This matches the live behavior where todos are cleared if no TodoWrite is used
+ * in the current turn.
+ */
+export const findTodosInLastTurn = (messages: ChatMessage[]): TodoItem[] => {
+    // Find the index of the last user message
+    let lastUserMessageIndex = -1;
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+        if (messages[i].type === MessageType.User) {
+            lastUserMessageIndex = i;
+            break;
+        }
+    }
+
+    // If no user message found, return empty
+    if (lastUserMessageIndex === -1) {
+        return [];
+    }
+
+    // Only search for TodoWrite from the last user message to the end
+    for (let i = messages.length - 1; i >= lastUserMessageIndex; i -= 1) {
+        const message = messages[i];
+        if (message.type === MessageType.ToolUse && message.toolName === "TodoWrite") {
+            const todos = extractTodosFromInput(message.rawInput);
+            if (todos.length > 0) {
+                return todos;
+            }
+        }
+    }
+
+    return [];
+};
+
+/**
  * Map raw conversation list items to typed ConversationListItem objects
  */
 export const mapConversationList = (items: unknown[]): ConversationListItem[] =>

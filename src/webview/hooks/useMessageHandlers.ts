@@ -18,7 +18,7 @@ import type { ConversationListItem } from "../types/history";
 import {
     extractTodosFromInput,
     buildChatMessages,
-    findLatestTodos,
+    findTodosInLastTurn,
     mapConversationList,
 } from "../utils";
 import type { RestoreStatePayload } from "../utils";
@@ -432,7 +432,7 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                             ? lastMessage.id
                             : null;
                     setStreamingMessageId(state.isProcessing === false ? null : streamingId);
-                    const restoredTodos = findLatestTodos(restoredMessages);
+                    const restoredTodos = findTodosInLastTurn(restoredMessages);
                     if (restoredTodos.length > 0) {
                         setTodos(restoredTodos);
                     } else {
