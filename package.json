@@ -235,7 +235,7 @@
                 {
                     "id": "claude-code-gui",
                     "title": "Claude Code GUI",
-                    "icon": "assets/icon.png"
+                    "icon": "assets/icons/sidebar-icon.svg"
                 }
             ]
         },
