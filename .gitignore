@@ -83,3 +83,5 @@ verify-setup.sh
 # Test workspace for debugging (keeps conversations between debug sessions)
 test-workspace/*
 !test-workspace/.gitkeep
+
+.agent/
