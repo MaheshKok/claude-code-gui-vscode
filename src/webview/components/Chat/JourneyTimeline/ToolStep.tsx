@@ -7,7 +7,7 @@
  */
 
 import React from "react";
-import { Clock, ChevronRight, Zap } from "lucide-react";
+import { Clock, ChevronRight, Zap, CheckCircle2 } from "lucide-react";
 import { TodoDisplay, ToolUseCard, ToolResultCard } from "../../Tools";
 import { getToolIcon } from "../../Common";
 import {
@@ -44,6 +44,29 @@ export const ToolStep: React.FC<ToolStepProps> = ({
         ? false
         : (collapsedSteps[step.id] ?? (status === "executing" ? false : true));
 
+    // TodoWrite specific logic
+    const isTodoWrite = toolName === "TodoWrite";
+    const todos = isTodoWrite ? extractTodosFromInput(rawInput) : [];
+
+    // Define minimal interface to avoid any
+    interface TodoItem {
+        status: "completed" | "in_progress" | "pending";
+    }
+
+    const todoStats = isTodoWrite
+        ? {
+              total: todos.length,
+              completed: todos.filter((t: TodoItem) => t.status === "completed").length,
+              inProgress: todos.filter((t: TodoItem) => t.status === "in_progress").length,
+              pending: todos.filter((t: TodoItem) => t.status === "pending").length,
+          }
+        : null;
+
+    const progressPercent =
+        todoStats && todoStats.total > 0
+            ? Math.round((todoStats.completed / todoStats.total) * 100)
+            : 0;
+
     return (
         <div
             key={step.id}
@@ -64,13 +87,44 @@ export const ToolStep: React.FC<ToolStepProps> = ({
 
                 <span className="font-medium text-sm text-white/90">{toolName}</span>
 
-                {toolSummary && (
-                    <span
-                        className="text-xs text-white/50 truncate max-w-[180px] font-mono opacity-60 group-hover:opacity-100 transition-opacity"
-                        title={toolSummary}
-                    >
-                        {toolSummary}
-                    </span>
+                {/* TodoWrite Stats Header */}
+                {isTodoWrite && todoStats ? (
+                    <div className="flex items-center gap-3 text-[10px] text-white/40 uppercase tracking-wider font-medium ml-1">
+                        <span>{todoStats.total} tasks</span>
+                        <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <span className={todoStats.completed > 0 ? "text-green-400" : ""}>
+                                ({todoStats.completed} done,
+                            </span>
+                            <span className={todoStats.inProgress > 0 ? "text-blue-400" : ""}>
+                                {todoStats.inProgress} active,
+                            </span>
+                            <span className={todoStats.pending > 0 ? "text-orange-400" : ""}>
+                                {todoStats.pending} pending)
+                            </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="flex items-center gap-3 ml-2 border-l border-white/10 pl-3">
+                            <span className="text-white/40">
+                                {todoStats.completed}/{todoStats.total}
+                            </span>
+                            <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                <div
+                                    className="h-full bg-blue-500 transition-all duration-500"
+                                    style={{ width: `${progressPercent}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    toolSummary && (
+                        <span
+                            className="text-xs text-white/50 truncate max-w-[180px] font-mono opacity-60 group-hover:opacity-100 transition-opacity"
+                            title={toolSummary}
+                        >
+                            {toolSummary}
+                        </span>
+                    )
                 )}
 
                 <div className="ml-auto flex items-center gap-2 flex-shrink-0">
@@ -109,6 +163,10 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                             <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" />
                             <span className="text-xs text-orange-400 font-medium">Running</span>
                         </div>
+                    ) : status === "completed" ? (
+                        <div className={`w-5 h-5 flex items-center justify-center`}>
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        </div>
                     ) : (
                         <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}
@@ -128,6 +186,7 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                             todos={extractTodosFromInput(step.toolUse.rawInput || {})}
                             title="Todo Update"
                             defaultCollapsed={false}
+                            hideHeader={true}
                         />
                     ) : (
                         <div className="space-y-4">

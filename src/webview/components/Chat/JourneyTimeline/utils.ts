@@ -62,6 +62,7 @@ interface StepTotals {
     tokens: number;
     cacheCreated: number;
     cacheRead: number;
+    duration: number;
 }
 
 /**
@@ -93,13 +94,15 @@ export const calculateStepTotals = (steps: TimelineItemTool[]): StepTotals => {
                 step.toolUse?.cacheCreationTokens ?? step.toolResult?.cacheCreationTokens ?? 0;
             const stepCacheRead =
                 step.toolUse?.cacheReadTokens ?? step.toolResult?.cacheReadTokens ?? 0;
+            const stepDuration = step.toolUse?.duration ?? step.toolResult?.duration ?? 0;
             return {
                 tokens: acc.tokens + stepTokens,
                 cacheCreated: acc.cacheCreated + stepCacheCreated,
                 cacheRead: acc.cacheRead + stepCacheRead,
+                duration: acc.duration + stepDuration,
             };
         },
-        { tokens: 0, cacheCreated: 0, cacheRead: 0 },
+        { tokens: 0, cacheCreated: 0, cacheRead: 0, duration: 0 },
     );
 };
 

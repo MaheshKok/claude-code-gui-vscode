@@ -7,7 +7,7 @@
  */
 
 import React, { useCallback } from "react";
-import { ChevronRight, CheckCircle2, Copy, Check, Eye } from "lucide-react";
+import { ChevronRight, Copy, Check, Eye, Clock } from "lucide-react";
 import { StatusIcon } from "./StatusIcon";
 import { CollapsibleReasoning } from "./CollapsibleReasoning";
 import { ToolStep } from "./ToolStep";
@@ -19,7 +19,7 @@ import {
     formatUsageSummary,
 } from "./utils";
 import type { PlanGroupProps } from "./types";
-import { looksLikeMarkdown } from "../../../utils";
+import { looksLikeMarkdown, formatDuration } from "../../../utils";
 import { useVSCode } from "../../../hooks/useVSCode";
 
 /**
@@ -77,11 +77,16 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3 text-xs">
-                    <div className="flex items-center gap-1 text-white/40">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>
-                            {completedCount}/{item.steps.length}
-                        </span>
+                    {stepTotals.duration > 0 && (
+                        <div className="flex items-center gap-1 text-white/40 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                                {formatDuration(stepTotals.duration, { abbreviated: true })}
+                            </span>
+                        </div>
+                    )}
+                    <div className="text-white/40 font-medium px-1">
+                        {completedCount}/{item.steps.length}
                     </div>
                     {showPreview && (
                         <button
