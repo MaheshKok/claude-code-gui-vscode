@@ -89,32 +89,97 @@ export const ToolStep: React.FC<ToolStepProps> = ({
 
                 {/* TodoWrite Stats Header */}
                 {isTodoWrite && todoStats ? (
-                    <div className="flex items-center gap-3 text-[10px] text-white/40 uppercase tracking-wider font-medium ml-1">
-                        <span>{todoStats.total} tasks</span>
-                        <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                            <span className={todoStats.completed > 0 ? "text-green-400" : ""}>
-                                ({todoStats.completed} done,
-                            </span>
-                            <span className={todoStats.inProgress > 0 ? "text-blue-400" : ""}>
-                                {todoStats.inProgress} active,
-                            </span>
-                            <span className={todoStats.pending > 0 ? "text-orange-400" : ""}>
-                                {todoStats.pending} pending)
-                            </span>
-                        </div>
+                    <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+                        {/* Progress Bar for TodoWrite */}
+                        {isTodoWrite && todoStats && (
+                            <div className="flex items-center gap-3 text-xs">
+                                <div className="flex items-center justify-between px-4 py-2 bg-white/5 text-[10px] text-white/40 font-medium uppercase tracking-wider">
+                                    <div className="flex gap-4">
+                                        <span
+                                            className={
+                                                todoStats.completed > 0 ? "text-green-400" : ""
+                                            }
+                                        >
+                                            {todoStats.completed} Done
+                                        </span>
+                                        <span
+                                            className={
+                                                todoStats.inProgress > 0 ? "text-blue-400" : ""
+                                            }
+                                        >
+                                            {todoStats.inProgress} Active
+                                        </span>
+                                        <span
+                                            className={
+                                                todoStats.pending > 0 ? "text-orange-400" : ""
+                                            }
+                                        >
+                                            {todoStats.pending} Pending
+                                        </span>
+                                    </div>
+                                </div>
 
-                        {/* Progress Bar */}
-                        <div className="flex items-center gap-3 ml-2 border-l border-white/10 pl-3">
-                            <span className="text-white/40">
-                                {todoStats.completed}/{todoStats.total}
-                            </span>
-                            <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                                <div
-                                    className="h-full bg-blue-500 transition-all duration-500"
-                                    style={{ width: `${progressPercent}%` }}
-                                />
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5">
+                                    <span className="text-white/60">
+                                        {todoStats.completed}/{todoStats.total}
+                                    </span>
+                                </div>
+
+                                <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500 transition-all duration-500"
+                                        style={{ width: `${progressPercent}%` }}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {duration !== undefined && (
+                            <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
+                                <Clock className="w-3 h-3" />
+                                {formatDuration(duration, { abbreviated: true })}
+                            </span>
+                        )}
+                        {tokens !== undefined && (
+                            <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
+                                <Zap className="w-3 h-3" />
+                                {formatTokensCompact(tokens)}
+                            </span>
+                        )}
+                        {cacheCreationTokens !== undefined && cacheCreationTokens > 0 && (
+                            <span
+                                className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono"
+                                title="Cache created"
+                            >
+                                <span className="text-[10px] font-semibold text-white/60">C</span>
+                                {formatTokensCompact(cacheCreationTokens)}
+                            </span>
+                        )}
+                        {cacheReadTokens !== undefined && cacheReadTokens > 0 && (
+                            <span
+                                className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono"
+                                title="Cache read"
+                            >
+                                <span className="text-[10px] font-semibold text-white/60">R</span>
+                                {formatTokensCompact(cacheReadTokens)}
+                            </span>
+                        )}
+                        {status === "executing" ? (
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 rounded-full">
+                                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" />
+                                <span className="text-xs text-orange-400 font-medium">Running</span>
+                            </div>
+                        ) : status === "completed" ? (
+                            <div className={`w-5 h-5 flex items-center justify-center`}>
+                                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                            </div>
+                        ) : (
+                            <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}
+                            >
+                                {statusLabel}
+                            </span>
+                        )}
                     </div>
                 ) : (
                     toolSummary && (
@@ -126,55 +191,6 @@ export const ToolStep: React.FC<ToolStepProps> = ({
                         </span>
                     )
                 )}
-
-                <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-                    {duration !== undefined && (
-                        <span className="flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
-                            <Clock className="w-3 h-3" />
-                            {formatDuration(duration, { abbreviated: true })}
-                        </span>
-                    )}
-                    {tokens !== undefined && (
-                        <span className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono">
-                            <Zap className="w-3 h-3" />
-                            {formatTokensCompact(tokens)}
-                        </span>
-                    )}
-                    {cacheCreationTokens !== undefined && cacheCreationTokens > 0 && (
-                        <span
-                            className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono"
-                            title="Cache created"
-                        >
-                            <span className="text-[10px] font-semibold text-white/60">C</span>
-                            {formatTokensCompact(cacheCreationTokens)}
-                        </span>
-                    )}
-                    {cacheReadTokens !== undefined && cacheReadTokens > 0 && (
-                        <span
-                            className="hidden sm:flex items-center gap-1 text-xs text-white/40 bg-white/5 px-1.5 py-0.5 rounded font-mono"
-                            title="Cache read"
-                        >
-                            <span className="text-[10px] font-semibold text-white/60">R</span>
-                            {formatTokensCompact(cacheReadTokens)}
-                        </span>
-                    )}
-                    {status === "executing" ? (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 rounded-full">
-                            <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" />
-                            <span className="text-xs text-orange-400 font-medium">Running</span>
-                        </div>
-                    ) : status === "completed" ? (
-                        <div className={`w-5 h-5 flex items-center justify-center`}>
-                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                        </div>
-                    ) : (
-                        <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}
-                        >
-                            {statusLabel}
-                        </span>
-                    )}
-                </div>
             </div>
 
             {/* Expanded Content */}
