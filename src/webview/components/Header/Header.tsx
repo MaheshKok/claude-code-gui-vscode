@@ -1,7 +1,8 @@
 import React from "react";
 import type { SessionInfo } from "../App";
-import { MessageSquarePlus, History, X, Cpu } from "lucide-react";
+import { MessageSquarePlus, History, X } from "lucide-react";
 import { useUsageStore } from "../../stores/usageStore";
+import logoImage from "../../assets/logo.png";
 
 // ============================================================================
 // Constants
@@ -10,7 +11,6 @@ import { useUsageStore } from "../../stores/usageStore";
 const HEADER_CONSTANTS = {
     APP_NAME: "Claude Code",
     ICON_SIZE: "w-4 h-4",
-    LOGO_ICON_SIZE: "w-5 h-5",
     TOOLTIPS: {
         OPEN_HISTORY: "Chat History",
         CLOSE_HISTORY: "Close History",
@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
     isHistoryOpen = false,
     onOpenUsage,
 }): React.JSX.Element => {
-    const { APP_NAME, ICON_SIZE, LOGO_ICON_SIZE, TOOLTIPS } = HEADER_CONSTANTS;
+    const { APP_NAME, ICON_SIZE, TOOLTIPS } = HEADER_CONSTANTS;
     const usageData = useUsageStore((state) => state.data);
 
     // Calculate usage percentage
@@ -56,8 +56,12 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-                            <Cpu className={LOGO_ICON_SIZE} />
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shadow-lg">
+                            <img
+                                src={logoImage}
+                                alt="Claude Code GUI"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-sm font-bold tracking-tight text-white/90">

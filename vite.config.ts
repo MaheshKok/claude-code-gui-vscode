@@ -28,6 +28,8 @@ export default defineConfig({
         target: "es2020",
         // Inline all CSS into JS to avoid separate file loading issues
         cssCodeSplit: false,
+        // Inline assets smaller than 1MB (fixes image loading in webview)
+        assetsInlineLimit: 1000000,
     },
 
     resolve: {
