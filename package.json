@@ -33,7 +33,7 @@
         "cli",
         "productivity"
     ],
-    "icon": "assets/icon.png",
+    "icon": "assets/logo.png",
     "main": "./dist/extension.js",
     "activationEvents": [
         "onStartupFinished"
