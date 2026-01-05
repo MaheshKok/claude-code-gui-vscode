@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QuickAction } from "../../webview/components/Chat/JourneyTimeline/QuickAction";
 
@@ -20,6 +20,13 @@ describe("QuickAction", () => {
             render(<QuickAction label="Click Me" icon={<span>✨</span>} />);
 
             expect(screen.getByRole("button")).toBeInTheDocument();
+        });
+        it("should call onClick when clicked", () => {
+            const handleClick = vi.fn();
+            render(<QuickAction label="Click Me" icon={<span>✨</span>} onClick={handleClick} />);
+
+            screen.getByRole("button").click();
+            expect(handleClick).toHaveBeenCalledTimes(1);
         });
     });
 });
