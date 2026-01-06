@@ -111,18 +111,24 @@ export class ClaudeService implements vscode.Disposable {
             "--verbose",
         ];
 
+        // YOLO mode and Plan mode are mutually exclusive
+        // YOLO: skip all permission checks (auto-approve everything)
+        // Plan: only allow read operations (blocks writes)
         if (options.yoloMode) {
             args.push("--dangerously-skip-permissions");
+            console.log("[ClaudeService] YOLO mode enabled, skipping all permissions");
         } else {
             args.push("--permission-prompt-tool", "stdio");
+
+            // Only apply plan mode when NOT in yolo mode
+            if (options.planMode) {
+                args.push("--permission-mode", "plan");
+                console.log("[ClaudeService] Plan mode enabled, added --permission-mode plan");
+            }
         }
 
         if (options.mcpConfigPath) {
             args.push("--mcp-config", convertToWSLPath(options.mcpConfigPath));
-        }
-
-        if (options.planMode) {
-            args.push("--permission-mode", "plan");
         }
 
         if (options.model) {

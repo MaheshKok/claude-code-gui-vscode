@@ -535,47 +535,109 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                         )}
                     </div>
 
-                    <button
-                        onClick={onPlanModeToggle}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
-                            planMode
-                                ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
-                                : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
-                        }`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <FileCode className="w-3.5 h-3.5" />
-                            <span>Plan</span>
-                        </div>
-                        <div
-                            className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${planMode ? "bg-blue-500" : "bg-white/20"}`}
+                    {/* Plan Mode - disabled when YOLO is on */}
+                    <div className="relative group/plan">
+                        <button
+                            onClick={yoloMode ? undefined : onPlanModeToggle}
+                            disabled={yoloMode}
+                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                                yoloMode
+                                    ? "opacity-40 cursor-not-allowed text-white/40"
+                                    : planMode
+                                      ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                                      : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
+                            }`}
                         >
+                            <div className="flex items-center gap-1.5">
+                                <FileCode className="w-3.5 h-3.5" />
+                                <span>Plan</span>
+                            </div>
                             <div
-                                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${planMode ? "left-3.5" : "left-0.5"}`}
-                            />
+                                className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${
+                                    yoloMode
+                                        ? "bg-white/10"
+                                        : planMode
+                                          ? "bg-blue-500"
+                                          : "bg-white/20"
+                                }`}
+                            >
+                                <div
+                                    className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${
+                                        planMode && !yoloMode ? "left-3.5" : "left-0.5"
+                                    }`}
+                                />
+                            </div>
+                        </button>
+                        {/* Custom Tooltip for Plan */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#1a1a1a] border border-white/20 rounded-lg shadow-xl opacity-0 invisible group-hover/plan:opacity-100 group-hover/plan:visible transition-all duration-200 z-50 whitespace-nowrap text-xs">
+                            <div className="text-white/90">
+                                {yoloMode ? (
+                                    <span className="text-yellow-400">
+                                        ⚠️ Turn off YOLO mode first to enable Plan mode
+                                    </span>
+                                ) : planMode ? (
+                                    <span className="text-blue-400">
+                                        ✓ Plan mode: Claude will only read and analyze
+                                    </span>
+                                ) : (
+                                    <span>Enable Plan mode: Read-only analysis</span>
+                                )}
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1a1a1a]" />
                         </div>
-                    </button>
+                    </div>
 
-                    <button
-                        onClick={onYoloModeToggle}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
-                            yoloMode
-                                ? "text-red-400 bg-red-700/20 border-red-500/30"
-                                : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
-                        }`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>YOLO</span>
-                        </div>
-                        <div
-                            className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${yoloMode ? "bg-red-500" : "bg-white/20"}`}
+                    {/* YOLO Mode - disabled when Plan is on */}
+                    <div className="relative group/yolo">
+                        <button
+                            onClick={planMode ? undefined : onYoloModeToggle}
+                            disabled={planMode}
+                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                                planMode
+                                    ? "opacity-40 cursor-not-allowed text-white/40"
+                                    : yoloMode
+                                      ? "text-red-400 bg-red-700/20 border-red-500/30"
+                                      : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
+                            }`}
                         >
+                            <div className="flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                <span>YOLO</span>
+                            </div>
                             <div
-                                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${yoloMode ? "left-3.5" : "left-0.5"}`}
-                            />
+                                className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${
+                                    planMode
+                                        ? "bg-white/10"
+                                        : yoloMode
+                                          ? "bg-red-500"
+                                          : "bg-white/20"
+                                }`}
+                            >
+                                <div
+                                    className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm ${
+                                        yoloMode && !planMode ? "left-3.5" : "left-0.5"
+                                    }`}
+                                />
+                            </div>
+                        </button>
+                        {/* Custom Tooltip for YOLO */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#1a1a1a] border border-white/20 rounded-lg shadow-xl opacity-0 invisible group-hover/yolo:opacity-100 group-hover/yolo:visible transition-all duration-200 z-50 whitespace-nowrap text-xs">
+                            <div className="text-white/90">
+                                {planMode ? (
+                                    <span className="text-yellow-400">
+                                        ⚠️ Turn off Plan mode first to enable YOLO mode
+                                    </span>
+                                ) : yoloMode ? (
+                                    <span className="text-red-400">
+                                        ⚡ YOLO mode: Auto-approving all operations
+                                    </span>
+                                ) : (
+                                    <span>Enable YOLO mode: Auto-approve (use caution!)</span>
+                                )}
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1a1a1a]" />
                         </div>
-                    </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">

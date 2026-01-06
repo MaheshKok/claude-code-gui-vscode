@@ -133,8 +133,13 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
     );
 
     const handlePlanModeToggle = useCallback(() => {
+        const newPlanMode = !settings.planMode;
         settingsActions.togglePlanMode();
-    }, [settingsActions]);
+        postMessage({
+            type: "saveSettings",
+            settings: { planMode: newPlanMode } as Record<string, unknown>,
+        });
+    }, [settingsActions, settings.planMode, postMessage]);
 
     const handleThinkingModeToggle = useCallback(() => {
         settingsActions.toggleThinkingMode();

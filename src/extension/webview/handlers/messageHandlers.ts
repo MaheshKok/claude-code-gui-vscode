@@ -54,11 +54,18 @@ const handleSendMessage = async (
     // Get configuration
     const config = vscode.workspace.getConfiguration("claudeCodeGui");
     const yoloMode = config.get<boolean>("permissions.yoloMode", false);
+    const planMode = message.planMode as boolean | undefined;
+
+    console.log("[MessageHandler] Sending message with options:", {
+        planMode,
+        yoloMode,
+        model: state.selectedModel || undefined,
+    });
 
     // Send message to Claude
     await context.claudeService.sendMessage(actualMessage, {
         cwd,
-        planMode: message.planMode as boolean | undefined,
+        planMode,
         yoloMode,
         model: state.selectedModel || undefined,
         mcpConfigPath: context.mcpService.getConfigPath(),
