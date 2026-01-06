@@ -121,6 +121,9 @@ export class PanelProvider {
             this._messageProcessor.finalizeAndClear();
             this._postMessage({ type: "clearLoading" });
             this._postMessage({ type: "setProcessing", isProcessing: false });
+
+            // Show completion notification if enabled
+            this._showCompletionNotification();
         });
 
         this._claudeService.onError((error) => {
@@ -137,6 +140,9 @@ export class PanelProvider {
         });
 
         this._claudeService.onPermissionRequest((request) => {
+            // Show permission notification
+            this._showPermissionNotification(request.toolName);
+
             const toolUseId = request.toolUseId || request.requestId;
             this._sendAndSaveMessage({
                 type: "permissionRequest",
@@ -707,5 +713,47 @@ export class PanelProvider {
                 data: "",
             });
         }
+    }
+
+    /**
+     * Show notification when Claude finishes processing
+     */
+    private _showCompletionNotification(): void {
+        const config = vscode.workspace.getConfiguration("claudeCodeGui");
+        if (!config.get<boolean>("notifications.onComplete", true)) {
+            return;
+        }
+
+        // Only notify if webview is not visible/focused
+        const isPanelVisible = this._panel?.visible ?? false;
+        const isWebviewVisible = this._webviewView?.visible ?? false;
+
+        if (!isPanelVisible && !isWebviewVisible) {
+            vscode.window
+                .showInformationMessage("Claude has finished processing your request", "Show")
+                .then((selection) => {
+                    if (selection === "Show") {
+                        this.show();
+                    }
+                });
+        }
+    }
+
+    /**
+     * Show notification when Claude requires permission
+     */
+    private _showPermissionNotification(toolName: string): void {
+        const config = vscode.workspace.getConfiguration("claudeCodeGui");
+        if (!config.get<boolean>("notifications.onPermission", true)) {
+            return;
+        }
+
+        vscode.window
+            .showWarningMessage(`Claude needs permission to use: ${toolName}`, "Review")
+            .then((selection) => {
+                if (selection === "Review") {
+                    this.show();
+                }
+            });
     }
 }

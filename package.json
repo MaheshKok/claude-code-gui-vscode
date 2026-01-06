@@ -379,6 +379,16 @@
                     "minimum": 50,
                     "maximum": 2000,
                     "description": "Maximum lines of context to include"
+                },
+                "claudeCodeGui.notifications.onComplete": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show notification when Claude finishes processing"
+                },
+                "claudeCodeGui.notifications.onPermission": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show notification when Claude requires permission"
                 }
             }
         }

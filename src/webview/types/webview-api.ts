@@ -418,7 +418,8 @@ export type WebviewToExtensionMessageType =
     | "refreshUsage"
     | "loadMCPServers"
     | "saveMCPServer"
-    | "deleteMCPServer";
+    | "deleteMCPServer"
+    | "revertFile";
 
 /**
  * Union type of all webview to extension messages
@@ -453,7 +454,8 @@ export type WebviewToExtensionMessage =
     | RefreshUsageRequest
     | LoadMCPServersRequest
     | SaveMCPServerRequest
-    | DeleteMCPServerRequest;
+    | DeleteMCPServerRequest
+    | RevertFileRequest;
 
 /**
  * Base interface for webview to extension messages
@@ -746,6 +748,17 @@ export interface TelemetryRequest extends BaseWebviewMessage {
     event: string;
     /** Event properties */
     properties?: Record<string, unknown>;
+}
+
+/**
+ * Revert file request - reverts a file to its original content
+ */
+export interface RevertFileRequest extends BaseWebviewMessage {
+    type: "revertFile";
+    /** File path to revert */
+    filePath: string;
+    /** Original content to restore */
+    oldContent: string;
 }
 
 // ============================================================================

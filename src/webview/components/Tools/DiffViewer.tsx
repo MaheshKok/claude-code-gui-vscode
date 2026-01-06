@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { ChevronDown, FileDiff, SplitSquareHorizontal } from "lucide-react";
+import { ChevronDown, FileDiff, SplitSquareHorizontal, Undo2 } from "lucide-react";
 
 export interface DiffLine {
     type: "context" | "added" | "removed";
@@ -16,6 +16,8 @@ export interface DiffViewerProps {
     maxVisibleLines?: number;
     onOpenDiff?: (filePath: string, oldContent: string, newContent: string) => void;
     onFilePathClick?: (filePath: string) => void;
+    onRevert?: (filePath: string, oldContent: string) => void;
+    canRevert?: boolean;
 }
 
 const computeLineDiff = (oldLines: string[], newLines: string[]): DiffLine[] => {
@@ -78,6 +80,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
     maxVisibleLines = 6,
     onOpenDiff,
     onFilePathClick,
+    onRevert,
+    canRevert = false,
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -115,6 +119,10 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         if (onFilePathClick) onFilePathClick(filePath);
     }, [onFilePathClick, filePath]);
 
+    const handleRevert = useCallback(() => {
+        if (onRevert) onRevert(filePath, oldContent);
+    }, [onRevert, filePath, oldContent]);
+
     return (
         <div className="glass-panel rounded-xl overflow-hidden border border-white/10 bg-black/20 group">
             {/* Header */}
@@ -130,12 +138,31 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider bg-black/20 px-2 py-1 rounded">
-                        {stats.added > 0 && <span className="text-green-400">+{stats.added}</span>}
+                    {/* Enhanced line stats - more visible */}
+                    <div className="flex items-center gap-2 text-xs font-semibold">
+                        {stats.added > 0 && (
+                            <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded-md border border-green-500/30">
+                                +{stats.added} {stats.added === 1 ? "line" : "lines"}
+                            </span>
+                        )}
                         {stats.removed > 0 && (
-                            <span className="text-red-400">-{stats.removed}</span>
+                            <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded-md border border-red-500/30">
+                                -{stats.removed} {stats.removed === 1 ? "line" : "lines"}
+                            </span>
                         )}
                     </div>
+
+                    {/* Revert button */}
+                    {canRevert && onRevert && (
+                        <button
+                            onClick={handleRevert}
+                            className="p-1.5 rounded-lg hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors flex items-center gap-1"
+                            title="Revert changes"
+                        >
+                            <Undo2 className="w-4 h-4" />
+                            <span className="text-xs">Revert</span>
+                        </button>
+                    )}
 
                     {onOpenDiff && (
                         <button

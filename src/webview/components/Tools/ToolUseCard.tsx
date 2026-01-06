@@ -8,7 +8,7 @@ import {
     ToolName,
 } from "../../utils";
 import { useVSCode } from "../../hooks/useVSCode";
-import { ChevronRight, Clock, FileDiff, FileText, Zap } from "lucide-react";
+import { ChevronRight, Clock, FileDiff, FileText, Zap, Undo2 } from "lucide-react";
 import { getToolIcon } from "../Common";
 
 export interface ToolInput {
@@ -203,6 +203,28 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
                 filePath: diffData.filePath,
             });
         }, [diffData, postMessage]);
+
+        const handleRevertFile = useCallback(() => {
+            if (!diffData || !diffData.filePath) return;
+            postMessage({
+                type: "revertFile",
+                filePath: diffData.filePath,
+                oldContent: diffData.oldContent,
+            });
+        }, [diffData, postMessage]);
+
+        // Compute line stats for display
+        const lineStats = useMemo(() => {
+            let added = 0;
+            let removed = 0;
+            diffSections.forEach((section) => {
+                section.diff.lines.forEach((line) => {
+                    if (line.type === "insert") added++;
+                    if (line.type === "delete") removed++;
+                });
+            });
+            return { added, removed };
+        }, [diffSections]);
 
         const renderInputValue = (key: string, value: unknown) => {
             if (isFilePath(key, value)) {
@@ -456,19 +478,50 @@ export const ToolUseCard: React.FC<ToolUseCardProps> = memo(
                         {diffSections.length > 0 && (
                             <div className="rounded-lg border border-white/10 overflow-hidden bg-black/40 shadow-inner">
                                 <div className="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
-                                    <div className="text-[10px] text-white/50 uppercase tracking-widest font-semibold flex items-center gap-2">
-                                        <FileDiff className="w-3 h-3" />
-                                        Diff Preview
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-[10px] text-white/50 uppercase tracking-widest font-semibold flex items-center gap-2">
+                                            <FileDiff className="w-3 h-3" />
+                                            Diff Preview
+                                        </div>
+                                        {/* Line stats badges */}
+                                        <div className="flex items-center gap-1.5">
+                                            {lineStats.added > 0 && (
+                                                <span className="bg-green-500/20 text-green-400 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-green-500/30">
+                                                    +{lineStats.added}
+                                                </span>
+                                            )}
+                                            {lineStats.removed > 0 && (
+                                                <span className="bg-red-500/20 text-red-400 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-red-500/30">
+                                                    -{lineStats.removed}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    {filePath && (
-                                        <span
-                                            className="text-[10px] text-orange-400 hover:underline cursor-pointer font-mono"
-                                            onClick={() => handleFileClick(filePath)}
-                                            title={filePath}
-                                        >
-                                            {formatFilePath(filePath)}
-                                        </span>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {filePath && (
+                                            <span
+                                                className="text-[10px] text-orange-400 hover:underline cursor-pointer font-mono"
+                                                onClick={() => handleFileClick(filePath)}
+                                                title={filePath}
+                                            >
+                                                {formatFilePath(filePath)}
+                                            </span>
+                                        )}
+                                        {/* Revert button */}
+                                        {diffData && diffData.filePath && (
+                                            <button
+                                                className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-colors"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    handleRevertFile();
+                                                }}
+                                                title="Revert to original"
+                                            >
+                                                <Undo2 className="w-3 h-3" />
+                                                Revert
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="divide-y divide-white/5">

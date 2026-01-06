@@ -8,6 +8,7 @@
  */
 
 import * as vscode from "vscode";
+import * as path from "path";
 import type { WebviewMessage, MessageHandlerContext, MessageHandlerMap } from "./types";
 
 // ============================================================================
@@ -409,6 +410,40 @@ const handleRefreshUsage = async (
     await context.refreshUsage();
 };
 
+const handleRevertFile = async (
+    message: WebviewMessage,
+    context: MessageHandlerContext,
+): Promise<void> => {
+    const filePath = message.filePath as string | undefined;
+    const oldContent = message.oldContent as string | undefined;
+
+    if (!filePath || oldContent === undefined) {
+        return;
+    }
+
+    try {
+        const uri = vscode.Uri.file(filePath);
+        const encoder = new TextEncoder();
+        await vscode.workspace.fs.writeFile(uri, encoder.encode(oldContent));
+
+        vscode.window.showInformationMessage(`Reverted changes to ${path.basename(filePath)}`);
+
+        context.postMessage({
+            type: "fileReverted",
+            filePath,
+            success: true,
+        });
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to revert: ${path.basename(filePath)}`);
+        context.postMessage({
+            type: "fileReverted",
+            filePath,
+            success: false,
+            error: String(error),
+        });
+    }
+};
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -485,6 +520,7 @@ export const messageHandlers: MessageHandlerMap = {
     enableYoloMode: handleEnableYoloMode,
     getClipboardText: handleGetClipboardText,
     refreshUsage: handleRefreshUsage,
+    revertFile: handleRevertFile,
 };
 
 /**
