@@ -160,7 +160,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                 {elapsedMs > 0 && (
                                     <div className="flex items-center gap-1" title="Elapsed Time">
                                         <Clock className="w-3 h-3" />
-                                        <span>{formatDuration(elapsedMs, { abbreviated: true })}</span>
+                                        <span>
+                                            {formatDuration(elapsedMs, { abbreviated: true })}
+                                        </span>
                                     </div>
                                 )}
                                 {totalTokens > 0 && (
@@ -206,9 +208,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                 {sessionCostUsd > 0 && (
                                     <div className="flex items-center gap-1" title="Session Cost">
                                         <DollarSign className="w-3 h-3" />
-                                        <span>
-                                            {sessionCostUsd.toFixed(2)}
-                                        </span>
+                                        <span>{sessionCostUsd.toFixed(2)}</span>
                                     </div>
                                 )}
                             </div>

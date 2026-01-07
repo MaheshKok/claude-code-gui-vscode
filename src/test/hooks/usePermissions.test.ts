@@ -18,11 +18,13 @@ let messageHandlers: Record<string, (message: any) => void> = {};
 
 // Mock useMessages hook to capture handlers
 vi.mock("../../webview/hooks/useMessages", () => ({
-    useMessages: vi.fn((options: { enabled?: boolean; handlers?: Record<string, (message: any) => void> }) => {
-        if (options?.handlers) {
-            messageHandlers = options.handlers;
-        }
-    }),
+    useMessages: vi.fn(
+        (options: { enabled?: boolean; handlers?: Record<string, (message: any) => void> }) => {
+            if (options?.handlers) {
+                messageHandlers = options.handlers;
+            }
+        },
+    ),
 }));
 
 import {
@@ -362,7 +364,10 @@ describe("usePermissions", () => {
             });
 
             act(() => {
-                result.current.approveWithSuggestion({ type: "allow", description: "Allow once" } as any);
+                result.current.approveWithSuggestion({
+                    type: "allow",
+                    description: "Allow once",
+                } as any);
             });
 
             expect(mockPostMessage).toHaveBeenCalledWith(
@@ -388,7 +393,10 @@ describe("usePermissions", () => {
             });
 
             act(() => {
-                result.current.approveWithSuggestion({ type: "allow_always", description: "Always allow" } as any);
+                result.current.approveWithSuggestion({
+                    type: "allow_always",
+                    description: "Always allow",
+                } as any);
             });
 
             expect(mockPostMessage).toHaveBeenCalledWith(
@@ -414,7 +422,10 @@ describe("usePermissions", () => {
             });
 
             act(() => {
-                result.current.approveWithSuggestion({ type: "allow_all", description: "Allow all" } as any);
+                result.current.approveWithSuggestion({
+                    type: "allow_all",
+                    description: "Allow all",
+                } as any);
             });
 
             expect(mockPostMessage).toHaveBeenCalledWith(
@@ -466,7 +477,10 @@ describe("usePermissions", () => {
             });
 
             act(() => {
-                result.current.approveWithSuggestion({ type: "explain", description: "Explain" } as any);
+                result.current.approveWithSuggestion({
+                    type: "explain",
+                    description: "Explain",
+                } as any);
             });
 
             expect(mockPostMessage).toHaveBeenCalledWith(
@@ -492,7 +506,10 @@ describe("usePermissions", () => {
             });
 
             act(() => {
-                result.current.approveWithSuggestion({ type: "unknown_type", description: "Unknown" } as any);
+                result.current.approveWithSuggestion({
+                    type: "unknown_type",
+                    description: "Unknown",
+                } as any);
             });
 
             expect(mockPostMessage).toHaveBeenCalledWith(

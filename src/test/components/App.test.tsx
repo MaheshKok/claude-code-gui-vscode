@@ -134,10 +134,7 @@ vi.mock("../../webview/components/Chat/ChatContainer", () => ({
     ChatContainer: ({ onSendMessage, onModelChange, currentModel }: any) => (
         <div data-testid="chat-container">
             <span data-testid="current-model">{currentModel}</span>
-            <button
-                data-testid="send-message-btn"
-                onClick={() => onSendMessage("test message")}
-            >
+            <button data-testid="send-message-btn" onClick={() => onSendMessage("test message")}>
                 Send
             </button>
             <button

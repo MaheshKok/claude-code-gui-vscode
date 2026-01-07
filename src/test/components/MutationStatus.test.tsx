@@ -56,7 +56,9 @@ describe("MutationStatus", () => {
         });
 
         it("should auto-hide after delay when autoHideSuccess is true", () => {
-            const { rerender } = render(<MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />);
+            const { rerender } = render(
+                <MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />,
+            );
             expect(screen.getByText("Done!")).toBeInTheDocument();
 
             act(() => {
@@ -64,7 +66,9 @@ describe("MutationStatus", () => {
             });
 
             // Re-render to trigger React update
-            rerender(<MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />);
+            rerender(
+                <MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />,
+            );
             expect(screen.queryByText("Done!")).not.toBeInTheDocument();
         });
 
@@ -159,11 +163,15 @@ describe("MutationStatus", () => {
             });
 
             // Re-render to apply state change
-            rerender(<MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />);
+            rerender(
+                <MutationStatus status="success" autoHideSuccess={true} autoHideDelay={1000} />,
+            );
             expect(screen.queryByText("Done!")).not.toBeInTheDocument();
 
             // Change status to pending, should become visible again
-            rerender(<MutationStatus status="pending" autoHideSuccess={true} autoHideDelay={1000} />);
+            rerender(
+                <MutationStatus status="pending" autoHideSuccess={true} autoHideDelay={1000} />,
+            );
             expect(screen.getByText("Processing...")).toBeInTheDocument();
         });
     });
@@ -307,9 +315,7 @@ describe("withMutationStatus HOC", () => {
             loadingMessage: "Loading...",
         });
 
-        render(
-            <WrappedComponent text="Test content" mutationStatus="idle" mutationError={null} />,
-        );
+        render(<WrappedComponent text="Test content" mutationStatus="idle" mutationError={null} />);
         expect(screen.getByText("Test content")).toBeInTheDocument();
     });
 
@@ -319,11 +325,7 @@ describe("withMutationStatus HOC", () => {
         });
 
         render(
-            <WrappedComponent
-                text="Test content"
-                mutationStatus="pending"
-                mutationError={null}
-            />,
+            <WrappedComponent text="Test content" mutationStatus="pending" mutationError={null} />,
         );
         expect(screen.getByText("Test content")).toBeInTheDocument();
         expect(screen.getByText("Processing data...")).toBeInTheDocument();

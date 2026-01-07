@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useAutoResize, calculateTextareaHeight, createMeasureElement } from "../../webview/hooks/useAutoResize";
+import {
+    useAutoResize,
+    calculateTextareaHeight,
+    createMeasureElement,
+} from "../../webview/hooks/useAutoResize";
 
 describe("useAutoResize", () => {
     let mockTextarea: HTMLTextAreaElement;
@@ -65,9 +69,7 @@ describe("useAutoResize", () => {
         });
 
         it("should initialize with initialValue", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ initialValue: "test content" }),
-            );
+            const { result } = renderHook(() => useAutoResize({ initialValue: "test content" }));
 
             expect(result.current.value).toBe("test content");
         });
@@ -112,9 +114,7 @@ describe("useAutoResize", () => {
 
     describe("reset", () => {
         it("should reset to initial value", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ initialValue: "initial" }),
-            );
+            const { result } = renderHook(() => useAutoResize({ initialValue: "initial" }));
 
             act(() => {
                 result.current.setValue("changed");
@@ -168,9 +168,7 @@ describe("useAutoResize", () => {
 
     describe("resize", () => {
         it("should resize when textarea ref exists", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ maxHeight: 200, minHeight: 50 }),
-            );
+            const { result } = renderHook(() => useAutoResize({ maxHeight: 200, minHeight: 50 }));
 
             Object.defineProperty(result.current.textareaRef, "current", {
                 value: mockTextarea,
@@ -186,9 +184,7 @@ describe("useAutoResize", () => {
         });
 
         it("should set overflow to auto when at max height", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ maxHeight: 50, minHeight: 30 }),
-            );
+            const { result } = renderHook(() => useAutoResize({ maxHeight: 50, minHeight: 30 }));
 
             Object.defineProperty(result.current.textareaRef, "current", {
                 value: mockTextarea,
@@ -220,9 +216,7 @@ describe("useAutoResize", () => {
 
     describe("getMinHeight calculation", () => {
         it("should use provided minHeight option", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ minHeight: 100 }),
-            );
+            const { result } = renderHook(() => useAutoResize({ minHeight: 100 }));
 
             Object.defineProperty(result.current.textareaRef, "current", {
                 value: mockTextarea,
@@ -289,9 +283,7 @@ describe("useAutoResize", () => {
         });
 
         it("should not reset height when resetOnEmpty is false", () => {
-            const { result } = renderHook(() =>
-                useAutoResize({ resetOnEmpty: false }),
-            );
+            const { result } = renderHook(() => useAutoResize({ resetOnEmpty: false }));
 
             Object.defineProperty(result.current.textareaRef, "current", {
                 value: mockTextarea,

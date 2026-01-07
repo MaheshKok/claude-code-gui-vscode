@@ -18,11 +18,13 @@ let messageHandlers: Record<string, (message: any) => void> = {};
 
 // Mock useMessages hook to capture handlers
 vi.mock("../../webview/hooks/useMessages", () => ({
-    useMessages: vi.fn((options: { enabled?: boolean; handlers?: Record<string, (message: any) => void> }) => {
-        if (options?.handlers) {
-            messageHandlers = options.handlers;
-        }
-    }),
+    useMessages: vi.fn(
+        (options: { enabled?: boolean; handlers?: Record<string, (message: any) => void> }) => {
+            if (options?.handlers) {
+                messageHandlers = options.handlers;
+            }
+        },
+    ),
 }));
 
 import {
@@ -452,7 +454,13 @@ describe("useFilePicker", () => {
                 messageHandlers.restoreState?.({
                     state: {
                         files: [
-                            { name: "test.ts", path: "/src/test.ts", type: "file", modifiedAt: Date.now(), size: 1024 },
+                            {
+                                name: "test.ts",
+                                path: "/src/test.ts",
+                                type: "file",
+                                modifiedAt: Date.now(),
+                                size: 1024,
+                            },
                             { name: "app.tsx", path: "/src/app.tsx", type: "file" },
                             { name: "index.js", path: "/src/index.js" }, // No type provided
                         ],
@@ -557,14 +565,14 @@ describe("useFilePicker", () => {
             const result = setupFilesForFiltering();
 
             // node_modules and .git files should be filtered out
-            expect(result.current.filteredFiles.some((f) => f.path.includes("node_modules"))).toBe(false);
+            expect(result.current.filteredFiles.some((f) => f.path.includes("node_modules"))).toBe(
+                false,
+            );
             expect(result.current.filteredFiles.some((f) => f.path.includes(".git"))).toBe(false);
         });
 
         it("should include directories when includeDirectories is true", () => {
-            const { result } = renderHook(() =>
-                useFilePicker({ includeDirectories: true }),
-            );
+            const { result } = renderHook(() => useFilePicker({ includeDirectories: true }));
 
             act(() => {
                 result.current.open();
@@ -630,7 +638,9 @@ describe("useFilePicker", () => {
             });
 
             expect(result.current.filteredFiles.length).toBe(2);
-            expect(result.current.filteredFiles.every((f) => ["ts", "tsx"].includes(f.extension!))).toBe(true);
+            expect(
+                result.current.filteredFiles.every((f) => ["ts", "tsx"].includes(f.extension!)),
+            ).toBe(true);
         });
 
         it("should filter out excluded extensions", () => {
@@ -809,9 +819,7 @@ describe("useFilePicker", () => {
             act(() => {
                 messageHandlers.restoreState?.({
                     state: {
-                        files: [
-                            { name: "test.ts", path: "test.ts", type: "file" },
-                        ],
+                        files: [{ name: "test.ts", path: "test.ts", type: "file" }],
                     },
                 });
             });
@@ -858,9 +866,7 @@ describe("useFilePicker", () => {
             act(() => {
                 messageHandlers.restoreState?.({
                     state: {
-                        files: [
-                            { name: "test.ts", path: "/test.ts", type: "file" },
-                        ],
+                        files: [{ name: "test.ts", path: "/test.ts", type: "file" }],
                     },
                 });
             });

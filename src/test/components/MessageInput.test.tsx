@@ -291,7 +291,6 @@ describe("MessageInput", () => {
             // Selector should be closed
             expect(screen.queryByText("Ultrathink")).not.toBeInTheDocument();
         });
-
     });
 
     describe("plan mode", () => {

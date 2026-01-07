@@ -696,9 +696,7 @@ describe("useAutoScroll hook", () => {
         });
 
         it("should detect scroll direction correctly", async () => {
-            const { result } = renderHook(() =>
-                useAutoScroll({ threshold: 100 }),
-            );
+            const { result } = renderHook(() => useAutoScroll({ threshold: 100 }));
 
             mockElement.scrollTop = 250;
             mockElement.scrollHeight = 1000;
@@ -758,5 +756,4 @@ describe("useAutoScroll hook", () => {
             expect(result.current.containerRef.current).toBeTruthy();
         });
     });
-
 });

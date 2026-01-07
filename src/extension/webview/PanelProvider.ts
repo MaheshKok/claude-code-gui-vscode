@@ -610,7 +610,10 @@ export class PanelProvider {
                     output: this._stateManager.totalTokensOutput,
                 },
             });
-            console.log("[PanelProvider] Saved interrupted conversation with sessionId:", sessionId);
+            console.log(
+                "[PanelProvider] Saved interrupted conversation with sessionId:",
+                sessionId,
+            );
         } else {
             console.warn("[PanelProvider] Could not save conversation: no sessionId available");
         }

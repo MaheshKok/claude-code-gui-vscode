@@ -635,7 +635,9 @@ describe("formatShortcut", () => {
         });
 
         it("should handle modifiers set to false", () => {
-            expect(formatShortcut("a", { ctrl: false, alt: false, shift: false, meta: false })).toBe("A");
+            expect(
+                formatShortcut("a", { ctrl: false, alt: false, shift: false, meta: false }),
+            ).toBe("A");
         });
     });
 });

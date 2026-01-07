@@ -243,30 +243,20 @@ describe("ToolResultCard", () => {
 
     describe("embedded variant", () => {
         it("should render embedded variant with label", () => {
-            render(
-                <ToolResultCard
-                    content="Test content"
-                    variant="embedded"
-                    label="Output"
-                />,
-            );
+            render(<ToolResultCard content="Test content" variant="embedded" label="Output" />);
 
             expect(screen.getByText("Output")).toBeInTheDocument();
         });
 
         it("should show error indicator in embedded variant", () => {
-            render(
-                <ToolResultCard content="Error message" variant="embedded" isError={true} />,
-            );
+            render(<ToolResultCard content="Error message" variant="embedded" isError={true} />);
 
             expect(screen.getByText("Error")).toBeInTheDocument();
         });
 
         it("should show preview button in embedded variant for markdown", () => {
             const markdownContent = "# Heading\n\n- List item";
-            render(
-                <ToolResultCard content={markdownContent} variant="embedded" />,
-            );
+            render(<ToolResultCard content={markdownContent} variant="embedded" />);
 
             expect(screen.getByTitle("Open markdown preview")).toBeInTheDocument();
         });
@@ -290,18 +280,14 @@ describe("ToolResultCard", () => {
 
         it("should show truncation button in embedded variant for long content", () => {
             const longContent = Array(20).fill("Line").join("\n");
-            render(
-                <ToolResultCard content={longContent} variant="embedded" maxLines={10} />,
-            );
+            render(<ToolResultCard content={longContent} variant="embedded" maxLines={10} />);
 
             expect(screen.getByText(/Show \d+ more lines/)).toBeInTheDocument();
         });
 
         it("should toggle expanded state in embedded variant", () => {
             const longContent = Array(20).fill("Line").join("\n");
-            render(
-                <ToolResultCard content={longContent} variant="embedded" maxLines={10} />,
-            );
+            render(<ToolResultCard content={longContent} variant="embedded" maxLines={10} />);
 
             fireEvent.click(screen.getByText(/Show \d+ more lines/));
             expect(screen.getByText("Show less")).toBeInTheDocument();
@@ -312,13 +298,7 @@ describe("ToolResultCard", () => {
 
         it("should handle preview click in embedded variant", () => {
             const markdownContent = "# Heading\n\n- List item";
-            render(
-                <ToolResultCard
-                    content={markdownContent}
-                    variant="embedded"
-                    toolName="Read"
-                />,
-            );
+            render(<ToolResultCard content={markdownContent} variant="embedded" toolName="Read" />);
 
             fireEvent.click(screen.getByTitle("Open markdown preview"));
 
@@ -344,9 +324,7 @@ describe("ToolResultCard", () => {
         });
 
         it("should show tokens when provided", () => {
-            render(
-                <ToolResultCard content="Test" tokens={500} defaultCollapsed={false} />,
-            );
+            render(<ToolResultCard content="Test" tokens={500} defaultCollapsed={false} />);
 
             // Tokens should be displayed
             expect(screen.getByText("500")).toBeInTheDocument();
@@ -469,9 +447,7 @@ describe("ToolResultCard", () => {
     describe("expand/collapse with card variant", () => {
         it("should show Show less button when expanded", () => {
             const longContent = Array(20).fill("Line").join("\n");
-            render(
-                <ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />,
-            );
+            render(<ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />);
 
             // Click to expand
             fireEvent.click(screen.getByText(/Show \d+ more lines/));
@@ -481,9 +457,7 @@ describe("ToolResultCard", () => {
 
         it("should collapse back when Show less clicked", () => {
             const longContent = Array(20).fill("Line").join("\n");
-            render(
-                <ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />,
-            );
+            render(<ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />);
 
             // Expand
             fireEvent.click(screen.getByText(/Show \d+ more lines/));

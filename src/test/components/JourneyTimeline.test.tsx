@@ -163,7 +163,6 @@ describe("JourneyTimeline", () => {
         });
     });
 
-
     describe("scroll behavior", () => {
         it("should have bottom ref element for auto-scroll", () => {
             const messages: Message[] = [

@@ -550,9 +550,7 @@ describe("ToolUseCard", () => {
         });
 
         it("should render empty embedded variant when no content", () => {
-            render(
-                <ToolUseCard toolName="Read" input={{}} variant="embedded" />,
-            );
+            render(<ToolUseCard toolName="Read" input={{}} variant="embedded" />);
 
             // Should still render without crashing
             expect(screen.queryByText("file_path:")).not.toBeInTheDocument();
@@ -847,11 +845,7 @@ describe("ToolUseCard", () => {
     describe("empty file path formatting", () => {
         it("should handle empty file path", () => {
             render(
-                <ToolUseCard
-                    toolName="Read"
-                    input={{ file_path: "" }}
-                    defaultCollapsed={false}
-                />,
+                <ToolUseCard toolName="Read" input={{ file_path: "" }} defaultCollapsed={false} />,
             );
 
             // Should render without crash

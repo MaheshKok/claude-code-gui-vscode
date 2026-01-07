@@ -2,7 +2,7 @@
     "name": "claude-code-gui",
     "displayName": "Claude Code GUI",
     "description": "Modern AI-Powered GUI Interface for Claude Code CLI",
-    "version": "1.5.4",
+    "version": "1.5.5",
     "publisher": "MaheshKok",
     "author": "Mahesh Kokare",
     "repository": {
@@ -412,8 +412,8 @@
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "test:e2e": "npx tsc -p src/tests/e2e/tsconfig.json && node out/tests/e2e/runTests.js",
-        "package": "vsce package",
-        "publish": "vsce publish",
+        "package": "vsce package --no-dependencies",
+        "publish": "vsce publish --no-dependencies",
         "clean": "rm -rf dist out"
     },
     "devDependencies": {
