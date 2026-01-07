@@ -5,12 +5,18 @@ All notable changes to the Claude Code GUI extension will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2026-01-07
+## [1.5.0] - 2026-01-07
 
 ### Fixed
 
 Drag and Drop Images and Files in Chat
 Journey Timeline Time elapsed display above chat
+
+## [1.4.0] - 2026-01-07
+
+### Fixed
+
+Major changes to UI to surface the critical details
 
 ## [1.3.0] - 2026-01-07
 
