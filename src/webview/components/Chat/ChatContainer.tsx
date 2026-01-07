@@ -5,7 +5,7 @@ import { TodoDisplay } from "../Tools";
 import { JourneyTimeline } from "./JourneyTimeline";
 import type { TodoItem } from "../Tools";
 import { ThinkingIntensity } from "../../../shared/constants";
-import { formatDuration, formatTokenCount, formatCost } from "../../utils";
+import { formatDuration, formatTokenCount } from "../../utils";
 import { Clock, Zap, DollarSign } from "lucide-react";
 
 interface ChatContainerProps {
@@ -65,30 +65,37 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     const [savedStartTime, setSavedStartTime] = React.useState<number | null>(null);
 
     // Initialize local duration from localStorage
-    const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(() => {
+    const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(null);
+
+    // Track elapsed time while processing
+    const [elapsedMs, setElapsedMs] = React.useState(0);
+
+    // Reload duration when session changes or when sessionId becomes available
+    React.useEffect(() => {
         try {
             const saved = localStorage.getItem(DURATION_STORAGE_KEY);
-            return saved ? parseInt(saved, 10) : null;
+            // Reset to the saved value (or null if no saved value)
+            setLocalDurationMs(saved ? parseInt(saved, 10) : null);
         } catch {
-            return null;
+            setLocalDurationMs(null);
         }
-    });
+    }, [DURATION_STORAGE_KEY]);
 
-    // Track previous session to detect session changes
-    const prevSessionRef = React.useRef<string | null | undefined>(sessionId);
-
-    // Reload duration when session changes
+    // Track elapsed time while processing
     React.useEffect(() => {
-        if (prevSessionRef.current !== sessionId) {
-            try {
-                const saved = localStorage.getItem(DURATION_STORAGE_KEY);
-                setLocalDurationMs(saved ? parseInt(saved, 10) : null);
-            } catch {
-                setLocalDurationMs(null);
-            }
-            prevSessionRef.current = sessionId;
+        if (!isProcessing || !requestStartTime) {
+            setElapsedMs(0);
+            return;
         }
-    }, [sessionId, DURATION_STORAGE_KEY]);
+
+        const tick = () => {
+            setElapsedMs(Date.now() - requestStartTime);
+        };
+
+        tick();
+        const interval = setInterval(tick, 200);
+        return () => clearInterval(interval);
+    }, [isProcessing, requestStartTime]);
 
     // When processing starts, save the start time
     React.useEffect(() => {
@@ -125,8 +132,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     isProcessing={isProcessing}
                     showEmptyState={showEmptyState}
                     onAction={onSendMessage}
-                    requestStartTime={requestStartTime}
-                    totalTokens={totalTokens}
                 />
             </div>
 
@@ -138,7 +143,42 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         </div>
                     )}
 
-                    {/* Stats below Tasks - positioned at bottom right */}
+                    {/* Processing indicator - below Tasks for consistency */}
+                    {isProcessing && (
+                        <div className="glass rounded-xl p-3 flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-3">
+                                <div className="flex gap-1.5">
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
+                                </div>
+                                <span className="text-sm font-medium text-white/60">
+                                    Claude is thinking...
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-white/50">
+                                {elapsedMs > 0 && (
+                                    <div className="flex items-center gap-1" title="Elapsed Time">
+                                        <Clock className="w-3 h-3" />
+                                        <span>{formatDuration(elapsedMs, { abbreviated: true })}</span>
+                                    </div>
+                                )}
+                                {totalTokens > 0 && (
+                                    <div className="flex items-center gap-1" title="Tokens">
+                                        <Zap className="w-3 h-3" />
+                                        <span>
+                                            {formatTokenCount(totalTokens, {
+                                                includeSuffix: true,
+                                                abbreviated: true,
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Stats below Tasks - positioned at bottom right (shown when not processing) */}
                     {showStats && (
                         <div className="flex justify-end mb-1">
                             <div className="flex items-center gap-3 text-xs text-white/40">
@@ -167,7 +207,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                     <div className="flex items-center gap-1" title="Session Cost">
                                         <DollarSign className="w-3 h-3" />
                                         <span>
-                                            {formatCost(sessionCostUsd, { showFreeForZero: false })}
+                                            {sessionCostUsd.toFixed(2)}
                                         </span>
                                     </div>
                                 )}

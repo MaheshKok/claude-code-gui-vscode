@@ -163,39 +163,6 @@ describe("JourneyTimeline", () => {
         });
     });
 
-    describe("processing state", () => {
-        it("should show processing indicator when processing", () => {
-            const messages: Message[] = [
-                {
-                    id: "1",
-                    type: "user",
-                    role: "user",
-                    content: "Hello",
-                    timestamp: Date.now(),
-                },
-            ];
-
-            render(<JourneyTimeline messages={messages} isProcessing={true} />);
-
-            expect(screen.getByText("Claude is thinking...")).toBeInTheDocument();
-        });
-
-        it("should not show processing indicator when not processing", () => {
-            const messages: Message[] = [
-                {
-                    id: "1",
-                    type: "user",
-                    role: "user",
-                    content: "Hello",
-                    timestamp: Date.now(),
-                },
-            ];
-
-            render(<JourneyTimeline messages={messages} isProcessing={false} />);
-
-            expect(screen.queryByText("Claude is thinking...")).not.toBeInTheDocument();
-        });
-    });
 
     describe("scroll behavior", () => {
         it("should have bottom ref element for auto-scroll", () => {

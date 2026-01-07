@@ -70,6 +70,7 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
     const stopRequestTiming = useChatStore((s) => s.stopRequestTiming);
     const hydrateConversation = useChatStore((s) => s.hydrateConversation);
     const costs = useChatStore((s) => s.costs);
+    const sessionId = useChatStore((s) => s.sessionId);
 
     const loadFromVSCode = useSettingsStore((s) => s.loadFromVSCode);
 
@@ -297,8 +298,17 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                         ? data.totalCost
                         : costs.sessionCostUsd + data.totalCostUsd;
                 updateSessionCost(sessionCost);
-                if (typeof data.durationMs === "number") {
+                if (typeof data.durationMs === "number" && data.durationMs > 0) {
                     setLastDurationMs(data.durationMs);
+                    // Persist duration to localStorage for retrieval after navigation
+                    try {
+                        const storageKey = sessionId
+                            ? `claude-code-gui-duration-${sessionId}`
+                            : "claude-code-gui-duration-global";
+                        localStorage.setItem(storageKey, data.durationMs.toString());
+                    } catch {
+                        // Ignore localStorage errors
+                    }
                 }
                 if (typeof data.requestCount === "number") {
                     setRequestCount(data.requestCount);
@@ -535,6 +545,7 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
         setActiveConversationId,
         activeConversationId,
         costs.sessionCostUsd,
+        sessionId,
     ]);
 
     return {

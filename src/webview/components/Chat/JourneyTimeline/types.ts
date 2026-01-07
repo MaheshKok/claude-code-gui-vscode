@@ -51,11 +51,6 @@ export interface JourneyTimelineProps {
     isProcessing: boolean;
     showEmptyState?: boolean;
     onAction?: (prompt: string) => void;
-    // Processing stats
-    requestStartTime?: number | null;
-    totalTokens?: number;
-    sessionCostUsd?: number;
-    lastDurationMs?: number | null;
 }
 
 /**
