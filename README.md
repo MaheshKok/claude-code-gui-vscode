@@ -40,7 +40,9 @@
 
 ---
 
-![alt text](image.png)
+<p align="center">
+  <img src="image.png" alt="Claude Code GUI screenshot" width="503" height="741">
+</p>
 
 ## ✨ Why Claude Code GUI?
 
@@ -163,6 +165,14 @@ Ever wondered which tool is eating all your tokens? Now you'll know. **See per-t
 2. Press `Ctrl+Shift+X` (or `Cmd+Shift+X` on macOS)
 3. Search for **"Claude Code GUI"**
 4. Click **Install**
+
+### For Cursor & other VS Code forks (VSIX)
+
+1. Download the latest `.vsix` from the GitHub Releases page:  
+   https://github.com/MaheshKok/claude-code-gui-vscode/releases/latest
+2. Open **Cursor** (or your VS Code fork)
+3. Open Extensions → `...` menu → **Install from VSIX**
+4. Select the downloaded `.vsix` file
 
 ### Prerequisites
 
