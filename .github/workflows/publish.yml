@@ -8,6 +8,13 @@ on:
         branches:
             - main
 
+concurrency:
+    group: build-release-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
 jobs:
     # Job 1: Build and Test (runs on pushes and PRs)
     build:
@@ -21,22 +28,36 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "22"
-                  cache: "npm"
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+              with:
+                  bun-version: "1.1.42"
+
+            - name: Cache Bun
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.bun/install/cache
+                      node_modules
+                  key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-bun-
 
             - name: Install dependencies
-              run: npm ci
+              run: bun install --frozen-lockfile
 
             - name: Run linter
-              run: npm run lint
+              run: bun run lint
 
             - name: Run type check
-              run: npm run typecheck
+              run: bun run typecheck
 
             - name: Build extension
-              run: npm run build
+              run: bun run build
 
             - name: Package extension
-              run: npx vsce package
+              run: bunx vsce package
 
             - name: Upload VSIX artifact
               uses: actions/upload-artifact@v4
@@ -82,29 +103,32 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "22"
-                  cache: "npm"
 
-            - name: Install dependencies
+            - name: Setup Bun
               if: steps.version-check.outputs.version_changed == 'true'
-              run: npm ci
+              uses: oven-sh/setup-bun@v1
+              with:
+                  bun-version: "1.1.42"
 
-            - name: Build extension
+            - name: Download VSIX artifact
               if: steps.version-check.outputs.version_changed == 'true'
-              run: npm run build
-
-            - name: Package extension
-              if: steps.version-check.outputs.version_changed == 'true'
-              run: npx vsce package
+              uses: actions/download-artifact@v4
+              with:
+                  name: extension-vsix
 
             - name: Publish to VS Code Marketplace
               if: steps.version-check.outputs.version_changed == 'true'
-              run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
+              run: |
+                  VSIX_PATH=$(ls *.vsix | head -n 1)
+                  bunx vsce publish --packagePath "$VSIX_PATH" -p ${{ secrets.VSCE_PAT }}
               env:
                   VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
             - name: Publish to Open VSX
               if: steps.version-check.outputs.version_changed == 'true'
-              run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
+              run: |
+                  VSIX_PATH=$(ls *.vsix | head -n 1)
+                  bunx ovsx publish -p ${{ secrets.OVSX_PAT }} "$VSIX_PATH"
               env:
                   OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
