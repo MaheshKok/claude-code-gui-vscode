@@ -26,6 +26,10 @@ export class UsageService implements vscode.Disposable {
     private _pollInterval: NodeJS.Timeout | undefined;
     private _dataEmitter = new EventEmitter();
     private _fetchInFlight = false;
+    // Cache for successfully fetched rate limit data (30 days validity)
+    private _cachedRateLimitData: UsageData | undefined;
+    private _cachedRateLimitTimestamp: number | undefined;
+    private static readonly CACHE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
     constructor(
         private readonly _claudeService: ClaudeService,
@@ -104,22 +108,57 @@ export class UsageService implements vscode.Disposable {
                 this._log(`   ⏱️  Weekly resets at: ${rateLimitUsage.weekly.resetsAt}`);
                 this._log("✅ ═══════════════════════════════════════════");
                 this._log("");
+
+                // Cache the successful rate limit data for future fallback
+                this._cachedRateLimitData = rateLimitUsage;
+                this._cachedRateLimitTimestamp = Date.now();
+                this._log("💾 Cached rate limit data for fallback use");
+
                 this._usageData = rateLimitUsage;
                 this._dataEmitter.emit("update", this._usageData);
                 return;
             }
 
-            this._log("⚠️  Rate limit fetch returned null, trying stats cache...");
+            // Rate limit fetch failed - try to use cached rate limit data first
+            this._log("⚠️  Rate limit fetch returned null");
+
+            // Check if we have valid cached rate limit data (within 30 days)
+            if (this._cachedRateLimitData && this._cachedRateLimitTimestamp) {
+                const cacheAge = Date.now() - this._cachedRateLimitTimestamp;
+                if (cacheAge < UsageService.CACHE_VALIDITY_MS) {
+                    const cacheAgeHours = Math.round(cacheAge / (1000 * 60 * 60));
+                    this._log(`📦 Using cached rate limit data (${cacheAgeHours}h old)`);
+                    this._usageData = this._cachedRateLimitData;
+                    this._dataEmitter.emit("update", this._usageData);
+                    return;
+                } else {
+                    this._log("⚠️  Cached rate limit data expired (>30 days)");
+                }
+            }
+
+            // Last resort: try stats cache (note: this has inaccurate reset times)
+            this._log("⚠️  No valid cached rate limit data, trying stats cache as last resort...");
             const statsUsage = await this._fetchUsageFromStatsCache();
             if (statsUsage) {
-                this._log("✅ Got usage data from stats cache");
+                this._log("⚠️  Got usage data from stats cache (reset times may be inaccurate)");
                 this._usageData = statsUsage;
                 this._dataEmitter.emit("update", this._usageData);
             } else {
-                this._log("❌ Both rate limit and stats cache failed");
+                this._log("❌ All data sources failed");
             }
         } catch (error) {
             this._log("❌ Failed to fetch usage data:", error);
+
+            // Even on error, try to use cached data
+            if (this._cachedRateLimitData && this._cachedRateLimitTimestamp) {
+                const cacheAge = Date.now() - this._cachedRateLimitTimestamp;
+                if (cacheAge < UsageService.CACHE_VALIDITY_MS) {
+                    const cacheAgeHours = Math.round(cacheAge / (1000 * 60 * 60));
+                    this._log(`📦 Using cached rate limit data on error (${cacheAgeHours}h old)`);
+                    this._usageData = this._cachedRateLimitData;
+                    this._dataEmitter.emit("update", this._usageData);
+                }
+            }
         } finally {
             this._fetchInFlight = false;
         }

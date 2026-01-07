@@ -14,15 +14,18 @@ interface CachedUsageData {
     timestamp: number; // Unix timestamp when cached
 }
 
+// Cache validity duration: 30 days in milliseconds
+const CACHE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000;
+
 // Try to load cached data from localStorage
 const loadCachedData = (): { data: UsageData | null; lastUpdatedAt: Date | null } => {
     try {
         const cached = localStorage.getItem(STORAGE_KEY);
         if (cached) {
             const parsed: CachedUsageData = JSON.parse(cached);
-            // Only use cache if less than 1 hour old
-            const oneHourAgo = Date.now() - 60 * 60 * 1000;
-            if (parsed.timestamp > oneHourAgo) {
+            // Only use cache if less than 30 days old
+            const cacheExpiry = Date.now() - CACHE_VALIDITY_MS;
+            if (parsed.timestamp > cacheExpiry) {
                 console.log(
                     "[UsageStore] Loaded cached usage data from",
                     new Date(parsed.timestamp).toLocaleTimeString(),
@@ -32,7 +35,7 @@ const loadCachedData = (): { data: UsageData | null; lastUpdatedAt: Date | null 
                     lastUpdatedAt: new Date(parsed.timestamp),
                 };
             }
-            console.log("[UsageStore] Cached data too old, ignoring");
+            console.log("[UsageStore] Cached data too old (>30 days), ignoring");
         }
     } catch (e) {
         console.warn("[UsageStore] Failed to load cached data:", e);
