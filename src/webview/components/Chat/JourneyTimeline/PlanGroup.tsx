@@ -147,7 +147,7 @@ export const PlanGroup: React.FC<PlanGroupProps> = ({
                         </div>
                     ) : null}
                     {usageSummary && (
-                        <div className="pt-2 mt-2 border-t border-white/5 text-[11px] text-white/50">
+                        <div className="pt-2 mt-2 border-t border-white/5 text-[11px] text-white/50 text-right">
                             {usageSummary}
                         </div>
                     )}

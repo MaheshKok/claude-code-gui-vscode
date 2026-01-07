@@ -58,11 +58,30 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
     const showEmptyState = messages.length === 0;
 
+    // Track the request start time when it begins processing
+    const [savedStartTime, setSavedStartTime] = React.useState<number | null>(null);
+    const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(null);
+
+    // When processing starts, save the start time
+    React.useEffect(() => {
+        if (isProcessing && requestStartTime) {
+            setSavedStartTime(requestStartTime);
+            setLocalDurationMs(null);
+        } else if (!isProcessing && savedStartTime) {
+            // When processing ends, calculate the duration
+            const duration = Date.now() - savedStartTime;
+            setLocalDurationMs(duration);
+        }
+    }, [isProcessing, requestStartTime, savedStartTime]);
+
+    // Use lastDurationMs from Claude if available, otherwise use our calculated duration
+    const displayDurationMs = lastDurationMs || localDurationMs;
+
     // Show stats when not processing and we have data
     const showStats =
         !isProcessing &&
         messages.length > 0 &&
-        (lastDurationMs || totalTokens > 0 || sessionCostUsd > 0);
+        (displayDurationMs || totalTokens > 0 || sessionCostUsd > 0);
 
     return (
         <div className="flex flex-col flex-1 overflow-hidden relative">
@@ -89,11 +108,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     {showStats && (
                         <div className="flex justify-end mb-1">
                             <div className="flex items-center gap-3 text-xs text-white/40">
-                                {lastDurationMs && lastDurationMs > 0 && (
+                                {displayDurationMs && displayDurationMs > 0 && (
                                     <div className="flex items-center gap-1" title="Total Duration">
                                         <Clock className="w-3 h-3" />
                                         <span>
-                                            {formatDuration(lastDurationMs, { abbreviated: true })}
+                                            {formatDuration(displayDurationMs, {
+                                                abbreviated: true,
+                                            })}
                                         </span>
                                     </div>
                                 )}
