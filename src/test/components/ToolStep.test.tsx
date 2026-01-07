@@ -77,20 +77,41 @@ describe("ToolStep", () => {
     });
 
     describe("status display", () => {
-        it("should show completed status", () => {
-            const step = createMockStep();
-            render(<ToolStep {...defaultProps} step={step} />);
-
-            expect(screen.getByText("Completed")).toBeInTheDocument();
-        });
-
-        it("should show pending status when no result", () => {
+        // Note: Status badges are only shown in the header for TodoWrite tools
+        it("should show completed status for TodoWrite with result", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
+                },
+                toolResult: {
+                    uuid: "result-1",
+                    type: "tool_result",
+                    timestamp: new Date(),
+                    toolName: "TodoWrite",
+                    content: "Success",
+                    isError: false,
+                },
+            });
+
+            // Completed status shows a checkmark icon for TodoWrite
+            const { container } = render(<ToolStep {...defaultProps} step={step} />);
+            // Check for check circle icon (lucide-react renders with class lucide and lucide-check-circle-2)
+            const checkIcon = container.querySelector("svg.text-green-400");
+            expect(checkIcon).toBeInTheDocument();
+        });
+
+        it("should show pending status when no result for TodoWrite", () => {
+            const step = createMockStep({
+                toolUse: {
+                    uuid: "use-1",
+                    type: "tool_use",
+                    timestamp: new Date(),
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                 },
                 toolResult: undefined,
             });
@@ -101,13 +122,14 @@ describe("ToolStep", () => {
             expect(screen.getByText("Pending")).toBeInTheDocument();
         });
 
-        it("should show running indicator when status is executing", () => {
+        it("should show running indicator when status is executing for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     status: "executing",
                 },
                 toolResult: undefined,
@@ -118,13 +140,20 @@ describe("ToolStep", () => {
             expect(screen.getByText("Running")).toBeInTheDocument();
         });
 
-        it("should show failed status when result has error", () => {
+        it("should show failed status when result has error for TodoWrite", () => {
             const step = createMockStep({
+                toolUse: {
+                    uuid: "use-1",
+                    type: "tool_use",
+                    timestamp: new Date(),
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
+                },
                 toolResult: {
                     uuid: "result-1",
                     type: "tool_result",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
                     content: "Error message",
                     isError: true,
                 },
@@ -234,15 +263,18 @@ describe("ToolStep", () => {
     });
 
     describe("duration display", () => {
-        it("should show duration from toolUse", () => {
+        // Note: Duration badges are only shown for TodoWrite tools in the header stats section
+        it("should show duration from toolUse for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     duration: 1500,
                 },
+                toolResult: undefined,
             });
 
             const { container } = render(<ToolStep {...defaultProps} step={step} />);
@@ -252,20 +284,21 @@ describe("ToolStep", () => {
             expect(clockIcon).toBeInTheDocument();
         });
 
-        it("should show duration from toolResult if toolUse has none", () => {
+        it("should show duration from toolResult if toolUse has none for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                 },
                 toolResult: {
                     uuid: "result-1",
                     type: "tool_result",
                     timestamp: new Date(),
-                    toolName: "Read",
-                    content: "Content",
+                    toolName: "TodoWrite",
+                    content: "Success",
                     duration: 500,
                 },
             });
@@ -278,15 +311,18 @@ describe("ToolStep", () => {
     });
 
     describe("tokens display", () => {
-        it("should show tokens from toolUse", () => {
+        // Note: Token badges are only shown for TodoWrite tools in the header stats section
+        it("should show tokens from toolUse for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     tokens: 150,
                 },
+                toolResult: undefined,
             });
 
             const { container } = render(<ToolStep {...defaultProps} step={step} />);
@@ -296,14 +332,21 @@ describe("ToolStep", () => {
             expect(zapIcon).toBeInTheDocument();
         });
 
-        it("should show tokens from toolResult", () => {
+        it("should show tokens from toolResult for TodoWrite", () => {
             const step = createMockStep({
+                toolUse: {
+                    uuid: "use-1",
+                    type: "tool_use",
+                    timestamp: new Date(),
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
+                },
                 toolResult: {
                     uuid: "result-1",
                     type: "tool_result",
                     timestamp: new Date(),
-                    toolName: "Read",
-                    content: "Content",
+                    toolName: "TodoWrite",
+                    content: "Success",
                     tokens: 200,
                 },
             });
@@ -316,37 +359,43 @@ describe("ToolStep", () => {
     });
 
     describe("cache tokens display", () => {
-        it("should show cache creation tokens when present", () => {
+        // Note: Cache token labels (C/R) are only shown for TodoWrite tools
+        // because that's where the header stats section is rendered
+        it("should show cache creation tokens when present for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     cacheCreationTokens: 500,
                 },
+                toolResult: undefined,
             });
 
             render(<ToolStep {...defaultProps} step={step} />);
 
-            // Cache creation is indicated by "C" label
+            // Cache creation is indicated by "C" label (only visible for TodoWrite)
             expect(screen.getByText("C")).toBeInTheDocument();
         });
 
-        it("should show cache read tokens when present", () => {
+        it("should show cache read tokens when present for TodoWrite", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     cacheReadTokens: 300,
                 },
+                toolResult: undefined,
             });
 
             render(<ToolStep {...defaultProps} step={step} />);
 
-            // Cache read is indicated by "R" label
+            // Cache read is indicated by "R" label (only visible for TodoWrite)
             expect(screen.getByText("R")).toBeInTheDocument();
         });
 
@@ -356,9 +405,11 @@ describe("ToolStep", () => {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     cacheCreationTokens: 0,
                 },
+                toolResult: undefined,
             });
 
             render(<ToolStep {...defaultProps} step={step} />);
@@ -372,9 +423,11 @@ describe("ToolStep", () => {
                     uuid: "use-1",
                     type: "tool_use",
                     timestamp: new Date(),
-                    toolName: "Read",
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
                     cacheReadTokens: 0,
                 },
+                toolResult: undefined,
             });
 
             render(<ToolStep {...defaultProps} step={step} />);
@@ -382,15 +435,21 @@ describe("ToolStep", () => {
             expect(screen.queryByText("R")).not.toBeInTheDocument();
         });
 
-        it("should get cache tokens from toolResult", () => {
+        it("should get cache tokens from toolResult for TodoWrite", () => {
             const step = createMockStep({
-                toolUse: undefined,
+                toolUse: {
+                    uuid: "use-1",
+                    type: "tool_use",
+                    timestamp: new Date(),
+                    toolName: "TodoWrite",
+                    rawInput: { todos: [] },
+                },
                 toolResult: {
                     uuid: "result-1",
                     type: "tool_result",
                     timestamp: new Date(),
-                    toolName: "Read",
-                    content: "Content",
+                    toolName: "TodoWrite",
+                    content: "Success",
                     cacheCreationTokens: 100,
                     cacheReadTokens: 50,
                 },

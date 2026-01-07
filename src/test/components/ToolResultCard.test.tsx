@@ -240,4 +240,265 @@ describe("ToolResultCard", () => {
             expect(iconContainer).toBeInTheDocument();
         });
     });
+
+    describe("embedded variant", () => {
+        it("should render embedded variant with label", () => {
+            render(
+                <ToolResultCard
+                    content="Test content"
+                    variant="embedded"
+                    label="Output"
+                />,
+            );
+
+            expect(screen.getByText("Output")).toBeInTheDocument();
+        });
+
+        it("should show error indicator in embedded variant", () => {
+            render(
+                <ToolResultCard content="Error message" variant="embedded" isError={true} />,
+            );
+
+            expect(screen.getByText("Error")).toBeInTheDocument();
+        });
+
+        it("should show preview button in embedded variant for markdown", () => {
+            const markdownContent = "# Heading\n\n- List item";
+            render(
+                <ToolResultCard content={markdownContent} variant="embedded" />,
+            );
+
+            expect(screen.getByTitle("Open markdown preview")).toBeInTheDocument();
+        });
+
+        it("should show copy button in embedded variant", () => {
+            render(<ToolResultCard content="Test content" variant="embedded" />);
+
+            expect(screen.getByTitle("Copy to clipboard")).toBeInTheDocument();
+        });
+
+        it("should handle copy in embedded variant", async () => {
+            render(<ToolResultCard content="Test content" variant="embedded" />);
+
+            const copyButton = screen.getByTitle("Copy to clipboard");
+            fireEvent.click(copyButton);
+
+            await waitFor(() => {
+                expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Test content");
+            });
+        });
+
+        it("should show truncation button in embedded variant for long content", () => {
+            const longContent = Array(20).fill("Line").join("\n");
+            render(
+                <ToolResultCard content={longContent} variant="embedded" maxLines={10} />,
+            );
+
+            expect(screen.getByText(/Show \d+ more lines/)).toBeInTheDocument();
+        });
+
+        it("should toggle expanded state in embedded variant", () => {
+            const longContent = Array(20).fill("Line").join("\n");
+            render(
+                <ToolResultCard content={longContent} variant="embedded" maxLines={10} />,
+            );
+
+            fireEvent.click(screen.getByText(/Show \d+ more lines/));
+            expect(screen.getByText("Show less")).toBeInTheDocument();
+
+            fireEvent.click(screen.getByText("Show less"));
+            expect(screen.getByText(/Show \d+ more lines/)).toBeInTheDocument();
+        });
+
+        it("should handle preview click in embedded variant", () => {
+            const markdownContent = "# Heading\n\n- List item";
+            render(
+                <ToolResultCard
+                    content={markdownContent}
+                    variant="embedded"
+                    toolName="Read"
+                />,
+            );
+
+            fireEvent.click(screen.getByTitle("Open markdown preview"));
+
+            expect(mockPostMessage).toHaveBeenCalledWith({
+                type: "openMarkdownPreview",
+                content: markdownContent,
+                title: "Read Result",
+            });
+        });
+    });
+
+    describe("duration and tokens display", () => {
+        it("should show duration when provided", () => {
+            const { container } = render(
+                <ToolResultCard content="Test" duration={1500} defaultCollapsed={false} />,
+            );
+
+            // Duration is displayed with clock icon - check for the clock icon
+            const clockIcon = container.querySelector(".lucide-clock");
+            expect(clockIcon).toBeInTheDocument();
+            // Duration is formatted (1500ms becomes "1s" by the formatDuration utility)
+            expect(screen.getByText("1s")).toBeInTheDocument();
+        });
+
+        it("should show tokens when provided", () => {
+            render(
+                <ToolResultCard content="Test" tokens={500} defaultCollapsed={false} />,
+            );
+
+            // Tokens should be displayed
+            expect(screen.getByText("500")).toBeInTheDocument();
+        });
+
+        it("should show both duration and tokens", () => {
+            const { container } = render(
+                <ToolResultCard
+                    content="Test"
+                    duration={2000}
+                    tokens={1000}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Check for clock icon (duration) and zap icon (tokens)
+            expect(container.querySelector(".lucide-clock")).toBeInTheDocument();
+            expect(container.querySelector(".lucide-zap")).toBeInTheDocument();
+        });
+    });
+
+    describe("copy state changes", () => {
+        it("should show Copied text after successful copy", async () => {
+            render(<ToolResultCard content="Test content" defaultCollapsed={false} />);
+
+            const copyButton = screen.getByTitle("Copy to clipboard");
+            fireEvent.click(copyButton);
+
+            await waitFor(() => {
+                expect(screen.getByText("Copied")).toBeInTheDocument();
+            });
+        });
+
+        it("should call onCopy callback when provided", async () => {
+            const onCopy = vi.fn();
+            render(
+                <ToolResultCard content="Test content" defaultCollapsed={false} onCopy={onCopy} />,
+            );
+
+            fireEvent.click(screen.getByTitle("Copy to clipboard"));
+
+            await waitFor(() => {
+                expect(onCopy).toHaveBeenCalledWith("Test content");
+            });
+        });
+
+        it("should handle copy failure gracefully", async () => {
+            const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+            Object.assign(navigator, {
+                clipboard: {
+                    writeText: vi.fn().mockRejectedValue(new Error("Copy failed")),
+                },
+            });
+
+            render(<ToolResultCard content="Test content" defaultCollapsed={false} />);
+
+            fireEvent.click(screen.getByTitle("Copy to clipboard"));
+
+            await waitFor(() => {
+                expect(consoleError).toHaveBeenCalledWith("Failed to copy:", expect.any(Error));
+            });
+
+            consoleError.mockRestore();
+        });
+    });
+
+    describe("escaped newlines normalization", () => {
+        it("should normalize escaped newlines in content", () => {
+            const contentWithEscaped = "Line 1\\nLine 2\\nLine 3";
+            render(<ToolResultCard content={contentWithEscaped} defaultCollapsed={false} />);
+
+            // The content should be displayed with actual newlines
+            const content = screen.getByText(/Line 1/);
+            expect(content).toBeInTheDocument();
+        });
+
+        it("should normalize escaped tabs", () => {
+            const contentWithTab = "Column1\\tColumn2";
+            render(<ToolResultCard content={contentWithTab} defaultCollapsed={false} />);
+
+            expect(screen.getByText(/Column1/)).toBeInTheDocument();
+        });
+
+        it("should handle Windows-style line endings", () => {
+            const contentWithCRLF = "Line 1\\r\\nLine 2";
+            render(<ToolResultCard content={contentWithCRLF} defaultCollapsed={false} />);
+
+            expect(screen.getByText(/Line 1/)).toBeInTheDocument();
+        });
+    });
+
+    describe("JSON array extraction", () => {
+        it("should extract text from JSON array", () => {
+            const jsonArrayContent = JSON.stringify([
+                { text: "First text" },
+                { text: "Second text" },
+            ]);
+
+            render(<ToolResultCard content={jsonArrayContent} defaultCollapsed={false} />);
+
+            expect(screen.getByText(/First text/)).toBeInTheDocument();
+            expect(screen.getByText(/Second text/)).toBeInTheDocument();
+        });
+
+        it("should handle empty JSON array", () => {
+            render(<ToolResultCard content="[]" defaultCollapsed={false} />);
+
+            expect(screen.getByText("[]")).toBeInTheDocument();
+        });
+
+        it("should handle JSON without text fields", () => {
+            const jsonContent = JSON.stringify({ key: "value", number: 123 });
+            render(<ToolResultCard content={jsonContent} defaultCollapsed={false} />);
+
+            // Should show raw JSON since no text fields
+            expect(screen.getByText(/key|value/)).toBeInTheDocument();
+        });
+    });
+
+    describe("expand/collapse with card variant", () => {
+        it("should show Show less button when expanded", () => {
+            const longContent = Array(20).fill("Line").join("\n");
+            render(
+                <ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />,
+            );
+
+            // Click to expand
+            fireEvent.click(screen.getByText(/Show \d+ more lines/));
+
+            expect(screen.getByText("Show less")).toBeInTheDocument();
+        });
+
+        it("should collapse back when Show less clicked", () => {
+            const longContent = Array(20).fill("Line").join("\n");
+            render(
+                <ToolResultCard content={longContent} defaultCollapsed={false} maxLines={10} />,
+            );
+
+            // Expand
+            fireEvent.click(screen.getByText(/Show \d+ more lines/));
+            // Collapse
+            fireEvent.click(screen.getByText("Show less"));
+
+            expect(screen.getByText(/Show \d+ more lines/)).toBeInTheDocument();
+        });
+    });
+
+    describe("preview without showPreview", () => {
+        it("should not show preview for non-markdown content", () => {
+            render(<ToolResultCard content="Just plain text" defaultCollapsed={false} />);
+
+            expect(screen.queryByTitle("Open markdown preview")).not.toBeInTheDocument();
+        });
+    });
 });

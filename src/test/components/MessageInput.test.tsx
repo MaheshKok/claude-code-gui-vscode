@@ -258,6 +258,42 @@ describe("MessageInput", () => {
 
             expect(screen.getByText("Enable Thinking")).toBeInTheDocument();
         });
+
+        it("should toggle thinking mode when clicking Enable Thinking toggle", () => {
+            const onThinkingModeToggle = vi.fn();
+            render(
+                <MessageInput
+                    {...defaultProps}
+                    thinkingMode={false}
+                    onThinkingModeToggle={onThinkingModeToggle}
+                />,
+            );
+
+            // Open the thinking selector
+            fireEvent.click(screen.getByText("Think"));
+
+            // Click the Enable Thinking toggle (which is a button with "Enable Thinking" text)
+            const enableThinkingToggle = screen.getByText("Enable Thinking").closest("button");
+            fireEvent.click(enableThinkingToggle!);
+
+            expect(onThinkingModeToggle).toHaveBeenCalled();
+        });
+
+        it("should close thinking selector after clicking Enable Thinking toggle", () => {
+            render(<MessageInput {...defaultProps} thinkingMode={false} />);
+
+            // Open the thinking selector
+            fireEvent.click(screen.getByText("Think"));
+            expect(screen.getByText("Ultrathink")).toBeInTheDocument();
+
+            // Click the Enable Thinking toggle
+            const enableThinkingToggle = screen.getByText("Enable Thinking").closest("button");
+            fireEvent.click(enableThinkingToggle!);
+
+            // Selector should be closed
+            expect(screen.queryByText("Ultrathink")).not.toBeInTheDocument();
+        });
+
     });
 
     describe("plan mode", () => {

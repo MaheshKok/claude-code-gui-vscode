@@ -164,6 +164,7 @@ describe("JourneyTimeline Utils", () => {
                 tokens: 0,
                 cacheCreated: 0,
                 cacheRead: 0,
+                duration: 0,
             });
         });
 

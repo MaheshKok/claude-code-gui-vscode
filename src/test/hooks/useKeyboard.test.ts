@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useKeyboard, useChatKeyboard } from "../../webview/hooks/useKeyboard";
+import { useKeyboard, useChatKeyboard, formatShortcut } from "../../webview/hooks/useKeyboard";
 
 describe("useKeyboard", () => {
     beforeEach(() => {
@@ -499,5 +499,143 @@ describe("useChatKeyboard", () => {
 
         expect(onSlashCommand).toHaveBeenCalled();
         vi.useRealTimers();
+    });
+});
+
+describe("formatShortcut", () => {
+    const originalNavigator = global.navigator;
+
+    afterEach(() => {
+        // Restore original navigator
+        Object.defineProperty(global, "navigator", {
+            value: originalNavigator,
+            writable: true,
+            configurable: true,
+        });
+    });
+
+    describe("on non-Mac platforms", () => {
+        beforeEach(() => {
+            Object.defineProperty(global, "navigator", {
+                value: { platform: "Win32" },
+                writable: true,
+                configurable: true,
+            });
+        });
+
+        it("should format simple key", () => {
+            expect(formatShortcut("a")).toBe("A");
+        });
+
+        it("should format key with Ctrl modifier", () => {
+            expect(formatShortcut("a", { ctrl: true })).toBe("Ctrl+A");
+        });
+
+        it("should format key with Alt modifier", () => {
+            expect(formatShortcut("a", { alt: true })).toBe("Alt+A");
+        });
+
+        it("should format key with Shift modifier", () => {
+            expect(formatShortcut("a", { shift: true })).toBe("Shift+A");
+        });
+
+        it("should format key with Meta modifier", () => {
+            expect(formatShortcut("a", { meta: true })).toBe("Win+A");
+        });
+
+        it("should format key with multiple modifiers", () => {
+            expect(formatShortcut("a", { ctrl: true, shift: true })).toBe("Ctrl+Shift+A");
+        });
+
+        it("should format Enter key", () => {
+            expect(formatShortcut("Enter")).toBe("Enter");
+        });
+
+        it("should format Escape key", () => {
+            expect(formatShortcut("Escape")).toBe("Esc");
+        });
+
+        it("should format arrow keys", () => {
+            expect(formatShortcut("ArrowUp")).toBe("\u2191");
+            expect(formatShortcut("ArrowDown")).toBe("\u2193");
+            expect(formatShortcut("ArrowLeft")).toBe("\u2190");
+            expect(formatShortcut("ArrowRight")).toBe("\u2192");
+        });
+
+        it("should format Tab key", () => {
+            expect(formatShortcut("Tab")).toBe("\u21E5");
+        });
+
+        it("should format Backspace key", () => {
+            expect(formatShortcut("Backspace")).toBe("Backspace");
+        });
+
+        it("should format Delete key", () => {
+            expect(formatShortcut("Delete")).toBe("Del");
+        });
+
+        it("should format Space key", () => {
+            expect(formatShortcut(" ")).toBe("Space");
+        });
+    });
+
+    describe("on Mac platforms", () => {
+        beforeEach(() => {
+            Object.defineProperty(global, "navigator", {
+                value: { platform: "MacIntel" },
+                writable: true,
+                configurable: true,
+            });
+        });
+
+        it("should use Mac-style Ctrl symbol (Command)", () => {
+            expect(formatShortcut("a", { ctrl: true })).toBe("\u2318A");
+        });
+
+        it("should use Mac-style Alt symbol (Option)", () => {
+            expect(formatShortcut("a", { alt: true })).toBe("\u2325A");
+        });
+
+        it("should use Mac-style Shift symbol", () => {
+            expect(formatShortcut("a", { shift: true })).toBe("\u21E7A");
+        });
+
+        it("should use Mac-style Meta symbol (Command)", () => {
+            expect(formatShortcut("a", { meta: true })).toBe("\u2318A");
+        });
+
+        it("should format Enter with Mac symbol", () => {
+            expect(formatShortcut("Enter")).toBe("\u21A9");
+        });
+
+        it("should format Escape with Mac symbol", () => {
+            expect(formatShortcut("Escape")).toBe("\u238B");
+        });
+
+        it("should format Backspace with Mac symbol", () => {
+            expect(formatShortcut("Backspace")).toBe("\u232B");
+        });
+
+        it("should format Delete with Mac symbol", () => {
+            expect(formatShortcut("Delete")).toBe("\u2326");
+        });
+
+        it("should format multiple modifiers without plus sign", () => {
+            expect(formatShortcut("a", { ctrl: true, shift: true })).toBe("\u2318\u21E7A");
+        });
+    });
+
+    describe("edge cases", () => {
+        it("should handle undefined modifiers", () => {
+            expect(formatShortcut("a", undefined)).toBe("A");
+        });
+
+        it("should handle empty modifiers object", () => {
+            expect(formatShortcut("a", {})).toBe("A");
+        });
+
+        it("should handle modifiers set to false", () => {
+            expect(formatShortcut("a", { ctrl: false, alt: false, shift: false, meta: false })).toBe("A");
+        });
     });
 });

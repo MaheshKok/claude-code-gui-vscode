@@ -212,6 +212,84 @@ describe("getAllVSCodeCssVariables", () => {
         const variables = getAllVSCodeCssVariables();
         expect(typeof variables).toBe("object");
     });
+
+    it("should return empty object when document is undefined", () => {
+        const originalDocument = global.document;
+        // @ts-expect-error - Testing undefined document
+        delete global.document;
+
+        const variables = getAllVSCodeCssVariables();
+        expect(variables).toEqual({});
+
+        // Restore document
+        global.document = originalDocument;
+    });
+
+    it("should extract VSCode CSS variables from document", () => {
+        // Mock getComputedStyle to return vscode variables
+        const mockStyles = {
+            length: 3,
+            0: "--vscode-editor-background",
+            1: "--vscode-editor-foreground",
+            2: "--some-other-var",
+            getPropertyValue: vi.fn((name: string) => {
+                const values: Record<string, string> = {
+                    "--vscode-editor-background": "#1e1e1e",
+                    "--vscode-editor-foreground": "#d4d4d4",
+                    "--some-other-var": "#ffffff",
+                };
+                return values[name] || "";
+            }),
+        };
+
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = vi.fn(() => mockStyles as unknown as CSSStyleDeclaration);
+
+        const variables = getAllVSCodeCssVariables();
+
+        // Should only include variables starting with --vscode-
+        expect(variables["--vscode-editor-background"]).toBe("#1e1e1e");
+        expect(variables["--vscode-editor-foreground"]).toBe("#d4d4d4");
+        expect(variables["--some-other-var"]).toBeUndefined();
+
+        // Restore
+        window.getComputedStyle = originalGetComputedStyle;
+    });
+
+    it("should return empty object when no VSCode variables present", () => {
+        const mockStyles = {
+            length: 2,
+            0: "--some-var",
+            1: "--another-var",
+            getPropertyValue: vi.fn(() => "#ffffff"),
+        };
+
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = vi.fn(() => mockStyles as unknown as CSSStyleDeclaration);
+
+        const variables = getAllVSCodeCssVariables();
+        expect(Object.keys(variables).length).toBe(0);
+
+        // Restore
+        window.getComputedStyle = originalGetComputedStyle;
+    });
+
+    it("should trim whitespace from variable values", () => {
+        const mockStyles = {
+            length: 1,
+            0: "--vscode-test-var",
+            getPropertyValue: vi.fn(() => "  #1e1e1e  "),
+        };
+
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = vi.fn(() => mockStyles as unknown as CSSStyleDeclaration);
+
+        const variables = getAllVSCodeCssVariables();
+        expect(variables["--vscode-test-var"]).toBe("#1e1e1e");
+
+        // Restore
+        window.getComputedStyle = originalGetComputedStyle;
+    });
 });
 
 describe("createCssVariables", () => {

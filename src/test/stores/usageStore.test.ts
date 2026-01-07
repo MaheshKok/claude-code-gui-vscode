@@ -439,3 +439,121 @@ describe("usageStore", () => {
         });
     });
 });
+
+// Tests for loadCachedData function at module initialization
+describe("usageStore cache loading", () => {
+    beforeEach(() => {
+        vi.resetModules();
+        localStorageMock.clear();
+        vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("should load valid cached data on initialization", async () => {
+        // Set up valid cached data (less than 1 hour old)
+        const cachedData = {
+            data: {
+                currentSession: {
+                    usageCost: 0.8,
+                    costLimit: 1,
+                    resetsIn: "45 min",
+                },
+                weekly: {
+                    costLikely: 0.6,
+                    costLimit: 1,
+                    resetsAt: "Thu",
+                },
+            },
+            timestamp: Date.now() - 30 * 60 * 1000, // 30 minutes ago
+        };
+
+        localStorageMock.getItem.mockReturnValue(JSON.stringify(cachedData));
+
+        // Re-import the module to trigger loadCachedData
+        const { useUsageStore: freshStore } = await import(
+            "../../webview/stores/usageStore"
+        );
+
+        const state = freshStore.getState();
+        expect(state.data?.currentSession.usageCost).toBe(0.8);
+        expect(state.data?.weekly.costLikely).toBe(0.6);
+        expect(state.lastUpdatedAt).not.toBeNull();
+    });
+
+    it("should ignore expired cached data (older than 1 hour)", async () => {
+        // Set up expired cached data (more than 1 hour old)
+        const cachedData = {
+            data: {
+                currentSession: {
+                    usageCost: 0.9,
+                    costLimit: 1,
+                    resetsIn: "10 min",
+                },
+                weekly: {
+                    costLikely: 0.7,
+                    costLimit: 1,
+                    resetsAt: "Fri",
+                },
+            },
+            timestamp: Date.now() - 2 * 60 * 60 * 1000, // 2 hours ago
+        };
+
+        localStorageMock.getItem.mockReturnValue(JSON.stringify(cachedData));
+
+        // Re-import the module
+        const { useUsageStore: freshStore } = await import(
+            "../../webview/stores/usageStore"
+        );
+
+        const state = freshStore.getState();
+        // Should have null data since cache is expired
+        expect(state.data).toBeNull();
+        expect(state.lastUpdatedAt).toBeNull();
+    });
+
+    it("should handle invalid JSON in cache gracefully", async () => {
+        // Set up invalid JSON in localStorage
+        localStorageMock.getItem.mockReturnValue("invalid json {{{");
+
+        // Re-import the module - should not throw
+        const { useUsageStore: freshStore } = await import(
+            "../../webview/stores/usageStore"
+        );
+
+        const state = freshStore.getState();
+        // Should have null data since parsing failed
+        expect(state.data).toBeNull();
+        expect(state.lastUpdatedAt).toBeNull();
+    });
+
+    it("should handle localStorage.getItem throwing error", async () => {
+        // Make localStorage throw
+        localStorageMock.getItem.mockImplementation(() => {
+            throw new Error("localStorage not available");
+        });
+
+        // Re-import the module - should not throw
+        const { useUsageStore: freshStore } = await import(
+            "../../webview/stores/usageStore"
+        );
+
+        const state = freshStore.getState();
+        expect(state.data).toBeNull();
+        expect(state.lastUpdatedAt).toBeNull();
+    });
+
+    it("should handle empty localStorage", async () => {
+        localStorageMock.getItem.mockReturnValue(null);
+
+        const { useUsageStore: freshStore } = await import(
+            "../../webview/stores/usageStore"
+        );
+
+        const state = freshStore.getState();
+        expect(state.data).toBeNull();
+        expect(state.lastUpdatedAt).toBeNull();
+    });
+});

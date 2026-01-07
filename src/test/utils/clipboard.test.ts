@@ -326,4 +326,304 @@ describe("clipboard utils", () => {
             expect(parseDataUrl("data:text/plain,hello")).toBeNull();
         });
     });
+
+    describe("copyToClipboard fallback", () => {
+        it("should use execCommand fallback when Clipboard API not available", async () => {
+            Object.defineProperty(navigator, "clipboard", {
+                value: null,
+                writable: true,
+                configurable: true,
+            });
+            const originalExecCommand = document.execCommand;
+            document.execCommand = vi.fn(() => true);
+
+            const result = await copyToClipboard("test text");
+            expect(result.success).toBe(true);
+
+            document.execCommand = originalExecCommand;
+        });
+
+        it("should return error when execCommand throws", async () => {
+            Object.defineProperty(navigator, "clipboard", {
+                value: null,
+                writable: true,
+                configurable: true,
+            });
+            const originalExecCommand = document.execCommand;
+            document.execCommand = vi.fn(() => {
+                throw new Error("execCommand not supported");
+            });
+
+            const result = await copyToClipboard("test text");
+            expect(result.success).toBe(false);
+            expect(result.error).toContain("execCommand failed");
+
+            document.execCommand = originalExecCommand;
+        });
+
+        it("should return error when Clipboard API throws and fallback also fails", async () => {
+            mockClipboard.writeText.mockRejectedValue(new Error("Permission denied"));
+            const originalExecCommand = document.execCommand;
+            document.execCommand = vi.fn(() => {
+                throw new Error("Not supported");
+            });
+
+            const result = await copyToClipboard("test text");
+            expect(result.success).toBe(false);
+            // The error can be either the fallback error or the original error
+            expect(result.error).toBeDefined();
+
+            document.execCommand = originalExecCommand;
+        });
+    });
+
+    describe("copyImageToClipboard errors", () => {
+        it("should return error when write throws", async () => {
+            const originalClipboardItem = globalThis.ClipboardItem;
+            globalThis.ClipboardItem = vi.fn().mockImplementation((data) => data) as any;
+            mockClipboard.write.mockRejectedValue(new Error("Write failed"));
+
+            const blob = new Blob(["fake image data"], { type: "image/png" });
+            const result = await copyImageToClipboard(blob);
+            expect(result.success).toBe(false);
+            expect(result.error).toContain("Failed to copy image");
+
+            globalThis.ClipboardItem = originalClipboardItem;
+        });
+    });
+
+    describe("readClipboardImage with data", () => {
+        it("should read image from clipboard when available", async () => {
+            const mockImageBlob = new Blob(["fake-image"], { type: "image/png" });
+            const mockItem = {
+                types: ["image/png"],
+                getType: vi.fn().mockResolvedValue(mockImageBlob),
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            // Mock Image for getImageDimensions
+            const originalImage = globalThis.Image;
+            globalThis.Image = class MockImage {
+                onload: (() => void) | null = null;
+                onerror: (() => void) | null = null;
+                width = 100;
+                height = 200;
+                set src(_url: string) {
+                    // Immediately trigger onload
+                    setTimeout(() => this.onload?.(), 0);
+                }
+            } as any;
+
+            // Mock URL.createObjectURL and revokeObjectURL
+            const originalCreateObjectURL = URL.createObjectURL;
+            const originalRevokeObjectURL = URL.revokeObjectURL;
+            URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
+            URL.revokeObjectURL = vi.fn();
+
+            const result = await readClipboardImage();
+
+            expect(result).not.toBeNull();
+            expect(result?.mimeType).toBe("image/png");
+
+            globalThis.Image = originalImage;
+            URL.createObjectURL = originalCreateObjectURL;
+            URL.revokeObjectURL = originalRevokeObjectURL;
+        });
+
+        it("should return null when no image types found", async () => {
+            const mockItem = {
+                types: ["text/plain"],
+                getType: vi.fn(),
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await readClipboardImage();
+            expect(result).toBeNull();
+        });
+    });
+
+    describe("readClipboard with full data", () => {
+        it("should read text using readText fallback when read not available", async () => {
+            // Test the readText fallback path
+            Object.defineProperty(navigator, "clipboard", {
+                value: {
+                    readText: vi.fn().mockResolvedValue("clipboard text content"),
+                },
+                writable: true,
+                configurable: true,
+            });
+
+            const result = await readClipboard();
+
+            expect(result.text).toBe("clipboard text content");
+            expect(result.html).toBeUndefined();
+            expect(result.image).toBeUndefined();
+        });
+
+        it("should read text from clipboard items with types", async () => {
+            // Create mock blob with text() method
+            const mockTextBlob = {
+                text: vi.fn().mockResolvedValue("item text"),
+            };
+
+            const mockItem = {
+                types: ["text/plain"],
+                getType: vi.fn().mockResolvedValue(mockTextBlob),
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await readClipboard();
+
+            expect(result.text).toBe("item text");
+        });
+
+        it("should read html from clipboard items", async () => {
+            const mockHtmlBlob = {
+                text: vi.fn().mockResolvedValue("<p>hello</p>"),
+            };
+
+            const mockItem = {
+                types: ["text/html"],
+                getType: vi.fn().mockResolvedValue(mockHtmlBlob),
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await readClipboard();
+
+            expect(result.html).toBe("<p>hello</p>");
+        });
+
+        it("should read image from clipboard items", async () => {
+            const mockImageBlob = new Blob(["image"], { type: "image/png" });
+
+            const mockItem = {
+                types: ["image/png"],
+                getType: vi.fn().mockResolvedValue(mockImageBlob),
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            // Mock Image for getImageDimensions
+            const originalImage = globalThis.Image;
+            globalThis.Image = class MockImage {
+                onload: (() => void) | null = null;
+                width = 100;
+                height = 200;
+                set src(_url: string) {
+                    setTimeout(() => this.onload?.(), 0);
+                }
+            } as any;
+
+            URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
+            URL.revokeObjectURL = vi.fn();
+
+            const result = await readClipboard();
+
+            expect(result.image).toBeDefined();
+            expect(result.image?.mimeType).toBe("image/png");
+
+            globalThis.Image = originalImage;
+        });
+
+        it("should handle error during read gracefully", async () => {
+            mockClipboard.read.mockRejectedValue(new Error("Access denied"));
+
+            const result = await readClipboard();
+            expect(result).toEqual({});
+        });
+    });
+
+    describe("isImageInClipboard with data", () => {
+        it("should return true when image is in clipboard", async () => {
+            const mockItem = {
+                types: ["image/png"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await isImageInClipboard();
+            expect(result).toBe(true);
+        });
+
+        it("should return false when no image in clipboard", async () => {
+            const mockItem = {
+                types: ["text/plain"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await isImageInClipboard();
+            expect(result).toBe(false);
+        });
+
+        it("should return false for empty clipboard", async () => {
+            mockClipboard.read.mockResolvedValue([]);
+
+            const result = await isImageInClipboard();
+            expect(result).toBe(false);
+        });
+    });
+
+    describe("getClipboardContentType with data", () => {
+        it("should return image when image is in clipboard", async () => {
+            const mockItem = {
+                types: ["image/jpeg"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await getClipboardContentType();
+            expect(result).toBe("image");
+        });
+
+        it("should return html when html is in clipboard", async () => {
+            const mockItem = {
+                types: ["text/html", "text/plain"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await getClipboardContentType();
+            expect(result).toBe("html");
+        });
+
+        it("should return text when only plain text is in clipboard", async () => {
+            const mockItem = {
+                types: ["text/plain"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await getClipboardContentType();
+            expect(result).toBe("text");
+        });
+
+        it("should return unknown for empty items array", async () => {
+            mockClipboard.read.mockResolvedValue([]);
+
+            const result = await getClipboardContentType();
+            expect(result).toBe("unknown");
+        });
+
+        it("should prioritize image over html", async () => {
+            const mockItem = {
+                types: ["text/html", "image/png"],
+            };
+            mockClipboard.read.mockResolvedValue([mockItem]);
+
+            const result = await getClipboardContentType();
+            expect(result).toBe("image");
+        });
+    });
+
+    describe("blobToBase64 edge cases", () => {
+        it("should handle empty blob", async () => {
+            const blob = new Blob([], { type: "text/plain" });
+            const result = await blobToBase64(blob);
+            expect(typeof result).toBe("string");
+        });
+
+        it("should handle image blob", async () => {
+            // Create a simple PNG header
+            const pngHeader = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+            const blob = new Blob([pngHeader], { type: "image/png" });
+            const result = await blobToBase64(blob);
+            expect(typeof result).toBe("string");
+            expect(result.length).toBeGreaterThan(0);
+        });
+    });
 });

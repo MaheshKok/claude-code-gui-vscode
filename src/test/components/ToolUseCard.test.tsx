@@ -432,4 +432,430 @@ describe("ToolUseCard", () => {
             expect(screen.getByText("Diff Preview")).toBeInTheDocument();
         });
     });
+
+    describe("revert file functionality", () => {
+        it("should show revert button when diff data is available", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            expect(screen.getByRole("button", { name: /Revert/ })).toBeInTheDocument();
+        });
+
+        it("should send revertFile message when revert button is clicked", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo original content"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            const revertButton = screen.getByRole("button", { name: /Revert/ });
+            fireEvent.click(revertButton);
+
+            expect(mockPostMessage).toHaveBeenCalledWith({
+                type: "revertFile",
+                filePath: "/test.ts",
+                oldContent: "foo original content",
+            });
+        });
+    });
+
+    describe("embedded variant", () => {
+        it("should render embedded variant with label", () => {
+            render(
+                <ToolUseCard
+                    toolName="Read"
+                    input={{ file_path: "/test.ts" }}
+                    variant="embedded"
+                    label="Input"
+                />,
+            );
+
+            expect(screen.getByText("Input")).toBeInTheDocument();
+            expect(screen.getByText("file_path:")).toBeInTheDocument();
+        });
+
+        it("should show diff button in embedded variant when diff data exists", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    variant="embedded"
+                />,
+            );
+
+            expect(screen.getByRole("button", { name: "Diff" })).toBeInTheDocument();
+        });
+
+        it("should handle openDiff in embedded variant", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    variant="embedded"
+                />,
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: "Diff" }));
+
+            expect(mockPostMessage).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: "openDiff",
+                    filePath: "/test.ts",
+                }),
+            );
+        });
+
+        it("should show diff preview in embedded variant", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    variant="embedded"
+                />,
+            );
+
+            expect(screen.getByText("Diff Preview")).toBeInTheDocument();
+        });
+
+        it("should render empty embedded variant when no content", () => {
+            render(
+                <ToolUseCard toolName="Read" input={{}} variant="embedded" />,
+            );
+
+            // Should still render without crashing
+            expect(screen.queryByText("file_path:")).not.toBeInTheDocument();
+        });
+
+        it("should handle file click in embedded variant diff preview", () => {
+            const onFilePathClick = vi.fn();
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/path/to/test.ts",
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    variant="embedded"
+                    onFilePathClick={onFilePathClick}
+                />,
+            );
+
+            // Multiple "test.ts" links exist - use getAllByText and click the first one
+            const fileLinks = screen.getAllByText("test.ts");
+            fireEvent.click(fileLinks[0]);
+
+            expect(onFilePathClick).toHaveBeenCalledWith("/path/to/test.ts");
+        });
+    });
+
+    describe("line stats badges", () => {
+        it("should show added lines count", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo",
+                        new_string: "bar\nbaz",
+                    }}
+                    fileContentBefore="foo"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should show +2 for two added lines
+            expect(screen.getByText(/\+\d+/)).toBeInTheDocument();
+        });
+
+        it("should show removed lines count", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "foo\nbar",
+                        new_string: "baz",
+                    }}
+                    fileContentBefore="foo\nbar"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should show -2 for two removed lines
+            expect(screen.getByText(/-\d+/)).toBeInTheDocument();
+        });
+
+        it("should show both added and removed when both exist", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "line1\nline2",
+                        new_string: "changed1\nchanged2\nchanged3",
+                    }}
+                    fileContentBefore="line1\nline2"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should show both + and - stats
+            expect(screen.getByText(/\+\d+/)).toBeInTheDocument();
+            expect(screen.getByText(/-\d+/)).toBeInTheDocument();
+        });
+    });
+
+    describe("file path key detection", () => {
+        it("should recognize filePath key as file path", () => {
+            const onFilePathClick = vi.fn();
+            render(
+                <ToolUseCard
+                    toolName="Custom"
+                    input={{ filePath: "/path/to/file.ts" }}
+                    onFilePathClick={onFilePathClick}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("file.ts"));
+
+            expect(onFilePathClick).toHaveBeenCalledWith("/path/to/file.ts");
+        });
+
+        it("should recognize path key as file path", () => {
+            const onFilePathClick = vi.fn();
+            render(
+                <ToolUseCard
+                    toolName="Custom"
+                    input={{ path: "/path/to/file.ts" }}
+                    onFilePathClick={onFilePathClick}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("file.ts"));
+
+            expect(onFilePathClick).toHaveBeenCalledWith("/path/to/file.ts");
+        });
+
+        it("should recognize file key as file path", () => {
+            const onFilePathClick = vi.fn();
+            render(
+                <ToolUseCard
+                    toolName="Custom"
+                    input={{ file: "/path/to/file.ts" }}
+                    onFilePathClick={onFilePathClick}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("file.ts"));
+
+            expect(onFilePathClick).toHaveBeenCalledWith("/path/to/file.ts");
+        });
+
+        it("should recognize absolute paths starting with /", () => {
+            const onFilePathClick = vi.fn();
+            render(
+                <ToolUseCard
+                    toolName="Custom"
+                    input={{ someKey: "/absolute/path/file.ts" }}
+                    onFilePathClick={onFilePathClick}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("file.ts"));
+
+            expect(onFilePathClick).toHaveBeenCalledWith("/absolute/path/file.ts");
+        });
+
+        it("should not treat path with newlines as file path", () => {
+            render(
+                <ToolUseCard
+                    toolName="Custom"
+                    input={{ content: "/path\nwith\nnewlines" }}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should not have a clickable file path
+            expect(screen.queryByTitle("/path\nwith\nnewlines")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("diff without file path", () => {
+        it("should handle diffData without file path", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        old_string: "foo",
+                        new_string: "bar",
+                    }}
+                    fileContentBefore="foo"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should still show diff preview
+            expect(screen.getByText("Diff Preview")).toBeInTheDocument();
+            // But should not show Diff button in header
+            expect(screen.queryByRole("button", { name: "Diff" })).not.toBeInTheDocument();
+        });
+    });
+
+    describe("MultiEdit with invalid edits", () => {
+        it("should skip invalid edits in MultiEdit", () => {
+            render(
+                <ToolUseCard
+                    toolName="MultiEdit"
+                    input={{
+                        file_path: "/test.ts",
+                        edits: [
+                            { old_string: "valid1", new_string: "valid2" },
+                            { old_string: 123, new_string: "invalid old" }, // invalid - will be skipped
+                            { old_string: "valid3", new_string: "valid4" },
+                        ],
+                    }}
+                    fileContentBefore="valid1\nvalid3"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Diff Preview should be shown
+            expect(screen.getByText("Diff Preview")).toBeInTheDocument();
+            // Should show at least one edit section (Edit 1)
+            expect(screen.getByText(/Edit 1/)).toBeInTheDocument();
+            // Edit 3 is rendered at index 2 in the loop, so it shows "Edit 3" in the title
+            expect(screen.getByText(/Edit 3/)).toBeInTheDocument();
+        });
+    });
+
+    describe("format value edge cases", () => {
+        it("should handle undefined values", () => {
+            render(
+                <ToolUseCard
+                    toolName="Task"
+                    input={{ undefinedValue: undefined }}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            expect(screen.getByText("null")).toBeInTheDocument();
+        });
+
+        it("should handle number values", () => {
+            render(
+                <ToolUseCard
+                    toolName="Task"
+                    input={{ numberValue: 42 }}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            expect(screen.getByText("42")).toBeInTheDocument();
+        });
+
+        it("should truncate long object values", () => {
+            const longObject = { key: "a".repeat(250) };
+            render(
+                <ToolUseCard
+                    toolName="Task"
+                    input={{ config: longObject }}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
+        });
+    });
+
+    describe("getStartLine calculation", () => {
+        it("should use provided startLine prop", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "target",
+                        new_string: "replacement",
+                    }}
+                    fileContentBefore="target somewhere in file"
+                    startLine={42}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // When startLine prop is provided, it should use that
+            expect(screen.getByText(/Line 42/)).toBeInTheDocument();
+        });
+
+        it("should use fallback when needle not found", () => {
+            render(
+                <ToolUseCard
+                    toolName="Edit"
+                    input={{
+                        file_path: "/test.ts",
+                        old_string: "notfound",
+                        new_string: "replacement",
+                    }}
+                    fileContentBefore="line1\nline2\nline3"
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // When needle not found, falls back to line 1
+            expect(screen.getByText(/Line 1/)).toBeInTheDocument();
+        });
+    });
+
+    describe("empty file path formatting", () => {
+        it("should handle empty file path", () => {
+            render(
+                <ToolUseCard
+                    toolName="Read"
+                    input={{ file_path: "" }}
+                    defaultCollapsed={false}
+                />,
+            );
+
+            // Should render without crash
+            expect(screen.getByText("Read")).toBeInTheDocument();
+        });
+    });
 });
