@@ -56,9 +56,39 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
     const showEmptyState = messages.length === 0;
 
+    // Storage key for persisting duration
+    const DURATION_STORAGE_KEY = sessionId
+        ? `claude-code-gui-duration-${sessionId}`
+        : "claude-code-gui-duration-global";
+
     // Track the request start time when it begins processing
     const [savedStartTime, setSavedStartTime] = React.useState<number | null>(null);
-    const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(null);
+
+    // Initialize local duration from localStorage
+    const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(() => {
+        try {
+            const saved = localStorage.getItem(DURATION_STORAGE_KEY);
+            return saved ? parseInt(saved, 10) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    // Track previous session to detect session changes
+    const prevSessionRef = React.useRef<string | null | undefined>(sessionId);
+
+    // Reload duration when session changes
+    React.useEffect(() => {
+        if (prevSessionRef.current !== sessionId) {
+            try {
+                const saved = localStorage.getItem(DURATION_STORAGE_KEY);
+                setLocalDurationMs(saved ? parseInt(saved, 10) : null);
+            } catch {
+                setLocalDurationMs(null);
+            }
+            prevSessionRef.current = sessionId;
+        }
+    }, [sessionId, DURATION_STORAGE_KEY]);
 
     // When processing starts, save the start time
     React.useEffect(() => {
@@ -69,10 +99,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             // When processing ends, calculate the duration
             const duration = Date.now() - savedStartTime;
             setLocalDurationMs(duration);
+            // Persist to localStorage
+            try {
+                localStorage.setItem(DURATION_STORAGE_KEY, duration.toString());
+            } catch {
+                // Ignore localStorage errors
+            }
         }
-    }, [isProcessing, requestStartTime, savedStartTime]);
+    }, [isProcessing, requestStartTime, savedStartTime, DURATION_STORAGE_KEY]);
 
-    // Use lastDurationMs from Claude if available, otherwise use our calculated duration
+    // Use lastDurationMs from Claude if available, otherwise use our calculated/stored duration
     const displayDurationMs = lastDurationMs || localDurationMs;
 
     // Show stats when not processing and we have data

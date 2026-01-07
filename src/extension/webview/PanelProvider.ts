@@ -542,6 +542,9 @@ export class PanelProvider {
 
             // Usage tracking
             refreshUsage: () => this._refreshUsage(),
+
+            // Conversation saving (for interrupted conversations)
+            saveConversation: () => this._saveConversation(),
         };
     }
 
@@ -591,6 +594,26 @@ export class PanelProvider {
             type: "mcpServers",
             data: servers,
         });
+    }
+
+    /**
+     * Save the current conversation (used for interrupted/stopped conversations)
+     */
+    private async _saveConversation(): Promise<void> {
+        const sessionId = this._claudeService.sessionId;
+        if (sessionId) {
+            await this._conversationService.saveCurrentConversation({
+                sessionId,
+                totalCost: this._stateManager.totalCost,
+                totalTokens: {
+                    input: this._stateManager.totalTokensInput,
+                    output: this._stateManager.totalTokensOutput,
+                },
+            });
+            console.log("[PanelProvider] Saved interrupted conversation with sessionId:", sessionId);
+        } else {
+            console.warn("[PanelProvider] Could not save conversation: no sessionId available");
+        }
     }
 
     private async _updateSettings(settings: Record<string, unknown>): Promise<void> {

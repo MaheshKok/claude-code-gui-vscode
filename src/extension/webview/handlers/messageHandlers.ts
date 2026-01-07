@@ -84,6 +84,8 @@ const handleStopGeneration = async (
     _message: WebviewMessage,
     context: MessageHandlerContext,
 ): Promise<void> => {
+    // Save the conversation before stopping (so interrupted conversations are preserved)
+    await context.saveConversation();
     await context.claudeService.stopProcess();
 };
 

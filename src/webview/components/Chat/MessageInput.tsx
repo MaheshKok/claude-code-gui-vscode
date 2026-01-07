@@ -332,12 +332,114 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
+    // Drag and drop state
+    const [isDragging, setIsDragging] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Process files from drag/drop or paste
+    const processFiles = useCallback((files: FileList | File[]) => {
+        Array.from(files).forEach((file) => {
+            const isImage = file.type.startsWith("image/");
+            const reader = new FileReader();
+            reader.onload = () => {
+                const newAttachment: Attachment = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    type: isImage ? "image" : "file",
+                    name: file.name,
+                    size: file.size,
+                    dataUrl: reader.result as string,
+                };
+                setAttachments((prev) => [...prev, newAttachment]);
+            };
+            reader.readAsDataURL(file);
+        });
+    }, []);
+
+    // Handle drag events
+    const handleDragEnter = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only set dragging to false if leaving the container entirely
+        if (containerRef.current && !containerRef.current.contains(e.relatedTarget as Node)) {
+            setIsDragging(false);
+        }
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }, []);
+
+    const handleDrop = useCallback(
+        (e: React.DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                processFiles(files);
+            }
+        },
+        [processFiles],
+    );
+
+    // Handle paste events
+    const handlePaste = useCallback(
+        (e: React.ClipboardEvent) => {
+            const items = e.clipboardData.items;
+            const files: File[] = [];
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind === "file") {
+                    const file = item.getAsFile();
+                    if (file) {
+                        files.push(file);
+                    }
+                }
+            }
+
+            if (files.length > 0) {
+                e.preventDefault();
+                processFiles(files);
+            }
+        },
+        [processFiles],
+    );
+
     const currentModelName = MODELS.find((m) => m.id === currentModel)?.shortName || "Model";
     const currentThinkingMode =
         THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
     return (
-        <div className="glass rounded-2xl shadow-2xl !border-orange-500/60 overflow-visible transition-all duration-300 focus-within:!border-orange-500 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.25)]">
+        <div
+            ref={containerRef}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            className={`relative glass rounded-2xl shadow-2xl overflow-visible transition-all duration-300 focus-within:shadow-[0_0_20px_rgba(237,110,29,0.25)] ${
+                isDragging
+                    ? "!border-orange-500 ring-2 ring-orange-500/30 bg-orange-500/5"
+                    : "!border-orange-500/60 focus-within:!border-orange-500"
+            }`}
+        >
+            {/* Drag overlay */}
+            {isDragging && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-2xl pointer-events-none">
+                    <div className="flex flex-col items-center gap-2 text-orange-400">
+                        <Paperclip className="w-8 h-8" />
+                        <span className="text-sm font-medium">Drop files here</span>
+                    </div>
+                </div>
+            )}
             {/* Hidden file inputs */}
             <input
                 ref={fileInputRef}
@@ -398,6 +500,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
                     disabled={disabled}
                     placeholder={disabled ? "Claude is thinking..." : "How can I help you?"}
                     className="w-full bg-transparent border-none !outline-none !focus:ring-0 !focus:outline-none resize-none text-white text-base placeholder-white/30 min-h-[50px] max-h-[200px] leading-relaxed selection:bg-orange-500/30 selection:text-white"
@@ -406,13 +509,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-1 px-2 py-1.5 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
+                <div className="flex flex-wrap items-center gap-0.5">
                     {/* Model Selector */}
                     <div className="relative" ref={modelSelectorRef}>
                         <button
                             onClick={() => setShowModelSelector(!showModelSelector)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 border border-transparent hover:border-white/5"
+                            className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 border border-transparent hover:border-white/5"
                         >
                             <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                             <span>{currentModelName}</span>
@@ -470,13 +573,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                         )}
                     </div>
 
-                    <div className="w-px h-4 bg-white/10 mx-1" />
+                    <div className="w-px h-4 bg-white/10 mx-0.5" />
 
                     {/* Thinking Mode */}
                     <div className="relative" ref={thinkingSelectorRef}>
                         <button
                             onClick={() => setShowThinkingSelector(!showThinkingSelector)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                            className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                                 thinkingMode
                                     ? "text-orange-400 bg-orange-500/10 border-orange-500/20"
                                     : "text-white/70 hover:bg-white/10 hover:text-white hover:border-white/5"
@@ -537,7 +640,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                         <button
                             onClick={yoloMode ? undefined : onPlanModeToggle}
                             disabled={yoloMode}
-                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                            className={`flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                                 yoloMode
                                     ? "opacity-40 cursor-not-allowed text-white/40"
                                     : planMode
@@ -589,7 +692,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                         <button
                             onClick={planMode ? undefined : onYoloModeToggle}
                             disabled={planMode}
-                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
+                            className={`flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg transition-all duration-200 border border-transparent ${
                                 planMode
                                     ? "opacity-40 cursor-not-allowed text-white/40"
                                     : yoloMode
@@ -637,7 +740,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
                     </button>

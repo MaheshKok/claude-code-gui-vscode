@@ -74,6 +74,9 @@ export interface MessageHandlerContext {
 
     // Usage tracking
     refreshUsage: () => Promise<void>;
+
+    // Conversation saving (for saving interrupted conversations)
+    saveConversation: () => Promise<void>;
 }
 
 /**
