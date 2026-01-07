@@ -17,7 +17,6 @@ describe("MessageInput", () => {
         onThinkingModeToggle: vi.fn(),
         onThinkingIntensityChange: vi.fn(),
         onYoloModeToggle: vi.fn(),
-        onSlashCommand: vi.fn(),
         onMcpAction: vi.fn(),
     };
 
@@ -70,11 +69,10 @@ describe("MessageInput", () => {
             expect(buttons.length).toBeGreaterThan(0);
         });
 
-        it("should render MCP and command buttons", () => {
+        it("should render MCP button", () => {
             render(<MessageInput {...defaultProps} />);
 
             expect(screen.getByTitle("MCP Tools")).toBeInTheDocument();
-            expect(screen.getByTitle("Commands (/)")).toBeInTheDocument();
         });
     });
 
@@ -340,15 +338,6 @@ describe("MessageInput", () => {
             fireEvent.click(screen.getByTitle("MCP Tools"));
 
             expect(onMcpAction).toHaveBeenCalledTimes(1);
-        });
-
-        it("should call onSlashCommand when command button clicked", () => {
-            const onSlashCommand = vi.fn();
-            render(<MessageInput {...defaultProps} onSlashCommand={onSlashCommand} />);
-
-            fireEvent.click(screen.getByTitle("Commands (/)"));
-
-            expect(onSlashCommand).toHaveBeenCalledTimes(1);
         });
     });
 

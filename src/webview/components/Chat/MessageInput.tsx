@@ -6,7 +6,6 @@ import {
     FileCode,
     Sparkles,
     AlertTriangle,
-    Command,
     Box,
     Paperclip,
     File,
@@ -39,7 +38,6 @@ interface MessageInputProps {
     onThinkingModeToggle: () => void;
     onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
     onYoloModeToggle: () => void;
-    onSlashCommand: () => void;
     onMcpAction: () => void;
 }
 
@@ -107,7 +105,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     onThinkingModeToggle,
     onThinkingIntensityChange,
     onYoloModeToggle,
-    onSlashCommand,
     onMcpAction,
     sessionId,
 }) => {
@@ -409,8 +406,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </div>
 
             {/* Toolbar */}
-            <div className="flex items-center justify-between px-3 py-2 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
-                <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
+                <div className="flex flex-wrap items-center gap-1.5">
                     {/* Model Selector */}
                     <div className="relative" ref={modelSelectorRef}>
                         <button
@@ -640,12 +637,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
-                    </button>
-                    <button className="btn-icon" onClick={onSlashCommand} title="Commands (/)">
-                        <Command className="w-4 h-4" />
                     </button>
                     <button
                         onClick={handleSubmit}

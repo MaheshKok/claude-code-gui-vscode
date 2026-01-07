@@ -76,7 +76,6 @@ vi.mock("../../webview/hooks/useAppCallbacks", () => ({
         handleThinkingModeToggle: vi.fn(),
         handleThinkingIntensityChange: vi.fn(),
         handleYoloModeToggle: vi.fn(),
-        handleSlashCommand: vi.fn(),
         handleMcpAction: vi.fn(),
         handleStopProcessing: vi.fn(),
         handleWSLConfigure: vi.fn(),
@@ -211,12 +210,6 @@ vi.mock("../../webview/components/Modals", () => ({
     InstallModal: ({ isOpen, onClose }: any) =>
         isOpen ? (
             <div data-testid="install-modal">
-                <button onClick={onClose}>Close</button>
-            </div>
-        ) : null,
-    SlashCommandsModal: ({ isOpen, onClose }: any) =>
-        isOpen ? (
-            <div data-testid="slash-commands-modal">
                 <button onClick={onClose}>Close</button>
             </div>
         ) : null,

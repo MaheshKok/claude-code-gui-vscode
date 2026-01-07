@@ -29,7 +29,6 @@ interface ChatContainerProps {
     onThinkingModeToggle: () => void;
     onThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
     onYoloModeToggle: () => void;
-    onSlashCommand: () => void;
     onMcpAction: () => void;
 }
 
@@ -48,7 +47,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     onThinkingModeToggle,
     onThinkingIntensityChange,
     onYoloModeToggle,
-    onSlashCommand,
     onMcpAction,
     sessionId,
     requestStartTime,
@@ -154,7 +152,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         onThinkingModeToggle={onThinkingModeToggle}
                         onThinkingIntensityChange={onThinkingIntensityChange}
                         onYoloModeToggle={onYoloModeToggle}
-                        onSlashCommand={onSlashCommand}
                         onMcpAction={onMcpAction}
                         sessionId={sessionId}
                     />

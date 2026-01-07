@@ -10,7 +10,6 @@ import {
     ModelSelectorModal,
     PermissionModal,
     InstallModal,
-    SlashCommandsModal,
     UsageModal,
 } from "./components/Modals";
 
@@ -184,7 +183,6 @@ export const App: React.FC = () => {
                 onThinkingModeToggle={callbacks.handleThinkingModeToggle}
                 onThinkingIntensityChange={callbacks.handleThinkingIntensityChange}
                 onYoloModeToggle={callbacks.handleYoloModeToggle}
-                onSlashCommand={callbacks.handleSlashCommand}
                 onMcpAction={callbacks.handleMcpAction}
             />
 
@@ -277,28 +275,6 @@ export const App: React.FC = () => {
 
             {ui.activeModal === "usage" && (
                 <UsageModal isOpen={true} onClose={state.uiActions.closeModal} />
-            )}
-
-            {ui.activeModal === "keyboard-shortcuts" && (
-                <SlashCommandsModal
-                    isOpen={true}
-                    onClose={state.uiActions.closeModal}
-                    customCommands={[]}
-                    onExecuteCommand={(cmd) => {
-                        state.uiActions.closeModal();
-                        if (cmd.prompt) {
-                            callbacks.handleSendMessage(cmd.prompt);
-                        } else {
-                            callbacks.handleSendMessage(cmd.name);
-                        }
-                    }}
-                    onAddCustomCommand={() => {}}
-                    onDeleteCustomCommand={() => {}}
-                    onQuickCommand={(cmd: string) => {
-                        state.uiActions.closeModal();
-                        callbacks.handleSendMessage(cmd);
-                    }}
-                />
             )}
         </div>
     );

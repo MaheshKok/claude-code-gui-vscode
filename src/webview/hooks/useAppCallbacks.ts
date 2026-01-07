@@ -28,7 +28,6 @@ export interface UseAppCallbacksReturn {
     handleThinkingModeToggle: () => void;
     handleThinkingIntensityChange: (intensity: ThinkingIntensity) => void;
     handleYoloModeToggle: () => void;
-    handleSlashCommand: () => void;
     handleMcpAction: () => void;
     handlePermissionResponse: (requestId: string, decision: PermissionDecision) => void;
     handleWSLConfigure: () => void;
@@ -161,10 +160,6 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
         });
     }, [settingsActions, settings.yoloMode, postMessage]);
 
-    const handleSlashCommand = useCallback(() => {
-        uiActions.openModal("keyboard-shortcuts");
-    }, [uiActions]);
-
     const handleMcpAction = useCallback(() => {
         // Load MCP servers when opening the modal
         postMessage({ type: "loadMCPServers" });
@@ -295,7 +290,6 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
         handleThinkingModeToggle,
         handleThinkingIntensityChange,
         handleYoloModeToggle,
-        handleSlashCommand,
         handleMcpAction,
         handlePermissionResponse,
         handleWSLConfigure,

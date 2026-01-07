@@ -291,19 +291,6 @@ describe("useAppCallbacks", () => {
         });
     });
 
-    describe("handleSlashCommand", () => {
-        it("should open keyboard shortcuts modal", () => {
-            const deps = createMockDeps();
-            const { result } = renderHook(() => useAppCallbacks(deps));
-
-            act(() => {
-                result.current.handleSlashCommand();
-            });
-
-            expect(mockOpenModal).toHaveBeenCalledWith("keyboard-shortcuts");
-        });
-    });
-
     describe("handleMcpAction", () => {
         it("should open MCP modal and load servers", () => {
             const deps = createMockDeps();

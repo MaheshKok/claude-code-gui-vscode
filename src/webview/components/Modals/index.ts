@@ -15,10 +15,6 @@ export type { MCPModalProps, MCPServer, MCPServerType, PopularServer } from "./M
 export { ModelSelectorModal } from "./ModelSelectorModal";
 export type { ModelSelectorModalProps, ModelOption, ModelInfo } from "./ModelSelectorModal";
 
-// Slash Commands Modal
-export { SlashCommandsModal } from "./SlashCommandsModal";
-export type { SlashCommandsModalProps, SlashCommand } from "./SlashCommandsModal";
-
 // File Picker Modal
 export { FilePickerModal } from "./FilePickerModal";
 export type { FilePickerModalProps, FileItem } from "./FilePickerModal";
