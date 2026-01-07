@@ -21,6 +21,11 @@ interface RateLimitClaim {
     reset?: number;
 }
 
+interface RateLimitClaimSelection {
+    claim: string;
+    data: RateLimitClaim;
+}
+
 export class UsageService implements vscode.Disposable {
     private _usageData: UsageData | undefined;
     private _pollInterval: NodeJS.Timeout | undefined;
@@ -655,26 +660,39 @@ export class UsageService implements vscode.Disposable {
             return null;
         }
 
+        const sessionResetEpoch = this._normalizeResetEpoch(
+            sessionClaim?.data.reset,
+            sessionClaim?.claim,
+        );
+        const weeklyResetEpoch = this._normalizeResetEpoch(
+            weeklyClaim?.data.reset,
+            weeklyClaim?.claim,
+        );
+
         const usageData: UsageData = {
             currentSession: {
-                usageCost: this._clampUsage(sessionClaim?.utilization),
+                usageCost: this._clampUsage(sessionClaim?.data.utilization),
                 costLimit: 1,
-                resetsIn: sessionClaim?.reset ? this._formatResetCountdown(sessionClaim.reset) : "",
+                resetsIn: sessionResetEpoch ? this._formatResetCountdown(sessionResetEpoch) : "",
             },
             weekly: {
-                costLikely: this._clampUsage(weeklyClaim?.utilization),
+                costLikely: this._clampUsage(weeklyClaim?.data.utilization),
                 costLimit: 1,
-                resetsAt: weeklyClaim?.reset ? this._formatResetAt(weeklyClaim.reset) : "",
+                resetsAt: weeklyResetEpoch ? this._formatResetAt(weeklyResetEpoch) : "",
             },
         };
 
         const sonnetClaim = this._findModelClaim(claims, "sonnet");
         if (sonnetClaim?.data.utilization !== undefined) {
+            const sonnetResetEpoch = this._normalizeResetEpoch(
+                sonnetClaim.data.reset,
+                sonnetClaim.claim,
+            );
             usageData.sonnet = {
                 usage: this._clampUsage(sonnetClaim.data.utilization),
                 limit: 1,
-                resetsAt: sonnetClaim.data.reset
-                    ? this._formatResetAt(sonnetClaim.data.reset)
+                resetsAt: sonnetResetEpoch
+                    ? this._formatResetAt(sonnetResetEpoch)
                     : usageData.weekly.resetsAt,
             };
         }
@@ -685,11 +703,11 @@ export class UsageService implements vscode.Disposable {
     private _selectClaim(
         claims: Map<string, RateLimitClaim>,
         candidates: string[],
-    ): RateLimitClaim | undefined {
+    ): RateLimitClaimSelection | undefined {
         for (const candidate of candidates) {
-            const claim = claims.get(candidate);
-            if (claim) {
-                return claim;
+            const data = claims.get(candidate);
+            if (data) {
+                return { claim: candidate, data };
             }
         }
         return undefined;
@@ -705,6 +723,68 @@ export class UsageService implements vscode.Disposable {
                 return { claim, data };
             }
         }
+        return null;
+    }
+
+    private _normalizeResetEpoch(
+        resetEpochSeconds: number | undefined,
+        claim?: string,
+    ): number | undefined {
+        if (!resetEpochSeconds || Number.isNaN(resetEpochSeconds)) {
+            return undefined;
+        }
+
+        const windowMs = claim ? this._parseClaimWindowMs(claim) : null;
+        if (!windowMs) {
+            return resetEpochSeconds;
+        }
+
+        const nowMs = Date.now();
+        let resetMs = resetEpochSeconds * 1000;
+
+        if (resetMs <= nowMs) {
+            const elapsedMs = nowMs - resetMs;
+            const windowsAhead = Math.floor(elapsedMs / windowMs) + 1;
+            resetMs += windowsAhead * windowMs;
+        }
+
+        return Math.floor(resetMs / 1000);
+    }
+
+    private _parseClaimWindowMs(claim: string): number | null {
+        const normalized = claim.toLowerCase();
+        const numericMatch = normalized.match(
+            /(\d+)(h|hr|hrs|hour|hours|d|day|days|m|min|mins|minute|minutes)/,
+        );
+
+        if (numericMatch) {
+            const value = Number(numericMatch[1]);
+            const unit = numericMatch[2];
+
+            if (Number.isNaN(value)) {
+                return null;
+            }
+
+            if (unit.startsWith("m")) {
+                return value * 60 * 1000;
+            }
+            if (unit.startsWith("h")) {
+                return value * 60 * 60 * 1000;
+            }
+            if (unit.startsWith("d")) {
+                return value * 24 * 60 * 60 * 1000;
+            }
+
+            return null;
+        }
+
+        if (normalized === "five_hour") {
+            return 5 * 60 * 60 * 1000;
+        }
+        if (normalized === "seven_day") {
+            return 7 * 24 * 60 * 60 * 1000;
+        }
+
         return null;
     }
 

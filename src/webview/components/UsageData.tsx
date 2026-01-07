@@ -44,6 +44,25 @@ const LoadingState: React.FC = () => (
     </div>
 );
 
+const getUsageRatio = (used: number, limit: number): number | null => {
+    if (!Number.isFinite(used) || !Number.isFinite(limit) || limit <= 0) {
+        return null;
+    }
+    return used / limit;
+};
+
+const formatUsageLabel = (ratio: number | null): string => {
+    if (ratio === null) {
+        return "N/A";
+    }
+    return `${Math.round(ratio * 100)}% used`;
+};
+
+const formatResetLabel = (prefix: string, value?: string): string => {
+    const trimmed = value?.trim();
+    return `${prefix} ${trimmed || "N/A"}`;
+};
+
 const formatTimeAgo = (date: Date | null): string => {
     if (!date) return "never";
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -78,6 +97,13 @@ export const UsageData: React.FC = () => {
         return <LoadingState />;
     }
 
+    const sessionRatio = getUsageRatio(
+        data.currentSession.usageCost,
+        data.currentSession.costLimit,
+    );
+    const weeklyRatio = getUsageRatio(data.weekly.costLikely, data.weekly.costLimit);
+    const sonnetRatio = data.sonnet ? getUsageRatio(data.sonnet.usage, data.sonnet.limit) : null;
+
     return (
         <div className="w-full text-sm">
             <h2 className="text-white font-semibold mb-6">Plan usage limits</h2>
@@ -85,9 +111,9 @@ export const UsageData: React.FC = () => {
             <div className="mb-8 border-b border-white/5 pb-6">
                 <ProgressBar
                     label="Current session"
-                    value={data.currentSession.usageCost / data.currentSession.costLimit}
-                    rightLabel={`${Math.round((data.currentSession.usageCost / data.currentSession.costLimit) * 100)}% used`}
-                    subLabel={`Resets in ${data.currentSession.resetsIn}`}
+                    value={sessionRatio ?? 0}
+                    rightLabel={formatUsageLabel(sessionRatio)}
+                    subLabel={formatResetLabel("Resets in", data.currentSession.resetsIn)}
                 />
             </div>
 
@@ -102,17 +128,17 @@ export const UsageData: React.FC = () => {
 
                 <ProgressBar
                     label="All models"
-                    value={data.weekly.costLikely / data.weekly.costLimit}
-                    rightLabel={`${Math.round((data.weekly.costLikely / data.weekly.costLimit) * 100)}% used`}
-                    subLabel={`Resets ${data.weekly.resetsAt}`}
+                    value={weeklyRatio ?? 0}
+                    rightLabel={formatUsageLabel(weeklyRatio)}
+                    subLabel={formatResetLabel("Resets", data.weekly.resetsAt)}
                 />
 
                 {data.sonnet && (
                     <ProgressBar
                         label="Sonnet only"
-                        value={data.sonnet.usage / data.sonnet.limit}
-                        rightLabel={`${Math.round((data.sonnet.usage / data.sonnet.limit) * 100)}% used`}
-                        subLabel={`Resets ${data.sonnet.resetsAt}`}
+                        value={sonnetRatio ?? 0}
+                        rightLabel={formatUsageLabel(sonnetRatio)}
+                        subLabel={formatResetLabel("Resets", data.sonnet.resetsAt)}
                     />
                 )}
             </div>

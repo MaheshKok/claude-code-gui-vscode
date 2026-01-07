@@ -1,6 +1,6 @@
 import React from "react";
 import type { SessionInfo } from "../App";
-import { MessageSquarePlus, History, X, Loader2 } from "lucide-react";
+import { MessageSquarePlus, History, X, Loader2, ChevronDown } from "lucide-react";
 import { useUsageStore } from "../../stores/usageStore";
 import logoImage from "../../assets/logo.png";
 
@@ -45,12 +45,20 @@ export const Header: React.FC<HeaderProps> = ({
     const usageData = useUsageStore((state) => state.data);
     const isRefreshing = useUsageStore((state) => state.isRefreshing);
 
-    // Calculate usage percentage
-    const usagePercentage = usageData
-        ? Math.round(
-              (usageData.currentSession.usageCost / usageData.currentSession.costLimit) * 100,
-          )
-        : 0;
+    const usageRatio =
+        usageData &&
+        Number.isFinite(usageData.currentSession.usageCost) &&
+        Number.isFinite(usageData.currentSession.costLimit) &&
+        usageData.currentSession.costLimit > 0
+            ? usageData.currentSession.usageCost / usageData.currentSession.costLimit
+            : null;
+    const usagePercentage =
+        usageRatio !== null && Number.isFinite(usageRatio) ? Math.round(usageRatio * 100) : null;
+    const usagePercentageLabel = usagePercentage !== null ? `${usagePercentage}%` : "N/A";
+    const usagePercentageWidth = usagePercentage !== null ? Math.min(usagePercentage, 100) : 0;
+    const resetLabel = usageData?.currentSession.resetsIn?.trim()
+        ? usageData.currentSession.resetsIn
+        : "N/A";
 
     // Show loading state if refreshing or if no data has been loaded yet
     const isLoading = isRefreshing || (!usageData && isRefreshing !== false);
@@ -90,26 +98,40 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
 
                     {/* Usage Progress Bar - clickable with hover effects */}
-                    {!isLoading && usageData && (
+                    {!isLoading && (
                         <div
-                            className="flex flex-col gap-0.5 cursor-pointer group"
-                            onClick={onOpenUsage}
+                            className="flex items-start gap-2 cursor-pointer group"
+                            onClick={() => onOpenUsage?.()}
                             title={TOOLTIPS.USAGE}
                         >
-                            {/* Progress bar with percentage - w-44 = 176px */}
-                            <div className="relative w-44 h-4 bg-white/10 rounded-full overflow-hidden transition-all duration-200 group-hover:bg-white/15 group-hover:shadow-[0_0_12px_rgba(249,115,22,0.3)]">
-                                <div
-                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
-                                    style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-                                />
-                                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-white drop-shadow-sm">
-                                    {usagePercentage}%
+                            <div className="flex flex-col gap-0.5">
+                                {/* Progress bar with percentage - w-44 = 176px */}
+                                <div className="relative w-44 h-4 bg-white/10 rounded-full overflow-hidden transition-all duration-200 group-hover:bg-white/15 group-hover:shadow-[0_0_12px_rgba(249,115,22,0.3)]">
+                                    <div
+                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
+                                        style={{ width: `${usagePercentageWidth}%` }}
+                                    />
+                                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-white drop-shadow-sm">
+                                        {usagePercentageLabel}
+                                    </span>
+                                </div>
+                                {/* Reset time - becomes brighter on hover */}
+                                <span className="text-[9px] text-white/40 group-hover:text-white/60 transition-colors">
+                                    Resets in {resetLabel}
                                 </span>
                             </div>
-                            {/* Reset time - becomes brighter on hover */}
-                            <span className="text-[9px] text-white/40 group-hover:text-white/60 transition-colors">
-                                Resets in {usageData.currentSession.resetsIn}
-                            </span>
+                            <button
+                                type="button"
+                                className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-colors group-hover:text-white/80 hover:bg-white/10"
+                                title={TOOLTIPS.USAGE}
+                                aria-label={TOOLTIPS.USAGE}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onOpenUsage?.();
+                                }}
+                            >
+                                <ChevronDown className="h-3 w-3" />
+                            </button>
                         </div>
                     )}
                 </div>

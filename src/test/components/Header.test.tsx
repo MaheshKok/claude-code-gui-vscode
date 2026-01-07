@@ -66,7 +66,7 @@ describe("Header", () => {
         });
         const onOpenUsage = vi.fn();
         render(<Header {...defaultProps} onOpenUsage={onOpenUsage} />);
-        fireEvent.click(screen.getByTitle("View Usage Details"));
+        fireEvent.click(screen.getByRole("button", { name: "View Usage Details" }));
         expect(onOpenUsage).toHaveBeenCalledTimes(1);
     });
 
@@ -78,10 +78,11 @@ describe("Header", () => {
     });
 
     describe("usage data display", () => {
-        it("should not show usage stats when no usage data", () => {
+        it("should show N/A usage when no usage data", () => {
             mockUsageStore(null);
             render(<Header {...defaultProps} />);
-            expect(screen.queryByText("Session")).not.toBeInTheDocument();
+            expect(screen.getByText("N/A")).toBeInTheDocument();
+            expect(screen.getByText(/Resets in N\/A/)).toBeInTheDocument();
         });
 
         it("should show usage stats when usage data is available", () => {
@@ -144,19 +145,19 @@ describe("Header", () => {
     });
 
     describe("usage button visibility", () => {
-        it("should not render usage button when onOpenUsage is not provided", () => {
+        it("should render usage button even when onOpenUsage is not provided", () => {
             render(<Header {...defaultProps} onOpenUsage={undefined} />);
-            expect(screen.queryByTitle("View Usage Details")).not.toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "View Usage Details" })).toBeInTheDocument();
         });
 
         it("should render usage button when onOpenUsage is provided", () => {
-            // Need usage data for button to appear
+            // Provide usage data for predictable labels
             mockUsageStore({
                 currentSession: { usageCost: 0, costLimit: 1, resetsIn: "1h" },
                 weekly: { costLikely: 0, costLimit: 1, resetsAt: "Mon" },
             });
             render(<Header {...defaultProps} onOpenUsage={vi.fn()} />);
-            expect(screen.getByTitle("View Usage Details")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "View Usage Details" })).toBeInTheDocument();
         });
     });
 
