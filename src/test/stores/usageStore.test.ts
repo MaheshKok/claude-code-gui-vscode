@@ -473,9 +473,7 @@ describe("usageStore cache loading", () => {
         localStorageMock.getItem.mockReturnValue(JSON.stringify(cachedData));
 
         // Re-import the module to trigger loadCachedData
-        const { useUsageStore: freshStore } = await import(
-            "../../webview/stores/usageStore"
-        );
+        const { useUsageStore: freshStore } = await import("../../webview/stores/usageStore");
 
         const state = freshStore.getState();
         expect(state.data?.currentSession.usageCost).toBe(0.8);
@@ -483,8 +481,8 @@ describe("usageStore cache loading", () => {
         expect(state.lastUpdatedAt).not.toBeNull();
     });
 
-    it("should ignore expired cached data (older than 1 hour)", async () => {
-        // Set up expired cached data (more than 1 hour old)
+    it("should ignore expired cached data (older than 30 days)", async () => {
+        // Set up expired cached data (more than 30 days old)
         const cachedData = {
             data: {
                 currentSession: {
@@ -498,15 +496,13 @@ describe("usageStore cache loading", () => {
                     resetsAt: "Fri",
                 },
             },
-            timestamp: Date.now() - 2 * 60 * 60 * 1000, // 2 hours ago
+            timestamp: Date.now() - 31 * 24 * 60 * 60 * 1000, // 31 days ago
         };
 
         localStorageMock.getItem.mockReturnValue(JSON.stringify(cachedData));
 
         // Re-import the module
-        const { useUsageStore: freshStore } = await import(
-            "../../webview/stores/usageStore"
-        );
+        const { useUsageStore: freshStore } = await import("../../webview/stores/usageStore");
 
         const state = freshStore.getState();
         // Should have null data since cache is expired
@@ -519,9 +515,7 @@ describe("usageStore cache loading", () => {
         localStorageMock.getItem.mockReturnValue("invalid json {{{");
 
         // Re-import the module - should not throw
-        const { useUsageStore: freshStore } = await import(
-            "../../webview/stores/usageStore"
-        );
+        const { useUsageStore: freshStore } = await import("../../webview/stores/usageStore");
 
         const state = freshStore.getState();
         // Should have null data since parsing failed
@@ -536,9 +530,7 @@ describe("usageStore cache loading", () => {
         });
 
         // Re-import the module - should not throw
-        const { useUsageStore: freshStore } = await import(
-            "../../webview/stores/usageStore"
-        );
+        const { useUsageStore: freshStore } = await import("../../webview/stores/usageStore");
 
         const state = freshStore.getState();
         expect(state.data).toBeNull();
@@ -548,9 +540,7 @@ describe("usageStore cache loading", () => {
     it("should handle empty localStorage", async () => {
         localStorageMock.getItem.mockReturnValue(null);
 
-        const { useUsageStore: freshStore } = await import(
-            "../../webview/stores/usageStore"
-        );
+        const { useUsageStore: freshStore } = await import("../../webview/stores/usageStore");
 
         const state = freshStore.getState();
         expect(state.data).toBeNull();

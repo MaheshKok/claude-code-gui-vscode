@@ -38,96 +38,37 @@ describe("StatusBar", () => {
         });
     });
 
-    describe("token display", () => {
-        it("should display total tokens", () => {
+    describe("simplified footer - stats removed", () => {
+        // The StatusBar was simplified to only show connection status
+        // Token, request count, cost, duration, and subscription type displays were moved elsewhere
+
+        it("should NOT display token stats in footer (moved to ChatContainer)", () => {
             render(<StatusBar {...defaultProps} totalTokens={1500} />);
 
-            // The formatTokenCount function will format this
-            expect(screen.getByTitle("Total Tokens")).toBeInTheDocument();
+            // Token stats were removed from StatusBar
+            expect(screen.queryByTitle("Total Tokens")).not.toBeInTheDocument();
         });
 
-        it("should display large token counts abbreviated", () => {
-            render(<StatusBar {...defaultProps} totalTokens={150000} />);
-
-            const tokenElement = screen.getByTitle("Total Tokens");
-            expect(tokenElement).toBeInTheDocument();
-        });
-    });
-
-    describe("request count", () => {
-        it("should display request count when > 0", () => {
+        it("should NOT display request count in footer (removed)", () => {
             render(<StatusBar {...defaultProps} requestCount={10} />);
 
-            expect(screen.getByText("10 reqs")).toBeInTheDocument();
+            expect(screen.queryByText("10 reqs")).not.toBeInTheDocument();
         });
 
-        it("should not display request count when 0", () => {
-            render(<StatusBar {...defaultProps} requestCount={0} />);
-
-            expect(screen.queryByText("0 reqs")).not.toBeInTheDocument();
-        });
-    });
-
-    describe("session cost", () => {
-        it("should display session cost when not processing", () => {
+        it("should NOT display session cost in footer (moved to ChatContainer)", () => {
             render(<StatusBar {...defaultProps} sessionCostUsd={0.25} />);
 
-            const costElement = screen.getByTitle("Session Cost");
-            expect(costElement).toBeInTheDocument();
-        });
-
-        it("should not display session cost when processing", () => {
-            render(<StatusBar {...defaultProps} isProcessing={true} sessionCostUsd={0.25} />);
-
             expect(screen.queryByTitle("Session Cost")).not.toBeInTheDocument();
         });
 
-        it("should not display session cost when 0", () => {
-            render(<StatusBar {...defaultProps} sessionCostUsd={0} />);
-
-            expect(screen.queryByTitle("Session Cost")).not.toBeInTheDocument();
-        });
-    });
-
-    describe("duration display", () => {
-        it("should display last duration when not processing", () => {
+        it("should NOT display duration in footer (moved to ChatContainer)", () => {
             render(<StatusBar {...defaultProps} lastDurationMs={2500} />);
-
-            const durationElement = screen.getByTitle("Last Request Duration");
-            expect(durationElement).toBeInTheDocument();
-        });
-
-        it("should not display duration when null", () => {
-            render(<StatusBar {...defaultProps} lastDurationMs={null} />);
 
             expect(screen.queryByTitle("Last Request Duration")).not.toBeInTheDocument();
         });
 
-        it("should display elapsed time when processing", () => {
-            const startTime = Date.now();
-            render(
-                <StatusBar {...defaultProps} isProcessing={true} requestStartTime={startTime} />,
-            );
-
-            // Advance time
-            act(() => {
-                vi.advanceTimersByTime(3000);
-            });
-
-            const elapsedElement = screen.getByTitle("Elapsed Time");
-            expect(elapsedElement).toBeInTheDocument();
-        });
-    });
-
-    describe("subscription type", () => {
-        it("should display subscription type when provided", () => {
+        it("should NOT display subscription type in footer (removed)", () => {
             render(<StatusBar {...defaultProps} subscriptionType="pro" />);
-
-            expect(screen.getByText("pro")).toBeInTheDocument();
-        });
-
-        it("should not display subscription type when null", () => {
-            render(<StatusBar {...defaultProps} subscriptionType={null} />);
 
             expect(screen.queryByText("pro")).not.toBeInTheDocument();
         });
@@ -162,7 +103,22 @@ describe("StatusBar", () => {
         });
     });
 
-    describe("elapsed time calculation", () => {
+    describe("elapsed time display", () => {
+        it("should display elapsed time when processing", () => {
+            const startTime = Date.now();
+            render(
+                <StatusBar {...defaultProps} isProcessing={true} requestStartTime={startTime} />,
+            );
+
+            // Advance time
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            const elapsedElement = screen.getByTitle("Elapsed Time");
+            expect(elapsedElement).toBeInTheDocument();
+        });
+
         it("should update elapsed time periodically when processing", () => {
             // Set start time to 1 second in the past so elapsedMs > 0 initially
             const startTime = Date.now() - 1000;
@@ -197,7 +153,7 @@ describe("StatusBar", () => {
             // Stop processing
             rerender(<StatusBar {...defaultProps} isProcessing={false} requestStartTime={null} />);
 
-            // Elapsed time should be reset - now shows last duration instead
+            // Elapsed time should be reset - no longer shown
             expect(screen.queryByTitle("Elapsed Time")).not.toBeInTheDocument();
         });
     });

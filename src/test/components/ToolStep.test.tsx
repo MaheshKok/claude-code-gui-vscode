@@ -359,9 +359,9 @@ describe("ToolStep", () => {
     });
 
     describe("cache tokens display", () => {
-        // Note: Cache token labels (C/R) are only shown for TodoWrite tools
-        // because that's where the header stats section is rendered
-        it("should show cache creation tokens when present for TodoWrite", () => {
+        // Note: Cache token labels (C/R) have been removed from the UI
+        // These tests verify that cache tokens are not displayed
+        it("should NOT show cache creation tokens badge (C removed from UI)", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
@@ -376,11 +376,11 @@ describe("ToolStep", () => {
 
             render(<ToolStep {...defaultProps} step={step} />);
 
-            // Cache creation is indicated by "C" label (only visible for TodoWrite)
-            expect(screen.getByText("C")).toBeInTheDocument();
+            // Cache creation badge "C" was removed from UI
+            expect(screen.queryByText("C")).not.toBeInTheDocument();
         });
 
-        it("should show cache read tokens when present for TodoWrite", () => {
+        it("should NOT show cache read tokens badge (R removed from UI)", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
@@ -395,8 +395,8 @@ describe("ToolStep", () => {
 
             render(<ToolStep {...defaultProps} step={step} />);
 
-            // Cache read is indicated by "R" label (only visible for TodoWrite)
-            expect(screen.getByText("R")).toBeInTheDocument();
+            // Cache read badge "R" was removed from UI
+            expect(screen.queryByText("R")).not.toBeInTheDocument();
         });
 
         it("should not show cache creation tokens when 0", () => {
@@ -435,7 +435,7 @@ describe("ToolStep", () => {
             expect(screen.queryByText("R")).not.toBeInTheDocument();
         });
 
-        it("should get cache tokens from toolResult for TodoWrite", () => {
+        it("should NOT show cache tokens from toolResult (badges removed from UI)", () => {
             const step = createMockStep({
                 toolUse: {
                     uuid: "use-1",
@@ -457,8 +457,9 @@ describe("ToolStep", () => {
 
             render(<ToolStep {...defaultProps} step={step} />);
 
-            expect(screen.getByText("C")).toBeInTheDocument();
-            expect(screen.getByText("R")).toBeInTheDocument();
+            // Cache token badges were removed from UI
+            expect(screen.queryByText("C")).not.toBeInTheDocument();
+            expect(screen.queryByText("R")).not.toBeInTheDocument();
         });
     });
 
