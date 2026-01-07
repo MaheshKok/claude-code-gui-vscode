@@ -70,7 +70,7 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
     const stopRequestTiming = useChatStore((s) => s.stopRequestTiming);
     const hydrateConversation = useChatStore((s) => s.hydrateConversation);
     const costs = useChatStore((s) => s.costs);
-    const sessionId = useChatStore((s) => s.sessionId);
+    const sessionId = useChatStore((s) => s.setSessionId);
 
     const loadFromVSCode = useSettingsStore((s) => s.loadFromVSCode);
 
