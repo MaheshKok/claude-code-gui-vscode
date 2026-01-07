@@ -5,6 +5,12 @@ All notable changes to the Claude Code GUI extension will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-07
+
+### Added
+
+Added Notificatin when claude seeks permissions or when claude finishes work
+
 ## [1.2.0] - 2026-01-06
 
 ### Fixed
