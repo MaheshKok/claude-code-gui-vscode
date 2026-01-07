@@ -174,6 +174,10 @@ export const App: React.FC = () => {
                 thinkingIntensity={settings.thinkingIntensity}
                 yoloMode={settings.yoloMode}
                 sessionId={useChatStore.getState().currentSessionId}
+                requestStartTime={chat.requestStartTime}
+                totalTokens={totalTokens}
+                sessionCostUsd={chat.costs.sessionCostUsd}
+                lastDurationMs={local.lastDurationMs}
                 onSendMessage={callbacks.handleSendMessage}
                 onModelChange={callbacks.handleModelChange}
                 onPlanModeToggle={callbacks.handlePlanModeToggle}

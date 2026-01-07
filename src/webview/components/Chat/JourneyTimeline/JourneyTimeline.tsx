@@ -14,6 +14,8 @@ import { EmptyState } from "./EmptyState";
 import { ToolStep } from "./ToolStep";
 import { PlanGroup } from "./PlanGroup";
 import { getGroupStatus } from "./utils";
+import { formatDuration, formatTokenCount } from "../../../utils";
+import { Clock, Zap } from "lucide-react";
 import type {
     TimelineItem,
     TimelineItemTool,
@@ -149,10 +151,13 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     isProcessing,
     showEmptyState = true,
     onAction,
+    requestStartTime,
+    totalTokens = 0,
 }) => {
     const [collapsedPlans, setCollapsedPlans] = useState<Record<string, boolean>>({});
     const [collapsedSteps, setCollapsedSteps] = useState<Record<string, boolean>>({});
     const [copiedPlanId, setCopiedPlanId] = useState<string | null>(null);
+    const [elapsedMs, setElapsedMs] = useState(0);
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const items = useMemo<TimelineItem[]>(() => buildTimelineItems(messages), [messages]);
@@ -164,6 +169,22 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         }
         return null;
     }, [messages]);
+
+    // Track elapsed time while processing
+    useEffect(() => {
+        if (!isProcessing || !requestStartTime) {
+            setElapsedMs(0);
+            return;
+        }
+
+        const tick = () => {
+            setElapsedMs(Date.now() - requestStartTime);
+        };
+
+        tick();
+        const interval = setInterval(tick, 200);
+        return () => clearInterval(interval);
+    }, [isProcessing, requestStartTime]);
 
     useEffect(() => {
         if (bottomRef.current) {
@@ -245,14 +266,40 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 );
             })}
 
+            {/* Processing indicator with time elapsed and tokens */}
             {isProcessing && (
-                <div className="glass rounded-xl p-4 flex items-center gap-4 animate-pulse">
-                    <div className="flex gap-1.5">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
+                <div className="glass rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex gap-1.5">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" />
+                        </div>
+                        <span className="text-sm font-medium text-white/60">
+                            Claude is thinking...
+                        </span>
                     </div>
-                    <span className="text-sm font-medium text-white/60">Claude is thinking...</span>
+
+                    {/* Processing stats */}
+                    <div className="flex items-center gap-3 text-xs text-white/50">
+                        {elapsedMs > 0 && (
+                            <div className="flex items-center gap-1.5" title="Elapsed Time">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDuration(elapsedMs, { abbreviated: true })}</span>
+                            </div>
+                        )}
+                        {totalTokens > 0 && (
+                            <div className="flex items-center gap-1.5" title="Tokens">
+                                <Zap className="w-3 h-3" />
+                                <span>
+                                    {formatTokenCount(totalTokens, {
+                                        includeSuffix: true,
+                                        abbreviated: true,
+                                    })}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 

@@ -5,6 +5,8 @@ import { TodoDisplay } from "../Tools";
 import { JourneyTimeline } from "./JourneyTimeline";
 import type { TodoItem } from "../Tools";
 import { ThinkingIntensity } from "../../../shared/constants";
+import { formatDuration, formatTokenCount, formatCost } from "../../utils";
+import { Clock, Zap, DollarSign } from "lucide-react";
 
 interface ChatContainerProps {
     messages: Message[];
@@ -16,6 +18,11 @@ interface ChatContainerProps {
     thinkingIntensity: ThinkingIntensity;
     yoloMode: boolean;
     sessionId?: string | null;
+    // Processing stats
+    requestStartTime?: number | null;
+    totalTokens?: number;
+    sessionCostUsd?: number;
+    lastDurationMs?: number | null;
     onSendMessage: (content: string) => void;
     onModelChange: (model: string) => void;
     onPlanModeToggle: () => void;
@@ -44,8 +51,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     onSlashCommand,
     onMcpAction,
     sessionId,
+    requestStartTime,
+    totalTokens = 0,
+    sessionCostUsd = 0,
+    lastDurationMs,
 }) => {
     const showEmptyState = messages.length === 0;
+
+    // Show stats when not processing and we have data
+    const showStats =
+        !isProcessing &&
+        messages.length > 0 &&
+        (lastDurationMs || totalTokens > 0 || sessionCostUsd > 0);
 
     return (
         <div className="flex flex-col flex-1 overflow-hidden relative">
@@ -55,6 +72,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     isProcessing={isProcessing}
                     showEmptyState={showEmptyState}
                     onAction={onSendMessage}
+                    requestStartTime={requestStartTime}
+                    totalTokens={totalTokens}
                 />
             </div>
 
@@ -65,6 +84,42 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                             <TodoDisplay todos={todos} title="Tasks" defaultCollapsed={true} />
                         </div>
                     )}
+
+                    {/* Stats below Tasks - positioned at bottom right */}
+                    {showStats && (
+                        <div className="flex justify-end mb-1">
+                            <div className="flex items-center gap-3 text-xs text-white/40">
+                                {lastDurationMs && lastDurationMs > 0 && (
+                                    <div className="flex items-center gap-1" title="Total Duration">
+                                        <Clock className="w-3 h-3" />
+                                        <span>
+                                            {formatDuration(lastDurationMs, { abbreviated: true })}
+                                        </span>
+                                    </div>
+                                )}
+                                {totalTokens > 0 && (
+                                    <div className="flex items-center gap-1" title="Total Tokens">
+                                        <Zap className="w-3 h-3" />
+                                        <span>
+                                            {formatTokenCount(totalTokens, {
+                                                includeSuffix: true,
+                                                abbreviated: true,
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+                                {sessionCostUsd > 0 && (
+                                    <div className="flex items-center gap-1" title="Session Cost">
+                                        <DollarSign className="w-3 h-3" />
+                                        <span>
+                                            {formatCost(sessionCostUsd, { showFreeForZero: false })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <MessageInput
                         disabled={isProcessing}
                         currentModel={currentModel}
