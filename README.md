@@ -40,6 +40,8 @@
 
 ---
 
+![alt text](image.png)
+
 ## ✨ Why Claude Code GUI?
 
 **You deserve to see what's happening.** When you can watch Claude work in real-time, you're not just trusting — you're _understanding_. This extension gives you a front-row seat to AI-powered coding.
