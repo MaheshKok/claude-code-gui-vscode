@@ -15,6 +15,9 @@ concurrency:
 permissions:
     contents: read
 
+env:
+    BUN_VERSION: "1.3.5"
+
 jobs:
     # Job 1: Build and Test (runs on pushes and PRs)
     build:
@@ -32,7 +35,7 @@ jobs:
             - name: Setup Bun
               uses: oven-sh/setup-bun@v1
               with:
-                  bun-version: "1.1.42"
+                  bun-version: ${{ env.BUN_VERSION }}
 
             - name: Cache Bun
               uses: actions/cache@v4
@@ -108,7 +111,7 @@ jobs:
               if: steps.version-check.outputs.version_changed == 'true'
               uses: oven-sh/setup-bun@v1
               with:
-                  bun-version: "1.1.42"
+                  bun-version: ${{ env.BUN_VERSION }}
 
             - name: Download VSIX artifact
               if: steps.version-check.outputs.version_changed == 'true'
