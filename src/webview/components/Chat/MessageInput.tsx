@@ -509,8 +509,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-1 px-2 py-1.5 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
-                <div className="flex flex-wrap items-center gap-0.5">
+            <div className="flex items-start justify-between gap-1 px-2 py-1.5 bg-black/10 border-t border-white/5 rounded-b-2xl backdrop-blur-sm">
+                <div className="flex flex-1 min-w-0 flex-wrap items-center gap-0.5">
                     {/* Model Selector */}
                     <div className="relative" ref={modelSelectorRef}>
                         <button
@@ -740,7 +740,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+                <div className="flex items-center gap-1 flex-shrink-0">
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
                     </button>
