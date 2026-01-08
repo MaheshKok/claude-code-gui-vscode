@@ -1,7 +1,7 @@
 <h1 align="center">Claude Code GUI</h1>
 
 <p align="center">
-  <strong>🚀 A stunning, modern AI-powered chat interface for Claude Code CLI</strong>
+  <strong>See Claude Code think, plan, and operate — live inside VS Code.</strong>
 </p>
 
 <p align="center">
@@ -17,21 +17,12 @@
 </p>
 
 <p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#%EF%B8%8F-configuration">Configuration</a> •
-  <a href="#-contributing">Contributing</a>
-</p>
-
----
-
-<p align="center">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React">
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="TailwindCSS">
-  <img src="https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/Zustand-5-orange?style=flat-square" alt="Zustand">
+  <a href="#why-this-exists">Why</a> •
+  <a href="#highlights">Highlights</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#modes--controls">Modes &amp; Controls</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#development">Development</a>
 </p>
 
 ---
@@ -40,247 +31,97 @@
   <img src="image.png" alt="Claude Code GUI screenshot" width="503" height="741">
 </p>
 
-## ✨ Why Claude Code GUI?
+## Why this exists
 
-**You deserve to see what's happening.** When you can watch Claude work in real-time, you're not just trusting — you're _understanding_. This extension gives you a front-row seat to AI-powered coding.
+Claude Code CLI is powerful, but most of its work happens invisibly in a terminal. Claude Code GUI turns the CLI into a visual cockpit: you can watch tool calls, diffs, token usage, and progress in real time without leaving VS Code.
 
-Transform your VS Code into a powerful AI coding companion. Claude Code GUI brings the intelligence of Anthropic's Claude directly into your editor with a **beautiful, modern interface** designed for developers who demand excellence.
+If you’ve ever wanted to **see the work, not just the answer**, this is for you.
 
-> 💡 **Built for productivity** — Real-time streaming, keyboard shortcuts, and seamless VS Code integration make coding with AI feel natural.
+## Highlights
 
----
+- **Journey Timeline** — messages, tool calls, and results grouped into a readable, collapsible flow.
+- **Tool intelligence** — per-tool duration and token counts with structured inputs and rich outputs.
+- **Diff-first edits** — inline diffs, open-in-VS Code diff, and one-click revert.
+- **Live progress** — `TodoWrite` steps render into a task panel while Claude works.
+- **Usage cockpit** — header meter + detailed modal for session and weekly usage/reset times.
+- **Permission control** — allow/deny tool requests, Plan mode (read-only), YOLO mode (skip prompts).
+- **MCP hub** — preseeded servers (Chrome, Context7, Sequential Thinking, Memory, Puppeteer, Fetch, Filesystem) with toggle/add/remove.
+- **Conversation history** — automatic saving, search, restore, delete.
+- **Sidebar + editor panel** — open the chat where you like.
 
-## 🎯 Why Should You Install This?
+## How it works
 
-<table>
-<tr>
-<td>
+1. Extension host spawns `claude` with `--output-format stream-json`.
+2. CLI events stream into the webview via `postMessage`.
+3. React UI renders streaming output, tool cards, diffs, usage, and history.
 
-### 🗺️ **Finally See the Journey, Not Just the Destination**
-
-You know what Claude concluded, but do you know _how_ it got there? Stop flying blind. **Watch every step** Claude takes, understand its reasoning, and learn how it solves problems. You'll never look at AI the same way again.
-
-</td>
-</tr>
-
-<tr> 
-<td>
-
-### 📋 **Your Live Progress Dashboard**
-
-No more wondering "what is Claude doing right now?" Watch your task list update **in real-time** as Claude works. See checkmarks appear, track progress instantly, and stay in sync with your AI pair programmer.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 📊 **Your Usage Always Visible**
-
-Why should you dig through commands to find your token usage? You shouldn't. **See your costs and consumption right in the header** — always visible, always current. Plan smarter, budget better, stay in control.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 🔌 **Pre-Configured MCPs **
-
-Skip the setup headaches. **Context7, Sequential Thinking, Puppeteer, Memory** your essential MCP servers come pre-configured and ready to use. Just start coding.
-
-</td>
-</tr>
-<tr>
-<td>
-
-### 🎛️ **Toggle Modes in One Click**
-
-Want to enable YOLO mode? One click. Switch thinking intensity? One click. Toggle Plan mode? **One. Click.** Your workflow, your way with zero friction.
-
-</td>
-</tr>
-<tr>
-<td>
-
-### 🔍 **Know Exactly Where Your Tokens Go**
-
-Ever wondered which tool is eating all your tokens? Now you'll know. **See per-tool token consumption** and optimize your prompts with real data, not guesswork.
-
-</td>
-</tr>
-</table>
-
----
-
-## 🎯 Features
-
-### 🗨️ **Intelligent Chat Experience**
-
-- **Real-time Streaming** — Watch responses appear as Claude thinks
-- **Rich Markdown** — Full GitHub-flavored markdown with syntax highlighting
-- **Code Blocks** — Beautiful syntax highlighting with one-click copy
-- **Session Persistence** — Your conversations survive restarts
-
-### 🛠️ **Powerful Tool Visualization**
-
-- **Tool Use Cards** — See exactly what Claude is doing
-- **Diff Viewer** — Side-by-side and unified views for file changes
-- **Todo Tracking** — Visual progress for multi-step tasks
-- **File Attachments** — Upload files and images directly
-
-### 🧠 **Advanced AI Modes**
-
-| Mode                | Description             | Token Budget |
-| ------------------- | ----------------------- | ------------ |
-| 🧠 **Think**        | Basic reasoning         | 4K tokens    |
-| 🔥 **Think Hard**   | Deeper analysis         | 10K tokens   |
-| 💪 **Think Harder** | Comprehensive reasoning | 20K tokens   |
-| ⚡ **Ultrathink**   | Maximum depth           | 32K tokens   |
-
-### 🔐 **Smart Permission System**
-
-- **Permission Modal** — Review and approve operations
-- **YOLO Mode** — Speed through trusted operations
-- **Auto-approve Patterns** — Configure what gets approved automatically
-
-### 🌐 **Model Context Protocol (MCP)**
-
-- Connect to MCP servers for extended capabilities
-- Real-time server status monitoring
-- Automatic tool discovery
-
----
-
-## 📥 Installation
-
-### From VS Code Marketplace
-
-1. Open **VS Code**
-2. Press `Ctrl+Shift+X` (or `Cmd+Shift+X` on macOS)
-3. Search for **"Claude Code GUI"**
-4. Click **Install**
-
-### For Cursor & other VS Code forks (VSIX)
-
-1. Download the latest `.vsix` from the GitHub Releases page:  
-   https://github.com/MaheshKok/claude-code-gui-vscode/releases/latest
-2. Open **Cursor** (or your VS Code fork)
-3. Open Extensions → `...` menu → **Install from VSIX**
-4. Select the downloaded `.vsix` file
+## Quick Start
 
 ### Prerequisites
 
-Before using Claude Code GUI, ensure you have:
-
 ```bash
-# Install Claude Code CLI
 npm install -g @anthropic-ai/claude-code
-
-# Authenticate with Anthropic
 claude auth login
 ```
 
-> ⚠️ **Requires**: VS Code 1.94+ and Node.js 22+
+> Requires VS Code 1.94+. The extension expects `claude` on your PATH.
 
----
+### Open the chat
 
-## 🚀 Quick Start
+- `Cmd+Shift+C` (macOS) / `Ctrl+Shift+C` (Windows/Linux)
+- Command Palette → "Open Claude Code GUI"
+- Activity Bar → Claude icon
 
-### Open the Chat
+### First message
 
-| Method                 | Action                                                  |
-| ---------------------- | ------------------------------------------------------- |
-| ⌨️ **Keyboard**        | `Ctrl+Shift+C` (Windows/Linux) or `Cmd+Shift+C` (macOS) |
-| 🔍 **Command Palette** | `Ctrl+Shift+P` → "Open Claude Code GUI"                 |
-| 🎯 **Activity Bar**    | Click the Claude icon in the sidebar                    |
+1. Type a prompt.
+2. Press Enter to send.
+3. Watch the timeline fill in as Claude works.
 
-### Your First Message
+## Modes & Controls
 
-1. Type your question or paste code
-2. Press **Enter** to send
-3. Watch Claude respond in real-time! ✨
+- **Model selector** — Sonnet 4.5 (default), Opus 4.5, Haiku 4.5.
+- **Thinking mode** — Think → Ultrathink for deeper reasoning.
+- **Plan mode** — read-only tool permissions (safe analysis).
+- **YOLO mode** — skip permission prompts (use with caution).
 
-### Right-Click Magic
+## Configuration
 
-Select any code in your editor and right-click to:
+Settings live under `Claude Code GUI` in VS Code.
 
-- 📝 **Explain Code** — Get a detailed explanation
-- 🔧 **Refactor** — Improve code quality
-- 🧪 **Generate Tests** — Create unit tests
-- 🐛 **Fix Error** — Debug issues fast
+| Setting                              | Default                      | Description             |
+| ------------------------------------ | ---------------------------- | ----------------------- |
+| `claudeCodeGui.claude.model`         | `claude-sonnet-4-5-20250929` | Default Claude model    |
+| `claudeCodeGui.thinking.enabled`     | `true`                       | Enable thinking mode    |
+| `claudeCodeGui.thinking.intensity`   | `think`                      | Thinking intensity      |
+| `claudeCodeGui.permissions.yoloMode` | `false`                      | Skip permission prompts |
 
----
+## Docs
 
-## ⚙️ Configuration
+- `docs/ARCHITECTURE.md`
+- `docs/DEVELOPMENT.md`
+- `docs/EXTENSION-SERVICES.md`
+- `docs/BUILD-SYSTEM.md`
+- `docs/SECURITY.md`
 
-Access settings via **Gear icon** in chat header or `Ctrl+,` → search "Claude Code GUI"
-
-### Essential Settings
-
-| Setting                | Default           | Description             |
-| ---------------------- | ----------------- | ----------------------- |
-| `claude.executable`    | `claude`          | Path to Claude CLI      |
-| `claude.model`         | `claude-sonnet-4` | Default AI model        |
-| `thinking.enabled`     | `true`            | Extended thinking mode  |
-| `permissions.yoloMode` | `false`           | Skip permission prompts |
-
-### WSL Users (Windows)
-
-```json
-{
-    "claudeCodeGui.wsl.enabled": true,
-    "claudeCodeGui.wsl.distro": "Ubuntu"
-}
-```
-
----
-
-## 🎨 User Interface
-
-<table>
-<tr>
-<td width="50%">
-
-### 💬 Chat Panel
-
-- Beautiful glassmorphism design
-- Dark mode optimized
-- Smooth animations
-- Responsive layout
-
-</td>
-<td width="50%">
-
-### 🎛️ Toolbar
-
-- Model selector (Sonnet, Opus, Haiku)
-- Thinking mode intensity
-- Plan mode toggle
-- File attachments
-
-</td>
-</tr>
-</table>
-
----
-
-## 🛠️ Development
+## Development
 
 ### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/MaheshKok/claude-code-gui-vscode.git
 cd claude-code-gui-vscode
-
-# Install dependencies
 npm install
+```
 
-# Start development
+### Build & watch
+
+```bash
+npm run build
 npm run dev
 ```
+
+> `npm run dev` uses Bun for the watch scripts. Install Bun or run the individual `watch:*` scripts.
 
 ### Available Commands
 
@@ -293,75 +134,26 @@ npm run dev
 | `npm run test`      | Run tests            |
 | `npm run package`   | Create .vsix file    |
 
-### Project Architecture
+## Contributing
 
-```
-📦 claude-code-gui/
-├── 📂 src/
-│   ├── 📂 extension/      # VS Code extension core
-│   │   ├── services/      # Claude, MCP, Permissions
-│   │   └── webview/       # Panel providers
-│   ├── 📂 webview/        # React application
-│   │   ├── components/    # UI components
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── stores/        # Zustand stores
-│   │   └── types/         # TypeScript types
-│   └── 📂 shared/         # Shared utilities
-├── 📂 assets/             # Icons & images
-└── 📂 dist/               # Build output
-```
+Contributions are welcome!
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how to get started:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing`)
-5. **Open** a Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
 ### Code Standards
 
-- ✅ TypeScript for all code
-- ✅ ESLint + Prettier formatting
-- ✅ Tests for new features
-- ✅ Descriptive commit messages
+- TypeScript for all code
+- ESLint + Prettier formatting
+- Tests for new features
+- Descriptive commit messages
 
----
+## License
 
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-<table>
-<tr>
-<td align="center">
-  <a href="https://www.anthropic.com/">
-    <strong>Anthropic</strong><br>
-    <sub>For creating Claude AI</sub>
-  </a>
-</td>
-<td align="center">
-  <a href="https://code.visualstudio.com/">
-    <strong>VS Code</strong><br>
-    <sub>The best code editor</sub>
-  </a>
-</td>
-<td align="center">
-  <a href="https://github.com/MaheshKok/claude-code-gui-vscode/graphs/contributors">
-    <strong>Contributors</strong><br>
-    <sub>Making this better</sub>
-  </a>
-</td>
-</tr>
-</table>
+This project is licensed under the MIT License — see `LICENSE`.
 
 ---
 
