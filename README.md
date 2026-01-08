@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/logo.png" alt="Claude Code GUI" width="128" height="128">
-</p>
-
 <h1 align="center">Claude Code GUI</h1>
 
 <p align="center">
