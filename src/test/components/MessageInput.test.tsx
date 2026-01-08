@@ -330,6 +330,65 @@ describe("MessageInput", () => {
         });
     });
 
+    describe("Plan and YOLO mode together", () => {
+        it("should allow both plan and yolo modes to be enabled simultaneously", () => {
+            render(<MessageInput {...defaultProps} planMode={true} yoloMode={true} />);
+
+            const planButton = screen.getByText("Plan").closest("button");
+            const yoloButton = screen.getByText("YOLO").closest("button");
+
+            // Both should show active styles
+            expect(planButton).toHaveClass("text-blue-400");
+            expect(yoloButton).toHaveClass("text-red-400");
+        });
+
+        it("should allow toggling plan mode when yolo mode is on", () => {
+            const onPlanModeToggle = vi.fn();
+            render(
+                <MessageInput
+                    {...defaultProps}
+                    yoloMode={true}
+                    onPlanModeToggle={onPlanModeToggle}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("Plan"));
+
+            expect(onPlanModeToggle).toHaveBeenCalledTimes(1);
+        });
+
+        it("should allow toggling yolo mode when plan mode is on", () => {
+            const onYoloModeToggle = vi.fn();
+            render(
+                <MessageInput
+                    {...defaultProps}
+                    planMode={true}
+                    onYoloModeToggle={onYoloModeToggle}
+                />,
+            );
+
+            fireEvent.click(screen.getByText("YOLO"));
+
+            expect(onYoloModeToggle).toHaveBeenCalledTimes(1);
+        });
+
+        it("should not disable plan button when yolo mode is on", () => {
+            render(<MessageInput {...defaultProps} yoloMode={true} />);
+
+            const planButton = screen.getByText("Plan").closest("button");
+            expect(planButton).not.toBeDisabled();
+            expect(planButton).not.toHaveClass("cursor-not-allowed");
+        });
+
+        it("should not disable yolo button when plan mode is on", () => {
+            render(<MessageInput {...defaultProps} planMode={true} />);
+
+            const yoloButton = screen.getByText("YOLO").closest("button");
+            expect(yoloButton).not.toBeDisabled();
+            expect(yoloButton).not.toHaveClass("cursor-not-allowed");
+        });
+    });
+
     describe("toolbar buttons", () => {
         it("should call onMcpAction when MCP button clicked", () => {
             const onMcpAction = vi.fn();
