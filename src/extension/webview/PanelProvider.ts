@@ -625,8 +625,20 @@ export class PanelProvider {
             this._setSelectedModel(settings.selectedModel);
         }
 
+        // Check if YOLO mode is being enabled
+        const wasYoloEnabled = this._settingsManager.isYoloModeEnabled();
+        const willBeYoloEnabled = settings.yoloMode === true;
+
         await this._settingsManager.updateSettings(settings);
         this._sendCurrentSettings();
+
+        // If YOLO mode was just enabled, auto-approve pending permission requests
+        if (!wasYoloEnabled && willBeYoloEnabled) {
+            console.log(
+                "[PanelProvider] YOLO mode enabled via settings, auto-approving pending requests",
+            );
+            this._claudeService.autoApproveAllPendingRequests();
+        }
     }
 
     private _setSelectedModel(model: string): void {
@@ -718,6 +730,9 @@ export class PanelProvider {
     private async _enableYoloMode(): Promise<void> {
         await this._settingsManager.enableYoloMode();
         this._sendCurrentSettings();
+
+        // Auto-approve any pending permission requests
+        this._claudeService.autoApproveAllPendingRequests();
 
         vscode.window.showInformationMessage(
             "YOLO mode enabled! All permissions will be automatically approved.",
