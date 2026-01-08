@@ -96,14 +96,6 @@ Settings live under `Claude Code GUI` in VS Code.
 | `claudeCodeGui.thinking.intensity`   | `think`                      | Thinking intensity      |
 | `claudeCodeGui.permissions.yoloMode` | `false`                      | Skip permission prompts |
 
-## Docs
-
-- `docs/ARCHITECTURE.md`
-- `docs/DEVELOPMENT.md`
-- `docs/EXTENSION-SERVICES.md`
-- `docs/BUILD-SYSTEM.md`
-- `docs/SECURITY.md`
-
 ## Development
 
 ### Setup
