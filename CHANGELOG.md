@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-Enable Plan and YOLO Mode at same time
+- Enable Plan and YOLO Mode at same time
 
 ## [1.5.7] - 2026-01-08
 
