@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-update layout for improved responsiveness in MessageInput component and remove logo from README
+improved responsiveness for elements in the footer where sends button always stays in the first row and remove logo from README
 
 ## [1.5.5] - 2026-01-07
 
