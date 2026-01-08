@@ -24,6 +24,7 @@ interface ChatContainerProps {
     sessionCostUsd?: number;
     lastDurationMs?: number | null;
     onSendMessage: (content: string) => void;
+    onStop: () => void;
     onModelChange: (model: string) => void;
     onPlanModeToggle: () => void;
     onThinkingModeToggle: () => void;
@@ -42,6 +43,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     thinkingIntensity,
     yoloMode,
     onSendMessage,
+    onStop,
     onModelChange,
     onPlanModeToggle,
     onThinkingModeToggle,
@@ -223,6 +225,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         thinkingIntensity={thinkingIntensity}
                         yoloMode={yoloMode}
                         onSendMessage={onSendMessage}
+                        onStop={onStop}
                         onModelChange={onModelChange}
                         onPlanModeToggle={onPlanModeToggle}
                         onThinkingModeToggle={onThinkingModeToggle}

@@ -178,6 +178,7 @@ export const App: React.FC = () => {
                 sessionCostUsd={chat.costs.sessionCostUsd}
                 lastDurationMs={local.lastDurationMs}
                 onSendMessage={callbacks.handleSendMessage}
+                onStop={callbacks.handleStopProcessing}
                 onModelChange={callbacks.handleModelChange}
                 onPlanModeToggle={callbacks.handlePlanModeToggle}
                 onThinkingModeToggle={callbacks.handleThinkingModeToggle}
@@ -187,9 +188,7 @@ export const App: React.FC = () => {
             />
 
             <StatusBar
-                isConnected={ui.isConnected}
                 isProcessing={chat.isProcessing}
-                onStop={callbacks.handleStopProcessing}
                 totalTokens={totalTokens}
                 requestCount={local.requestCount}
                 sessionCostUsd={chat.costs.sessionCostUsd}

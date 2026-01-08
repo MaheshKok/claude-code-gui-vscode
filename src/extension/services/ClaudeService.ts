@@ -418,6 +418,27 @@ export class ClaudeService implements vscode.Disposable {
         return this._pendingPermissionRequests.get(requestId);
     }
 
+    /**
+     * Get all pending permission request IDs
+     */
+    public getPendingPermissionRequestIds(): string[] {
+        return Array.from(this._pendingPermissionRequests.keys());
+    }
+
+    /**
+     * Auto-approve all pending permission requests (used when YOLO mode is enabled mid-session)
+     */
+    public autoApproveAllPendingRequests(): void {
+        const pendingIds = this.getPendingPermissionRequestIds();
+        console.log(
+            `[ClaudeService] Auto-approving ${pendingIds.length} pending permission requests (YOLO mode enabled)`,
+        );
+
+        for (const requestId of pendingIds) {
+            this.sendPermissionResponse(requestId, true, false);
+        }
+    }
+
     // ==================== Private Methods ====================
 
     private _processJsonData(jsonData: any, claudeProcess: cp.ChildProcess): void {

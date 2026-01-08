@@ -12,6 +12,7 @@ describe("MessageInput", () => {
         thinkingIntensity: ThinkingIntensity.Think,
         yoloMode: false,
         onSendMessage: vi.fn(),
+        onStop: vi.fn(),
         onModelChange: vi.fn(),
         onPlanModeToggle: vi.fn(),
         onThinkingModeToggle: vi.fn(),
@@ -353,13 +354,19 @@ describe("MessageInput", () => {
             expect(onSendMessage).not.toHaveBeenCalled();
         });
 
-        it("should be disabled when disabled prop is true", () => {
-            render(<MessageInput {...defaultProps} disabled={true} />);
+        it("should show Stop button when disabled (processing)", () => {
+            const onStop = vi.fn();
+            render(<MessageInput {...defaultProps} disabled={true} onStop={onStop} />);
 
             const buttons = screen.getAllByRole("button");
-            const sendButton = buttons[buttons.length - 1];
+            const stopButton = buttons[buttons.length - 1];
 
-            expect(sendButton).toHaveClass("cursor-not-allowed");
+            // Stop button should have red styling
+            expect(stopButton).toHaveClass("bg-red-500/20");
+
+            // Stop button should call onStop when clicked
+            fireEvent.click(stopButton);
+            expect(onStop).toHaveBeenCalledTimes(1);
         });
 
         it("should call onSendMessage when clicked with content", () => {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
     Send,
+    Square,
     Brain,
     ChevronDown,
     FileCode,
@@ -33,6 +34,7 @@ interface MessageInputProps {
     yoloMode: boolean;
     sessionId?: string | null;
     onSendMessage: (content: string) => void;
+    onStop: () => void;
     onModelChange: (model: string) => void;
     onPlanModeToggle: () => void;
     onThinkingModeToggle: () => void;
@@ -100,6 +102,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     thinkingIntensity,
     yoloMode,
     onSendMessage,
+    onStop,
     onModelChange,
     onPlanModeToggle,
     onThinkingModeToggle,
@@ -744,19 +747,29 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                     <button className="btn-icon" onClick={onMcpAction} title="MCP Tools">
                         <Box className="w-4 h-4" />
                     </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={disabled || (!content.trim() && attachments.length === 0)}
-                        className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300
-                    ${
-                        disabled || (!content.trim() && attachments.length === 0)
-                            ? "opacity-50 cursor-not-allowed bg-white/5 text-white/30"
-                            : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/30 hover:scale-110 active:scale-95 hover:shadow-orange-500/50"
-                    }
-                `}
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
+                    {disabled ? (
+                        <button
+                            onClick={onStop}
+                            className="flex items-center justify-center p-2 rounded-lg transition-all duration-300 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 hover:scale-105 active:scale-95"
+                            title="Stop processing (Escape)"
+                        >
+                            <Square className="w-4 h-4 fill-current" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!content.trim() && attachments.length === 0}
+                            className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300
+                        ${
+                            !content.trim() && attachments.length === 0
+                                ? "opacity-50 cursor-not-allowed bg-white/5 text-white/30"
+                                : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/30 hover:scale-110 active:scale-95 hover:shadow-orange-500/50"
+                        }
+                    `}
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
