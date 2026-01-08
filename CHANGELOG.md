@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-Enabling Yolo Mode during claude is thinking auto approves all pending requests
+Enabling Yolo Mode when claude is thinking, auto approves all pending requests
 
 ## [1.5.6] - 2026-01-08
 
