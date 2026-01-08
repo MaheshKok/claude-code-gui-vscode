@@ -348,6 +348,8 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                 if (data.isProcessing) {
                     startRequestTiming();
                     didUpdateTodosRef.current = false;
+                    // Clear todos from previous prompt when starting a new one
+                    clearTodos();
                 } else {
                     stopRequestTiming();
                 }
