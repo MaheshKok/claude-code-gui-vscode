@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-improved responsiveness for elements in the footer where sends button always stays in the first row and remove logo from README
+footer now wraps properly on smaller screens where sends button always stays in the first row and remove logo from README
 
 ## [1.5.5] - 2026-01-07
 
