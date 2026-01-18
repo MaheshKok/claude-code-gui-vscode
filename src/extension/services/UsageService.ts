@@ -63,8 +63,7 @@ export class UsageService implements vscode.Disposable {
     private _log(message: string, data?: unknown): void {
         const formatted = `[UsageService] ${message}`;
         if (this._outputChannel) {
-            const logLine =
-                data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
+            const logLine = data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
             this._outputChannel.appendLine(logLine);
         }
     }
@@ -182,7 +181,9 @@ export class UsageService implements vscode.Disposable {
                 this._errorMessage = undefined;
                 this._log("📡 Emitting 'update' event to listeners...");
                 this._dataEmitter.emit("update", this._usageData);
-                this._log(`📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`);
+                this._log(
+                    `📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`,
+                );
             } else {
                 // No fallback - emit error
                 this._log("❌ Error getting usage data");
@@ -291,7 +292,9 @@ export class UsageService implements vscode.Disposable {
                         this._log(`⚠️  claude command exited with code ${code}`);
                     }
 
-                    this._log(`🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`);
+                    this._log(
+                        `🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`,
+                    );
 
                     // Parse rate limit headers
                     const combinedOutput = stdout + "\n" + stderr;
