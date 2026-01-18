@@ -384,7 +384,7 @@ export class UsageService implements vscode.Disposable {
                 const args = [
                     "-p", ".",
                     "--output-format", "json",
-                    "--model", "haiku",
+                    "--model", "claude-haiku-4-5-20251001",
                 ];
                 this._log(`🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`);
 
