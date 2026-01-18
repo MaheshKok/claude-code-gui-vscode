@@ -486,7 +486,8 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                 console.log("[useMessageHandlers] ⚠️ Received usageError message!");
                 const data = msg as { error: string };
                 console.log("[useMessageHandlers] Error:", data.error);
-                // For now, just log - the UI will show cached data if available
+                // Clear refresh state so UI is not stuck with spinner
+                useUsageStore.getState().setRefreshing(false);
             },
 
             mcpServers: (msg: unknown) => {

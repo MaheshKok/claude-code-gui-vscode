@@ -28,7 +28,6 @@ import {
 
 const POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const COMMAND_TIMEOUT_MS = 60_000; // 60 seconds
-const CACHE_STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 // ============================================================================
 // Types
@@ -380,12 +379,10 @@ export class UsageService implements vscode.Disposable {
 
             try {
                 // Run minimal claude command with debug logging enabled
-                // Use shell with 2>&1 to redirect stderr to stdout so we capture everything
-                const command = "ANTHROPIC_LOG=debug claude -p '.' --output-format json 2>&1";
-                this._log(`🔍 Running command: ${command}`);
+                // Cross-platform: use args array and env option instead of shell command string
+                this._log(`🔍 Running command: claude -p "." --output-format json (with ANTHROPIC_LOG=debug)`);
 
-                this._currentProcess = spawn(command, [], {
-                    shell: true,
+                this._currentProcess = spawn("claude", ["-p", ".", "--output-format", "json"], {
                     stdio: ["ignore", "pipe", "pipe"],
                     env: {
                         ...process.env,
@@ -393,13 +390,13 @@ export class UsageService implements vscode.Disposable {
                     },
                 });
 
-                // Capture stdout (all output goes here due to 2>&1)
+                // Capture stdout
                 const onStdoutData = (data: Buffer) => {
                     stdout += data.toString();
                 };
                 this._currentProcess.stdout?.on("data", onStdoutData);
 
-                // Capture stderr (backup)
+                // Capture stderr (debug output with rate limit headers goes here)
                 const onStderrData = (data: Buffer) => {
                     stderr += data.toString();
                 };
