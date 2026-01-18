@@ -79,8 +79,10 @@ export const useUsageStore = create<UsageState & UsageActions>((set) => ({
     lastUpdatedAt: initialCache.lastUpdatedAt,
     isRefreshing: false,
     setUsageData: (data) => {
+        console.log("[UsageStore] ✅ setUsageData called with:", JSON.stringify(data, null, 2));
         saveToCache(data);
         set({ data, lastUpdatedAt: new Date(), isRefreshing: false });
+        console.log("[UsageStore] State updated, isRefreshing set to false");
     },
     toggleVisibility: () => set((state) => ({ isVisible: !state.isVisible })),
     setRefreshing: (refreshing) => set({ isRefreshing: refreshing }),

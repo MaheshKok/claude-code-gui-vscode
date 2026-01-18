@@ -135,6 +135,8 @@ export function activate(context: vscode.ExtensionContext): void {
         permissionService,
         mcpService,
         usageService,
+        // PanelProvider wrapper to dispose all resources including global subscriptions
+        { dispose: () => panelProvider.disposeAll() },
     );
 
     outputChannel.appendLine("");

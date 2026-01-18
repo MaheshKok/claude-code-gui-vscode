@@ -180,7 +180,9 @@ export class UsageService implements vscode.Disposable {
 
                 this._usageData = usageData;
                 this._errorMessage = undefined;
+                this._log("📡 Emitting 'update' event to listeners...");
                 this._dataEmitter.emit("update", this._usageData);
+                this._log(`📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`);
             } else {
                 // No fallback - emit error
                 this._log("❌ Error getting usage data");
