@@ -163,12 +163,13 @@ export class PanelProvider {
      * Set up event handlers for Usage service
      */
     private _setupUsageServiceHandlers(): void {
-        this._usageService.onUsageUpdate((data) => {
+        const subscription = this._usageService.onUsageUpdate((data) => {
             this._postMessage({
                 type: "usageData",
                 data,
             });
         });
+        this._disposables.push(subscription);
     }
 
     private _sendUsageData(): void {

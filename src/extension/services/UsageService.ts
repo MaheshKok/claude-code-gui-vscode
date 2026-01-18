@@ -1,78 +1,119 @@
 /**
  * Usage Service
  *
- * Handles fetching and polling for Claude usage data.
+ * Fetches Claude usage data by running a minimal claude command with ANTHROPIC_LOG=debug
+ * to capture the actual rate limit headers from Anthropic's API response.
+ *
+ * How Claude CLI's /usage works:
+ * - Every API call returns rate limit headers in the response
+ * - Headers include: anthropic-ratelimit-unified-5h-utilization, anthropic-ratelimit-unified-7d-utilization
+ * - The CLI caches/displays these headers from API responses
+ * - We make a minimal API call to get fresh headers
  */
 import * as vscode from "vscode";
 import { EventEmitter } from "events";
-import * as os from "os";
-import * as path from "path";
-import * as fs from "fs";
-import * as cp from "child_process";
-import { promisify } from "util";
+import { spawn, ChildProcess } from "child_process";
 import { UsageData } from "../../shared/types/usage";
-import { ClaudeService } from "./ClaudeService";
-import { getWSLConfig } from "../utils/wsl";
 
-const execFileAsync = promisify(cp.execFile);
+// ============================================================================
+// Constants
+// ============================================================================
 
-interface RateLimitClaim {
-    utilization?: number;
-    reset?: number;
+const POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const COMMAND_TIMEOUT_MS = 60_000; // 60 seconds
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface RateLimitData {
+    session5h: number; // 0-1 ratio from anthropic-ratelimit-unified-5h-utilization
+    weekly7d: number; // 0-1 ratio from anthropic-ratelimit-unified-7d-utilization
+    reset5h?: number; // Unix timestamp for 5h reset
+    reset7d?: number; // Unix timestamp for 7d reset
 }
 
-interface RateLimitClaimSelection {
-    claim: string;
-    data: RateLimitClaim;
-}
+// ============================================================================
+// UsageService
+// ============================================================================
 
 export class UsageService implements vscode.Disposable {
     private _usageData: UsageData | undefined;
+    private _errorMessage: string | undefined;
     private _pollInterval: NodeJS.Timeout | undefined;
     private _dataEmitter = new EventEmitter();
-    private _fetchInFlight = false;
-    // Cache for successfully fetched rate limit data (30 days validity)
-    private _cachedRateLimitData: UsageData | undefined;
-    private _cachedRateLimitTimestamp: number | undefined;
-    private static readonly CACHE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+    private _fetchInFlight: Promise<void> | null = null;
+    private _currentProcess: ChildProcess | null = null;
+    private _isDisposed = false;
 
-    constructor(
-        private readonly _claudeService: ClaudeService,
-        private readonly _outputChannel?: vscode.OutputChannel,
-    ) {
+    constructor(private readonly _outputChannel?: vscode.OutputChannel) {
         this._log("╔════════════════════════════════════════════╗");
         this._log("║   USAGE SERVICE INITIALIZING               ║");
         this._log("╚════════════════════════════════════════════╝");
+
         // Start polling
         this.startPolling();
         this._log("✅ Polling started (5-minute intervals)");
     }
 
+    // ========================================================================
+    // Logging
+    // ========================================================================
+
     private _log(message: string, data?: unknown): void {
         const formatted = `[UsageService] ${message}`;
-        if (data !== undefined) {
-            console.log(formatted, data);
-        } else {
-            console.log(formatted);
-        }
         if (this._outputChannel) {
-            const logLine = data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
+            const logLine =
+                data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
             this._outputChannel.appendLine(logLine);
         }
     }
 
-    public onUsageUpdate(callback: (data: UsageData) => void): void {
+    // ========================================================================
+    // Event Handling (Returns disposable to prevent memory leaks)
+    // ========================================================================
+
+    /**
+     * Subscribe to usage data updates.
+     * Returns a disposable that removes the listener when disposed.
+     */
+    public onUsageUpdate(callback: (data: UsageData) => void): vscode.Disposable {
         this._dataEmitter.on("update", callback);
+        return {
+            dispose: () => {
+                this._dataEmitter.off("update", callback);
+            },
+        };
     }
 
-    public startPolling(): void {
-        // Poll every 5 minutes
-        this._pollInterval = setInterval(
-            () => {
-                this.fetchUsageData();
+    /**
+     * Subscribe to error events.
+     * Returns a disposable that removes the listener when disposed.
+     */
+    public onError(callback: (error: string) => void): vscode.Disposable {
+        this._dataEmitter.on("error", callback);
+        return {
+            dispose: () => {
+                this._dataEmitter.off("error", callback);
             },
-            5 * 60 * 1000,
-        );
+        };
+    }
+
+    // ========================================================================
+    // Polling (Prevents duplicate intervals)
+    // ========================================================================
+
+    public startPolling(): void {
+        if (this._isDisposed) return;
+
+        // Clear any existing interval first to prevent duplicates
+        this.stopPolling();
+
+        this._pollInterval = setInterval(() => {
+            if (!this._isDisposed) {
+                this.fetchUsageData();
+            }
+        }, POLLING_INTERVAL_MS);
 
         // Initial fetch
         this.fetchUsageData();
@@ -85,762 +126,362 @@ export class UsageService implements vscode.Disposable {
         }
     }
 
+    // ========================================================================
+    // Data Fetching (Mutex pattern to prevent race conditions)
+    // ========================================================================
+
+    /**
+     * Fetch usage data from API rate limit headers.
+     * Uses mutex pattern to prevent duplicate concurrent fetches.
+     */
     public async fetchUsageData(): Promise<void> {
+        if (this._isDisposed) return;
+
+        // Mutex pattern to prevent race conditions
         if (this._fetchInFlight) {
-            this._log("⏭️  Fetch already in flight, skipping");
+            this._log("⏭️  Fetch already in flight, waiting...");
+            await this._fetchInFlight;
             return;
         }
 
-        this._fetchInFlight = true;
+        this._fetchInFlight = this._doFetchUsageData();
+        try {
+            await this._fetchInFlight;
+        } finally {
+            this._fetchInFlight = null;
+        }
+    }
+
+    private async _doFetchUsageData(): Promise<void> {
+        if (this._isDisposed) return;
+
         this._log("");
         this._log("🔄 ═══════════════════════════════════════════");
         this._log("🔄 FETCHING USAGE DATA...");
         this._log("🔄 ═══════════════════════════════════════════");
 
         try {
-            const rateLimitUsage = await this._fetchUsageFromRateLimits();
-            if (rateLimitUsage) {
-                this._log("");
-                this._log("✅ ═══════════════════════════════════════════");
-                this._log("✅ GOT USAGE DATA FROM RATE LIMITS:");
-                this._log(
-                    `   📊 Session: ${(rateLimitUsage.currentSession.usageCost * 100).toFixed(1)}% used`,
-                );
-                this._log(
-                    `   📊 Weekly:  ${(rateLimitUsage.weekly.costLikely * 100).toFixed(1)}% used`,
-                );
-                this._log(`   ⏱️  Session resets in: ${rateLimitUsage.currentSession.resetsIn}`);
-                this._log(`   ⏱️  Weekly resets at: ${rateLimitUsage.weekly.resetsAt}`);
-                this._log("✅ ═══════════════════════════════════════════");
-                this._log("");
-
-                // Cache the successful rate limit data for future fallback
-                this._cachedRateLimitData = rateLimitUsage;
-                this._cachedRateLimitTimestamp = Date.now();
-                this._log("💾 Cached rate limit data for fallback use");
-
-                this._usageData = rateLimitUsage;
-                this._dataEmitter.emit("update", this._usageData);
-                return;
-            }
-
-            // Rate limit fetch failed - try to use cached rate limit data first
-            this._log("⚠️  Rate limit fetch returned null");
-
-            // Check if we have valid cached rate limit data (within 30 days)
-            if (this._cachedRateLimitData && this._cachedRateLimitTimestamp) {
-                const cacheAge = Date.now() - this._cachedRateLimitTimestamp;
-                if (cacheAge < UsageService.CACHE_VALIDITY_MS) {
-                    const cacheAgeHours = Math.round(cacheAge / (1000 * 60 * 60));
-                    this._log(`📦 Using cached rate limit data (${cacheAgeHours}h old)`);
-                    this._usageData = this._cachedRateLimitData;
-                    this._dataEmitter.emit("update", this._usageData);
-                    return;
-                } else {
-                    this._log("⚠️  Cached rate limit data expired (>30 days)");
-                }
-            }
-
-            // Last resort: try stats cache (note: this has inaccurate reset times)
-            this._log("⚠️  No valid cached rate limit data, trying stats cache as last resort...");
-            const statsUsage = await this._fetchUsageFromStatsCache();
-            if (statsUsage) {
-                this._log("⚠️  Got usage data from stats cache (reset times may be inaccurate)");
-                this._usageData = statsUsage;
-                this._dataEmitter.emit("update", this._usageData);
-            } else {
-                this._log("❌ All data sources failed");
-            }
-        } catch (error) {
-            this._log("❌ Failed to fetch usage data:", error);
-
-            // Even on error, try to use cached data
-            if (this._cachedRateLimitData && this._cachedRateLimitTimestamp) {
-                const cacheAge = Date.now() - this._cachedRateLimitTimestamp;
-                if (cacheAge < UsageService.CACHE_VALIDITY_MS) {
-                    const cacheAgeHours = Math.round(cacheAge / (1000 * 60 * 60));
-                    this._log(`📦 Using cached rate limit data on error (${cacheAgeHours}h old)`);
-                    this._usageData = this._cachedRateLimitData;
-                    this._dataEmitter.emit("update", this._usageData);
-                }
-            }
-        } finally {
-            this._fetchInFlight = false;
-        }
-    }
-
-    private async _fetchUsageFromRateLimits(): Promise<UsageData | null> {
-        try {
-            this._log("📡 Running quota command...");
-            const output = await this._runQuotaCommand();
-            if (!output) {
-                this._log("❌ Quota command returned no output");
-                return null;
-            }
-            this._log(`📄 Quota command output: ${output.length} chars`);
-
-            const headers = this._parseRateLimitHeaders(output);
-            const usageData = this._buildUsageDataFromRateLimits(headers);
+            const usageData = await this._fetchFromClaudeCommand();
 
             if (usageData) {
-                this._log("Successfully built usage data from rate limits");
-            } else {
-                this._log("Could not build usage data from rate limits");
-            }
+                this._log("");
+                this._log("✅ ═══════════════════════════════════════════");
+                this._log("✅ GOT USAGE DATA:");
+                this._log(
+                    `   📊 Session (5h): ${((usageData.currentSession.usageCost / usageData.currentSession.costLimit) * 100).toFixed(1)}% used`,
+                );
+                this._log(
+                    `   📊 Weekly (7d):  ${((usageData.weekly.costLikely / usageData.weekly.costLimit) * 100).toFixed(1)}% used`,
+                );
+                this._log(`   ⏱️  Session resets: ${usageData.currentSession.resetsIn}`);
+                this._log(`   ⏱️  Weekly resets: ${usageData.weekly.resetsAt}`);
+                this._log("✅ ═══════════════════════════════════════════");
+                this._log("");
 
-            return usageData;
+                this._usageData = usageData;
+                this._errorMessage = undefined;
+                this._dataEmitter.emit("update", this._usageData);
+            } else {
+                // No fallback - emit error
+                this._log("❌ Error getting usage data");
+                this._errorMessage = "Error getting usage";
+                this._dataEmitter.emit("error", this._errorMessage);
+            }
         } catch (error) {
-            this._log(
-                "Rate-limit usage fetch failed:",
-                error instanceof Error ? error.message : error,
-            );
-            return null;
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            this._log("❌ Failed to fetch usage data:", errorMsg);
+            this._errorMessage = "Error getting usage";
+            this._dataEmitter.emit("error", this._errorMessage);
         }
     }
 
-    private async _fetchUsageFromStatsCache(): Promise<UsageData | null> {
-        const homeDir = os.homedir();
-        const paths = [
-            path.join(homeDir, ".claude"),
-            path.join(homeDir, ".config", "claude"),
-            path.join(homeDir, "Library", "Application Support", "Claude"),
-        ];
+    // ========================================================================
+    // Fetch from Claude Command with proper cleanup
+    // ========================================================================
 
-        let statsPath = "";
-        for (const p of paths) {
-            const checkPath = path.join(p, "stats-cache.json");
-            if (fs.existsSync(checkPath)) {
-                statsPath = checkPath;
-                break;
+    /**
+     * Run `claude -p "." --output-format json` with ANTHROPIC_LOG=debug
+     * to capture rate limit headers from the API response.
+     *
+     * Memory leak prevention:
+     * - Timeout clears and kills process
+     * - Event listeners are removed on close/error
+     * - Process reference is cleared
+     */
+    private async _fetchFromClaudeCommand(): Promise<UsageData | null> {
+        if (this._isDisposed) return null;
+
+        this._log("🔍 Running minimal claude command to get rate limit headers...");
+
+        return new Promise((resolve) => {
+            let stdout = "";
+            let stderr = "";
+            let resolved = false;
+            let timeoutId: NodeJS.Timeout | null = null;
+
+            // Cleanup function to prevent memory leaks
+            const cleanup = () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                if (this._currentProcess) {
+                    // Remove all listeners to prevent memory leaks
+                    this._currentProcess.stdout?.removeAllListeners();
+                    this._currentProcess.stderr?.removeAllListeners();
+                    this._currentProcess.removeAllListeners();
+                    this._currentProcess = null;
+                }
+            };
+
+            const safeResolve = (value: UsageData | null) => {
+                if (!resolved) {
+                    resolved = true;
+                    cleanup();
+                    resolve(value);
+                }
+            };
+
+            // Set timeout to prevent hanging
+            timeoutId = setTimeout(() => {
+                this._log("⏱️  Command timed out after 60s");
+                if (this._currentProcess && !this._currentProcess.killed) {
+                    this._currentProcess.kill("SIGTERM");
+                    // Force kill after 5 seconds if SIGTERM doesn't work
+                    setTimeout(() => {
+                        if (this._currentProcess && !this._currentProcess.killed) {
+                            this._currentProcess.kill("SIGKILL");
+                        }
+                    }, 5000);
+                }
+                safeResolve(null);
+            }, COMMAND_TIMEOUT_MS);
+
+            try {
+                // Run minimal claude command with debug logging enabled
+                // Use shell with 2>&1 to redirect stderr to stdout so we capture everything
+                const command = "ANTHROPIC_LOG=debug claude -p '.' --output-format json 2>&1";
+                this._log(`🔍 Running command: ${command}`);
+
+                this._currentProcess = spawn(command, [], {
+                    shell: true,
+                    stdio: ["ignore", "pipe", "pipe"],
+                    env: {
+                        ...process.env,
+                        ANTHROPIC_LOG: "debug",
+                    },
+                });
+
+                // Capture stdout (all output goes here due to 2>&1)
+                const onStdoutData = (data: Buffer) => {
+                    stdout += data.toString();
+                };
+                this._currentProcess.stdout?.on("data", onStdoutData);
+
+                // Capture stderr (backup)
+                const onStderrData = (data: Buffer) => {
+                    stderr += data.toString();
+                };
+                this._currentProcess.stderr?.on("data", onStderrData);
+
+                const onClose = (code: number | null) => {
+                    if (code !== 0 && code !== null) {
+                        this._log(`⚠️  claude command exited with code ${code}`);
+                    }
+
+                    this._log(`🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`);
+
+                    // Parse rate limit headers
+                    const combinedOutput = stdout + "\n" + stderr;
+                    const rateLimits = this._parseRateLimitHeaders(combinedOutput);
+
+                    if (rateLimits) {
+                        this._log("✅ Got rate limits from API headers");
+                        safeResolve(this._buildUsageDataFromRateLimits(rateLimits));
+                    } else {
+                        this._log("⚠️  Could not parse rate limits from output");
+                        safeResolve(null);
+                    }
+                };
+                this._currentProcess.on("close", onClose);
+
+                const onError = (err: Error) => {
+                    this._log("⚠️  Failed to spawn claude command:", err.message);
+                    safeResolve(null);
+                };
+                this._currentProcess.on("error", onError);
+            } catch (error) {
+                this._log(
+                    "⚠️  Error running claude command:",
+                    error instanceof Error ? error.message : error,
+                );
+                safeResolve(null);
             }
-        }
+        });
+    }
 
-        if (!statsPath) {
-            this._log("Could not find stats-cache.json");
+    /**
+     * Parse rate limit headers from debug output.
+     */
+    private _parseRateLimitHeaders(output: string): RateLimitData | null {
+        let session5h: number | undefined;
+        let weekly7d: number | undefined;
+        let reset5h: number | undefined;
+        let reset7d: number | undefined;
+
+        // Check if output contains rate limit data
+        if (!output.includes("ratelimit") && !output.includes("utilization")) {
+            this._log("⚠️  No rate limit data in output");
             return null;
         }
 
-        const content = await fs.promises.readFile(statsPath, "utf-8");
-        const stats = JSON.parse(content) as {
-            dailyModelTokens: Array<{ date: string; tokensByModel: Record<string, number> }>;
-        };
-
-        const today = new Date().toISOString().split("T")[0];
-        let dailyModelTokens =
-            stats.dailyModelTokens?.find((d) => d.date === today)?.tokensByModel || {};
-
-        if (Object.keys(dailyModelTokens).length === 0 && stats.dailyModelTokens?.length > 0) {
-            const latest = stats.dailyModelTokens[stats.dailyModelTokens.length - 1];
-            this._log(`No data for ${today}, utilizing latest available data from ${latest.date}`);
-            dailyModelTokens = latest.tokensByModel || {};
-        }
-
-        const PRICING = {
-            opus: { input: 15.0, output: 75.0 },
-            sonnet: { input: 3.0, output: 15.0 },
-            haiku: { input: 0.25, output: 1.25 },
-        };
-
-        let dailyCost = 0;
-        let dailySonnetTokens = 0;
-
-        for (const model in dailyModelTokens) {
-            const tokens = dailyModelTokens[model];
-            const modelLower = model.toLowerCase();
-            let price = PRICING.sonnet.input;
-
-            if (modelLower.includes("opus")) {
-                price = PRICING.opus.input * 0.8 + PRICING.opus.output * 0.2;
-            } else if (modelLower.includes("sonnet")) {
-                price = PRICING.sonnet.input * 0.8 + PRICING.sonnet.output * 0.2;
-                dailySonnetTokens += tokens;
-            } else if (modelLower.includes("haiku")) {
-                price = PRICING.haiku.input * 0.8 + PRICING.haiku.output * 0.2;
+        // Pattern for 5h utilization
+        const match5h = output.match(
+            /["']?anthropic-ratelimit-unified-5h-utilization["']?\s*[":]\s*["']?([0-9.]+)/i,
+        );
+        if (match5h) {
+            const value = parseFloat(match5h[1]);
+            if (!isNaN(value) && value >= 0 && value <= 2) {
+                session5h = Math.min(1, value);
+                this._log(`   ✅ Found 5h utilization: ${(value * 100).toFixed(1)}%`);
             }
-
-            dailyCost += (tokens / 1_000_000) * price;
         }
 
-        let weeklyCost = 0;
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const oneWeekAgoStr = oneWeekAgo.toISOString().split("T")[0];
-
-        if (Array.isArray(stats.dailyModelTokens)) {
-            stats.dailyModelTokens.forEach((dayEntry) => {
-                if (dayEntry.date >= oneWeekAgoStr) {
-                    const dayTokens = dayEntry.tokensByModel || {};
-                    for (const model in dayTokens) {
-                        const tokens = dayTokens[model];
-                        const modelLower = model.toLowerCase();
-                        let price = 5.0;
-                        if (modelLower.includes("opus")) price = 27.0;
-                        if (modelLower.includes("sonnet")) price = 5.4;
-                        weeklyCost += (tokens / 1_000_000) * price;
-                    }
-                }
-            });
+        // Pattern for 7d utilization
+        const match7d = output.match(
+            /["']?anthropic-ratelimit-unified-7d-utilization["']?\s*[":]\s*["']?([0-9.]+)/i,
+        );
+        if (match7d) {
+            const value = parseFloat(match7d[1]);
+            if (!isNaN(value) && value >= 0 && value <= 2) {
+                weekly7d = Math.min(1, value);
+                this._log(`   ✅ Found 7d utilization: ${(value * 100).toFixed(1)}%`);
+            }
         }
 
-        const SESSION_COST_LIMIT = 5.0;
-        const PLAN_COST_LIMIT = 50.0;
+        // Pattern for 5h reset timestamp
+        const matchReset5h = output.match(
+            /["']?anthropic-ratelimit-unified-5h-reset["']?\s*[":]\s*["']?([0-9]+)/i,
+        );
+        if (matchReset5h) {
+            reset5h = parseInt(matchReset5h[1], 10);
+        }
+
+        // Pattern for 7d reset timestamp
+        const matchReset7d = output.match(
+            /["']?anthropic-ratelimit-unified-7d-reset["']?\s*[":]\s*["']?([0-9]+)/i,
+        );
+        if (matchReset7d) {
+            reset7d = parseInt(matchReset7d[1], 10);
+        }
+
+        // Need at least one valid rate limit
+        if (session5h === undefined && weekly7d === undefined) {
+            return null;
+        }
+
+        return {
+            session5h: session5h ?? 0,
+            weekly7d: weekly7d ?? 0,
+            reset5h,
+            reset7d,
+        };
+    }
+
+    /**
+     * Build UsageData from rate limit headers.
+     */
+    private _buildUsageDataFromRateLimits(rateLimits: RateLimitData): UsageData {
+        const sessionResetTime = rateLimits.reset5h
+            ? this._formatResetTime(rateLimits.reset5h)
+            : "~5 hr";
+        const weeklyResetTime = rateLimits.reset7d
+            ? this._formatResetTime(rateLimits.reset7d)
+            : "~7 days";
 
         return {
             currentSession: {
-                usageCost: dailyCost,
-                costLimit: SESSION_COST_LIMIT,
-                resetsIn: "24h",
+                usageCost: rateLimits.session5h,
+                costLimit: 1,
+                resetsIn: sessionResetTime,
             },
             weekly: {
-                costLikely: weeklyCost,
-                costLimit: PLAN_COST_LIMIT,
-                resetsAt: "Daily",
-            },
-            sonnet: {
-                usage: dailySonnetTokens,
-                limit: 2_000_000,
-                resetsAt: "Daily",
-            },
-        };
-    }
-
-    private async _runQuotaCommand(): Promise<string> {
-        const timeoutMs = 15_000; // 15 seconds should be plenty for a quota check
-        const maxBuffer = 10 * 1024 * 1024;
-        const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd();
-        // Non-interactive mode - stdin is already closed via spawn
-        const args = ["-p", "--output-format", "json", "--no-session-persistence", "quota"];
-
-        this._log(`⏱️  Command timeout: ${timeoutMs / 1000}s`);
-        this._log(`📂 Working directory: ${cwd}`);
-        const wslConfig = getWSLConfig();
-
-        if (process.platform === "win32" && wslConfig.enabled) {
-            const wslArgs = [
-                "-d",
-                wslConfig.distro,
-                "--",
-                "env",
-                "ANTHROPIC_LOG=debug",
-                wslConfig.nodePath,
-                "--no-warnings",
-                "--enable-source-maps",
-                wslConfig.claudePath,
-                ...args,
-            ];
-
-            return this._execCommand("wsl", wslArgs, { cwd, timeout: timeoutMs, maxBuffer });
-        }
-
-        // Find claude binary - try direct path first
-        const homeDir = os.homedir();
-        const localBin = path.join(homeDir, ".local", "bin");
-        const claudeLocalPath = path.join(localBin, "claude");
-
-        this._log(`🏠 Home directory: ${homeDir}`);
-        this._log(`📁 Local bin path: ${localBin}`);
-        this._log(`   Local bin exists: ${fs.existsSync(localBin) ? "✅ YES" : "❌ NO"}`);
-        this._log(`📍 Claude path: ${claudeLocalPath}`);
-        this._log(`   Claude exists: ${fs.existsSync(claudeLocalPath) ? "✅ YES" : "❌ NO"}`);
-
-        // Use the full path to claude if it exists, otherwise fall back to PATH lookup
-        const claudeCommand = fs.existsSync(claudeLocalPath) ? claudeLocalPath : "claude";
-        this._log(`🚀 Using claude command: ${claudeCommand}`);
-
-        // Enhance PATH for any child processes that claude might spawn
-        const enhancedPath = this._getEnhancedPath();
-        this._log(`🔧 Enhanced PATH (first 200 chars): ${enhancedPath.substring(0, 200)}...`);
-
-        // Use spawn for better control over stdin
-        return this._execCommandWithSpawn(claudeCommand, args, {
-            cwd,
-            timeout: timeoutMs,
-            maxBuffer,
-            env: {
-                ...process.env,
-                PATH: enhancedPath,
-                ANTHROPIC_LOG: "debug",
-                // Ensure fully non-interactive mode
-                CI: "true",
-                NO_COLOR: "1",
-            },
-        });
-    }
-
-    private _getEnhancedPath(): string {
-        const homeDir = os.homedir();
-        const currentPath = process.env.PATH || "";
-
-        // Common paths where claude might be installed
-        const additionalPaths = [
-            // Local bin (where pipx/claude-code installs)
-            path.join(homeDir, ".local", "bin"),
-            // NVM paths
-            path.join(homeDir, ".nvm", "versions", "node"),
-            // Global npm
-            "/usr/local/bin",
-            path.join(homeDir, ".npm-global", "bin"),
-            path.join(homeDir, ".npm", "bin"),
-            // Volta
-            path.join(homeDir, ".volta", "bin"),
-            // pnpm
-            path.join(homeDir, ".local", "share", "pnpm"),
-            // Brew
-            "/opt/homebrew/bin",
-            "/usr/local/Homebrew/bin",
-        ];
-
-        // Find NVM current node version if NVM_DIR is set
-        const nvmDir = process.env.NVM_DIR || path.join(homeDir, ".nvm");
-        const nvmBin = this._findNvmCurrentBin(nvmDir);
-        if (nvmBin) {
-            additionalPaths.unshift(nvmBin);
-        }
-
-        // Combine paths, removing duplicates
-        const allPaths = [...additionalPaths, ...currentPath.split(path.delimiter)];
-        const uniquePaths = [...new Set(allPaths)].filter(Boolean);
-
-        return uniquePaths.join(path.delimiter);
-    }
-
-    private _findNvmCurrentBin(nvmDir: string): string | null {
-        try {
-            // Check for NVM default alias
-            const aliasPath = path.join(nvmDir, "alias", "default");
-            if (fs.existsSync(aliasPath)) {
-                const version = fs.readFileSync(aliasPath, "utf-8").trim();
-                // Handle aliases like "lts/*" or "node" or direct version
-                const nodePath = version.startsWith("v")
-                    ? path.join(nvmDir, "versions", "node", version, "bin")
-                    : null;
-                if (nodePath && fs.existsSync(nodePath)) {
-                    return nodePath;
-                }
-            }
-
-            // Fall back to checking versions directory
-            const versionsDir = path.join(nvmDir, "versions", "node");
-            if (fs.existsSync(versionsDir)) {
-                const versions = fs.readdirSync(versionsDir).filter((v) => v.startsWith("v"));
-                if (versions.length > 0) {
-                    // Use the latest version
-                    versions.sort().reverse();
-                    const binPath = path.join(versionsDir, versions[0], "bin");
-                    if (fs.existsSync(binPath)) {
-                        return binPath;
-                    }
-                }
-            }
-        } catch {
-            // Ignore errors, fall back to current PATH
-        }
-        return null;
-    }
-
-    private async _execCommandWithSpawn(
-        command: string,
-        args: string[],
-        options: { cwd: string; timeout: number; maxBuffer: number; env: NodeJS.ProcessEnv },
-    ): Promise<string> {
-        this._log(`⚡ Executing (spawn): ${command} ${args.join(" ")}`);
-        const startTime = Date.now();
-
-        return new Promise((resolve, reject) => {
-            const child = cp.spawn(command, args, {
-                cwd: options.cwd,
-                env: options.env,
-                stdio: ["ignore", "pipe", "pipe"], // Close stdin immediately
-            });
-
-            let stdout = "";
-            let stderr = "";
-
-            child.stdout?.on("data", (data: Buffer) => {
-                stdout += data.toString("utf8");
-            });
-
-            child.stderr?.on("data", (data: Buffer) => {
-                stderr += data.toString("utf8");
-            });
-
-            const timeoutId = setTimeout(() => {
-                child.kill("SIGTERM");
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                this._log(`⏰ Command timed out after ${elapsed}s`);
-                // Return whatever output we have so far
-                const output = `${stdout}\n${stderr}`;
-                if (output.trim()) {
-                    this._log(`ℹ️  Partial output (${output.length} chars)`);
-                    resolve(output);
-                } else {
-                    reject(new Error(`Command timed out after ${options.timeout}ms`));
-                }
-            }, options.timeout);
-
-            child.on("close", (code) => {
-                clearTimeout(timeoutId);
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                const output = `${stdout}\n${stderr}`;
-
-                if (code === 0) {
-                    this._log(`✅ Command succeeded in ${elapsed}s (${output.length} chars)`);
-                } else {
-                    this._log(`⚠️  Command exited with code ${code} after ${elapsed}s`);
-                }
-
-                if (output.length > 0) {
-                    this._log(
-                        `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
-                    );
-                }
-
-                resolve(output);
-            });
-
-            child.on("error", (error) => {
-                clearTimeout(timeoutId);
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                this._log(`❌ Command error after ${elapsed}s: ${error.message}`);
-                reject(error);
-            });
-        });
-    }
-
-    private async _execCommand(
-        command: string,
-        args: string[],
-        options: cp.ExecFileOptions,
-    ): Promise<string> {
-        this._log(`⚡ Executing: ${command} ${args.join(" ")}`);
-        const startTime = Date.now();
-
-        // Ensure we get strings, not Buffers
-        const execOptions: cp.ExecFileOptions = {
-            ...options,
-            encoding: "utf8" as BufferEncoding,
-        };
-
-        try {
-            const { stdout, stderr } = await execFileAsync(command, args, execOptions);
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            const output = `${stdout || ""}\n${stderr || ""}`;
-            this._log(`✅ Command succeeded in ${elapsed}s (${output.length} chars)`);
-            // Log first 200 chars to see if we got anything useful
-            if (output.length > 0) {
-                this._log(
-                    `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
-                );
-            }
-            return output;
-        } catch (error) {
-            const execError = error as cp.ExecException & {
-                stdout?: string | Buffer;
-                stderr?: string | Buffer;
-            };
-
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            this._log(`⚠️  Command error after ${elapsed}s: ${execError.message}`);
-
-            // Handle both string and Buffer outputs
-            const stdout = execError.stdout
-                ? Buffer.isBuffer(execError.stdout)
-                    ? execError.stdout.toString("utf8")
-                    : String(execError.stdout)
-                : "";
-            const stderr = execError.stderr
-                ? Buffer.isBuffer(execError.stderr)
-                    ? execError.stderr.toString("utf8")
-                    : String(execError.stderr)
-                : "";
-
-            const output = `${stdout}\n${stderr}`;
-
-            if (stdout || stderr) {
-                this._log(`ℹ️  Command failed but has output (${output.length} chars)`);
-                this._log(
-                    `📝 Output preview: ${output.substring(0, 200).replace(/\n/g, "\\n")}...`,
-                );
-                return output;
-            }
-
-            this._log("❌ Command failed with no output");
-            throw error;
-        }
-    }
-
-    private _parseRateLimitHeaders(output: string): Record<string, string> {
-        const headers: Record<string, string> = {};
-
-        this._log("🔍 Parsing rate limit headers from output...");
-
-        // Match both quoted (JSON) and unquoted formats:
-        // Quoted:   "anthropic-ratelimit-unified-5h-utilization": "0.714"
-        // Unquoted: anthropic-ratelimit-unified-5h-utilization: 0.714
-        const headerRegex =
-            /"?(anthropic-ratelimit-unified-[a-z0-9_.-]+-(?:utilization|reset))"?\s*:\s*"?([0-9.]+(?:e[+-]?\d+)?)"?/gi;
-        let match: RegExpExecArray | null = null;
-
-        while ((match = headerRegex.exec(output)) !== null) {
-            const key = match[1];
-            const value = match[2];
-            if (key && value) {
-                headers[key] = value;
-                this._log(`   Found: ${key} = ${value}`);
-            }
-        }
-
-        if (Object.keys(headers).length > 0) {
-            this._log(`✅ Found ${Object.keys(headers).length} rate limit headers`);
-        } else {
-            this._log("⚠️  No rate limit headers found in output");
-            // Check if output contains any anthropic references at all
-            if (output.includes("anthropic")) {
-                this._log("   Output contains 'anthropic' string but no matching headers");
-                // Log sample around 'anthropic' to help debug
-                const idx = output.indexOf("anthropic");
-                this._log(
-                    `   Sample around 'anthropic': ${output.substring(Math.max(0, idx - 20), idx + 80)}`,
-                );
-            } else {
-                this._log("   Output does not contain 'anthropic' string");
-            }
-            // Log a sample of the output
-            this._log(
-                `   Output sample (first 300 chars): ${output.substring(0, 300).replace(/\n/g, "\\n")}`,
-            );
-        }
-
-        return headers;
-    }
-
-    private _extractRateLimitClaims(headers: Record<string, string>): Map<string, RateLimitClaim> {
-        const claims = new Map<string, RateLimitClaim>();
-
-        for (const [key, rawValue] of Object.entries(headers)) {
-            const match = key.match(/^anthropic-ratelimit-unified-(.+?)-(utilization|reset)$/);
-            if (!match) {
-                continue;
-            }
-
-            const claim = match[1];
-            const kind = match[2];
-            const value = Number(rawValue);
-
-            if (Number.isNaN(value)) {
-                continue;
-            }
-
-            const existing = claims.get(claim) ?? {};
-            if (kind === "utilization") {
-                existing.utilization = value;
-            } else {
-                existing.reset = value;
-            }
-            claims.set(claim, existing);
-        }
-
-        return claims;
-    }
-
-    private _buildUsageDataFromRateLimits(headers: Record<string, string>): UsageData | null {
-        const claims = this._extractRateLimitClaims(headers);
-        this._log("Extracted claims:", Array.from(claims.keys()));
-
-        const sessionClaim =
-            this._selectClaim(claims, ["5h", "five_hour"]) ?? this._selectClaim(claims, ["5hr"]);
-        const weeklyClaim =
-            this._selectClaim(claims, ["7d", "seven_day"]) ?? this._selectClaim(claims, ["7day"]);
-
-        this._log("Session claim:", sessionClaim);
-        this._log("Weekly claim:", weeklyClaim);
-
-        if (!sessionClaim && !weeklyClaim) {
-            this._log("No valid claims found, returning null");
-            return null;
-        }
-
-        const sessionResetEpoch = this._normalizeResetEpoch(
-            sessionClaim?.data.reset,
-            sessionClaim?.claim,
-        );
-        const weeklyResetEpoch = this._normalizeResetEpoch(
-            weeklyClaim?.data.reset,
-            weeklyClaim?.claim,
-        );
-
-        const usageData: UsageData = {
-            currentSession: {
-                usageCost: this._clampUsage(sessionClaim?.data.utilization),
+                costLikely: rateLimits.weekly7d,
                 costLimit: 1,
-                resetsIn: sessionResetEpoch ? this._formatResetCountdown(sessionResetEpoch) : "",
-            },
-            weekly: {
-                costLikely: this._clampUsage(weeklyClaim?.data.utilization),
-                costLimit: 1,
-                resetsAt: weeklyResetEpoch ? this._formatResetAt(weeklyResetEpoch) : "",
+                resetsAt: weeklyResetTime,
             },
         };
-
-        const sonnetClaim = this._findModelClaim(claims, "sonnet");
-        if (sonnetClaim?.data.utilization !== undefined) {
-            const sonnetResetEpoch = this._normalizeResetEpoch(
-                sonnetClaim.data.reset,
-                sonnetClaim.claim,
-            );
-            usageData.sonnet = {
-                usage: this._clampUsage(sonnetClaim.data.utilization),
-                limit: 1,
-                resetsAt: sonnetResetEpoch
-                    ? this._formatResetAt(sonnetResetEpoch)
-                    : usageData.weekly.resetsAt,
-            };
-        }
-
-        return usageData;
     }
 
-    private _selectClaim(
-        claims: Map<string, RateLimitClaim>,
-        candidates: string[],
-    ): RateLimitClaimSelection | undefined {
-        for (const candidate of candidates) {
-            const data = claims.get(candidate);
-            if (data) {
-                return { claim: candidate, data };
-            }
-        }
-        return undefined;
-    }
+    /**
+     * Format reset time from Unix timestamp.
+     */
+    private _formatResetTime(timestamp: number): string {
+        const resetDate = new Date(timestamp * 1000);
+        const now = new Date();
+        const diffMs = resetDate.getTime() - now.getTime();
 
-    private _findModelClaim(
-        claims: Map<string, RateLimitClaim>,
-        token: string,
-    ): { claim: string; data: RateLimitClaim } | null {
-        const needle = token.toLowerCase();
-        for (const [claim, data] of claims.entries()) {
-            if (claim.toLowerCase().includes(needle)) {
-                return { claim, data };
-            }
-        }
-        return null;
-    }
-
-    private _normalizeResetEpoch(
-        resetEpochSeconds: number | undefined,
-        claim?: string,
-    ): number | undefined {
-        if (!resetEpochSeconds || Number.isNaN(resetEpochSeconds)) {
-            return undefined;
+        if (diffMs <= 0) {
+            return "Now";
         }
 
-        const windowMs = claim ? this._parseClaimWindowMs(claim) : null;
-        if (!windowMs) {
-            return resetEpochSeconds;
-        }
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
-        const nowMs = Date.now();
-        let resetMs = resetEpochSeconds * 1000;
-
-        if (resetMs <= nowMs) {
-            const elapsedMs = nowMs - resetMs;
-            const windowsAhead = Math.floor(elapsedMs / windowMs) + 1;
-            resetMs += windowsAhead * windowMs;
-        }
-
-        return Math.floor(resetMs / 1000);
-    }
-
-    private _parseClaimWindowMs(claim: string): number | null {
-        const normalized = claim.toLowerCase();
-        const numericMatch = normalized.match(
-            /(\d+)(h|hr|hrs|hour|hours|d|day|days|m|min|mins|minute|minutes)/,
-        );
-
-        if (numericMatch) {
-            const value = Number(numericMatch[1]);
-            const unit = numericMatch[2];
-
-            if (Number.isNaN(value)) {
-                return null;
-            }
-
-            if (unit.startsWith("m")) {
-                return value * 60 * 1000;
-            }
-            if (unit.startsWith("h")) {
-                return value * 60 * 60 * 1000;
-            }
-            if (unit.startsWith("d")) {
-                return value * 24 * 60 * 60 * 1000;
-            }
-
-            return null;
-        }
-
-        if (normalized === "five_hour") {
-            return 5 * 60 * 60 * 1000;
-        }
-        if (normalized === "seven_day") {
-            return 7 * 24 * 60 * 60 * 1000;
-        }
-
-        return null;
-    }
-
-    private _formatResetCountdown(resetEpochSeconds: number): string {
-        const resetDate = new Date(resetEpochSeconds * 1000);
-        const msRemaining = resetEpochSeconds * 1000 - Date.now();
-        const totalMinutes = Math.max(0, Math.floor(msRemaining / 60000));
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
         const parts: string[] = [];
-
-        if (hours > 0) {
-            parts.push(`${hours} hr`);
+        if (diffHours > 0) {
+            parts.push(`${diffHours} hr`);
+        }
+        if (diffMinutes > 0 || parts.length === 0) {
+            parts.push(`${diffMinutes} min`);
         }
 
-        if (minutes > 0 || parts.length === 0) {
-            parts.push(`${minutes} min`);
-        }
-
-        // Format the actual reset time
-        const resetTime = resetDate.toLocaleTimeString("en-US", {
+        const timeStr = resetDate.toLocaleTimeString("en-US", {
             hour: "numeric",
             minute: "2-digit",
         });
 
-        return `${parts.join(" ")} @ ${resetTime}`;
-    }
-
-    private _formatResetAt(resetEpochSeconds: number): string {
-        const date = new Date(resetEpochSeconds * 1000);
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        // Format: "Jan 8 at 4:59 PM"
-        const month = date.toLocaleDateString("en-US", { month: "short" });
-        const day = date.getDate();
-        const time = date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-        });
-
-        return `${month} ${day} at ${time} (${timezone})`;
-    }
-
-    private _clampUsage(value?: number): number {
-        if (value === undefined || Number.isNaN(value)) {
-            return 0;
+        // If more than 24 hours away, include the date
+        if (diffHours >= 24) {
+            const dateStr = resetDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+            });
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            return `${dateStr} at ${timeStr} (${timezone})`;
         }
-        return Math.max(0, Math.min(1, value));
+
+        return `${parts.join(" ")} @ ${timeStr}`;
     }
+
+    // ========================================================================
+    // Public API
+    // ========================================================================
 
     public get currentUsage(): UsageData | undefined {
         return this._usageData;
     }
 
+    public get lastError(): string | undefined {
+        return this._errorMessage;
+    }
+
     public dispose(): void {
+        this._isDisposed = true;
         this.stopPolling();
         this._dataEmitter.removeAllListeners();
+
+        // Kill any running process
+        if (this._currentProcess) {
+            if (!this._currentProcess.killed) {
+                this._currentProcess.kill("SIGTERM");
+            }
+            this._currentProcess.stdout?.removeAllListeners();
+            this._currentProcess.stderr?.removeAllListeners();
+            this._currentProcess.removeAllListeners();
+            this._currentProcess = null;
+        }
+
+        this._log("🧹 UsageService disposed - all resources cleaned up");
     }
 }
