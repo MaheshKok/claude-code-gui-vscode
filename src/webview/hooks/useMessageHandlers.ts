@@ -475,8 +475,19 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
             },
 
             usageData: (msg: unknown) => {
+                console.log("[useMessageHandlers] ✅ Received usageData message!");
                 const data = msg as { data: UsageData };
+                console.log("[useMessageHandlers] Usage data:", JSON.stringify(data.data, null, 2));
                 useUsageStore.getState().setUsageData(data.data);
+                console.log("[useMessageHandlers] Updated usage store");
+            },
+
+            usageError: (msg: unknown) => {
+                console.log("[useMessageHandlers] ⚠️ Received usageError message!");
+                const data = msg as { error: string };
+                console.log("[useMessageHandlers] Error:", data.error);
+                // Clear refresh state so UI is not stuck with spinner
+                useUsageStore.getState().setRefreshing(false);
             },
 
             mcpServers: (msg: unknown) => {

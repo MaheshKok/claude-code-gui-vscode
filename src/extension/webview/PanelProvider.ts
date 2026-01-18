@@ -27,7 +27,8 @@ export class PanelProvider {
     private _panel: vscode.WebviewPanel | undefined;
     private _webview: vscode.Webview | undefined;
     private _webviewView: vscode.WebviewView | undefined;
-    private _disposables: vscode.Disposable[] = [];
+    private _disposables: vscode.Disposable[] = []; // Panel-specific disposables
+    private _globalDisposables: vscode.Disposable[] = []; // Service subscriptions that persist
     private _messageHandlerDisposable: vscode.Disposable | undefined;
 
     // Extracted managers
@@ -124,6 +125,9 @@ export class PanelProvider {
 
             // Show completion notification if enabled
             this._showCompletionNotification();
+
+            // Refresh usage data since API was called (rate limits may have changed)
+            this._usageService.onClaudeSessionEnd();
         });
 
         this._claudeService.onError((error) => {
@@ -161,14 +165,35 @@ export class PanelProvider {
 
     /**
      * Set up event handlers for Usage service
+     * NOTE: These are global subscriptions that persist even when panel is closed
      */
     private _setupUsageServiceHandlers(): void {
-        this._usageService.onUsageUpdate((data) => {
+        console.log("[PanelProvider] Setting up usage service handlers...");
+
+        // Subscribe to usage updates (global - persists across panel open/close)
+        const updateSubscription = this._usageService.onUsageUpdate((data) => {
+            console.log("[PanelProvider] ✅ Received usage update from UsageService!");
+            console.log("[PanelProvider] Usage data:", JSON.stringify(data, null, 2));
+            console.log("[PanelProvider] Has panel:", !!this._panel);
+            console.log("[PanelProvider] Has webview:", !!this._webview);
             this._postMessage({
                 type: "usageData",
                 data,
             });
         });
+        this._globalDisposables.push(updateSubscription);
+
+        // Subscribe to usage errors (global - persists across panel open/close)
+        const errorSubscription = this._usageService.onError((errorMessage) => {
+            console.log("[PanelProvider] ⚠️ Received usage error:", errorMessage);
+            this._postMessage({
+                type: "usageError",
+                error: errorMessage,
+            });
+        });
+        this._globalDisposables.push(errorSubscription);
+
+        console.log("[PanelProvider] Usage service handlers set up successfully");
     }
 
     private _sendUsageData(): void {
@@ -222,6 +247,18 @@ export class PanelProvider {
         this._panel.webview.html = this._getHtmlForWebview();
 
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
+        // Send latest usage data when panel becomes visible
+        this._panel.onDidChangeViewState(
+            (e) => {
+                if (e.webviewPanel.visible) {
+                    console.log("[PanelProvider] Panel became visible, sending latest usage data");
+                    this._sendUsageData();
+                }
+            },
+            null,
+            this._disposables,
+        );
 
         this._setupWebviewMessageHandler(this._panel.webview);
 
@@ -339,21 +376,46 @@ export class PanelProvider {
     }
 
     /**
-     * Dispose of the panel and resources
+     * Dispose of the panel (called when panel is closed)
+     * NOTE: Does NOT dispose global service subscriptions - those persist
      */
     public dispose(): void {
+        console.log("[PanelProvider] Disposing panel (keeping global subscriptions)");
         this._panel = undefined;
 
         if (this._messageHandlerDisposable) {
             this._messageHandlerDisposable.dispose();
+            this._messageHandlerDisposable = undefined;
         }
 
+        // Only dispose panel-specific disposables, not global subscriptions
         while (this._disposables.length) {
             const disposable = this._disposables.pop();
             if (disposable) {
                 disposable.dispose();
             }
         }
+    }
+
+    /**
+     * Dispose of all resources including global subscriptions
+     * (called when extension is deactivated)
+     */
+    public disposeAll(): void {
+        console.log("[PanelProvider] Disposing all resources including global subscriptions");
+        this.dispose();
+
+        // Dispose global subscriptions (service handlers)
+        while (this._globalDisposables.length) {
+            const disposable = this._globalDisposables.pop();
+            if (disposable) {
+                disposable.dispose();
+            }
+        }
+
+        // Clear webview references
+        this._webview = undefined;
+        this._webviewView = undefined;
     }
 
     // ==================== Private Methods ====================

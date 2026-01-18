@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const mcpService = new MCPService(context);
 
     outputChannel.appendLine("[Extension] Initializing UsageService...");
-    const usageService = new UsageService(claudeService, outputChannel);
+    const usageService = new UsageService(outputChannel);
 
     // Create the main panel provider (for editor area)
     const panelProvider = new PanelProvider(
@@ -135,6 +135,8 @@ export function activate(context: vscode.ExtensionContext): void {
         permissionService,
         mcpService,
         usageService,
+        // PanelProvider wrapper to dispose all resources including global subscriptions
+        { dispose: () => panelProvider.disposeAll() },
     );
 
     outputChannel.appendLine("");
