@@ -320,8 +320,8 @@ export class UsageService implements vscode.Disposable {
     // ========================================================================
 
     /**
-     * Run `claude -p "." --output-format json` with ANTHROPIC_LOG=debug
-     * to capture rate limit headers from the API response.
+     * Run minimal claude command with ANTHROPIC_LOG=debug to capture rate limit headers.
+     * Uses haiku model with max-tokens=1 for cheapest/fastest API call.
      *
      * Memory leak prevention:
      * - Timeout clears and kills process
@@ -379,10 +379,17 @@ export class UsageService implements vscode.Disposable {
 
             try {
                 // Run minimal claude command with debug logging enabled
+                // Use haiku model with max-tokens 1 for cheapest/fastest API call
                 // Cross-platform: use args array and env option instead of shell command string
-                this._log(`🔍 Running command: claude -p "." --output-format json (with ANTHROPIC_LOG=debug)`);
+                const args = [
+                    "-p", ".",
+                    "--output-format", "json",
+                    "--model", "claude-3-5-haiku-20241022",
+                    "--max-tokens", "1",
+                ];
+                this._log(`🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`);
 
-                this._currentProcess = spawn("claude", ["-p", ".", "--output-format", "json"], {
+                this._currentProcess = spawn("claude", args, {
                     stdio: ["ignore", "pipe", "pipe"],
                     env: {
                         ...process.env,
