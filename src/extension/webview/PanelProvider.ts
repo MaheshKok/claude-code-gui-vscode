@@ -125,6 +125,9 @@ export class PanelProvider {
 
             // Show completion notification if enabled
             this._showCompletionNotification();
+
+            // Refresh usage data since API was called (rate limits may have changed)
+            this._usageService.onClaudeSessionEnd();
         });
 
         this._claudeService.onError((error) => {

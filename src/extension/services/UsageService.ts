@@ -4,16 +4,23 @@
  * Fetches Claude usage data by running a minimal claude command with ANTHROPIC_LOG=debug
  * to capture the actual rate limit headers from Anthropic's API response.
  *
- * How Claude CLI's /usage works:
- * - Every API call returns rate limit headers in the response
- * - Headers include: anthropic-ratelimit-unified-5h-utilization, anthropic-ratelimit-unified-7d-utilization
- * - The CLI caches/displays these headers from API responses
- * - We make a minimal API call to get fresh headers
+ * Caching Strategy:
+ * - On startup, load from cache immediately for instant display
+ * - If cache is stale (>30 min), fetch fresh data from API
+ * - When Claude CLI sessions end, trigger a refresh (since API was called anyway)
+ * - Cache persists to ~/.claude/rate-limit-cache.json
  */
 import * as vscode from "vscode";
 import { EventEmitter } from "events";
 import { spawn, ChildProcess } from "child_process";
 import { UsageData } from "../../shared/types/usage";
+import {
+    readRateLimitCache,
+    writeRateLimitCache,
+    isCacheFresh,
+    getCacheAgeMinutes,
+    CachedRateLimits,
+} from "./RateLimitCache";
 
 // ============================================================================
 // Constants
@@ -21,6 +28,7 @@ import { UsageData } from "../../shared/types/usage";
 
 const POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const COMMAND_TIMEOUT_MS = 60_000; // 60 seconds
+const CACHE_STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 // ============================================================================
 // Types
@@ -45,13 +53,17 @@ export class UsageService implements vscode.Disposable {
     private _fetchInFlight: Promise<void> | null = null;
     private _currentProcess: ChildProcess | null = null;
     private _isDisposed = false;
+    private _lastFetchTime: number = 0;
 
     constructor(private readonly _outputChannel?: vscode.OutputChannel) {
         this._log("╔════════════════════════════════════════════╗");
         this._log("║   USAGE SERVICE INITIALIZING               ║");
         this._log("╚════════════════════════════════════════════╝");
 
-        // Start polling
+        // Try to load from cache first for instant display
+        this._loadFromCache();
+
+        // Start polling (will only fetch from API if cache is stale)
         this.startPolling();
         this._log("✅ Polling started (5-minute intervals)");
     }
@@ -66,6 +78,67 @@ export class UsageService implements vscode.Disposable {
             const logLine = data !== undefined ? `${formatted} ${JSON.stringify(data)}` : formatted;
             this._outputChannel.appendLine(logLine);
         }
+    }
+
+    // ========================================================================
+    // Cache Management
+    // ========================================================================
+
+    /**
+     * Load usage data from cache file.
+     * Returns true if cache was loaded and is fresh.
+     */
+    private _loadFromCache(): boolean {
+        this._log("📂 Checking rate limit cache...");
+
+        const cache = readRateLimitCache();
+        if (!cache) {
+            this._log("   ℹ️  No cache found");
+            return false;
+        }
+
+        const ageMinutes = getCacheAgeMinutes(cache);
+        this._log(`   📂 Cache found (${ageMinutes} minutes old)`);
+
+        // Build usage data from cache
+        const usageData = this._buildUsageDataFromCache(cache);
+        this._usageData = usageData;
+
+        // Emit the cached data immediately
+        this._dataEmitter.emit("update", usageData);
+        this._log("   ✅ Loaded usage from cache");
+
+        // Return whether cache is fresh
+        const fresh = isCacheFresh(cache);
+        if (!fresh) {
+            this._log("   ⚠️  Cache is stale, will fetch fresh data");
+        }
+        return fresh;
+    }
+
+    /**
+     * Save rate limit data to cache file.
+     */
+    private _saveToCache(rateLimits: RateLimitData): void {
+        writeRateLimitCache({
+            session5h: rateLimits.session5h,
+            weekly7d: rateLimits.weekly7d,
+            reset5h: rateLimits.reset5h,
+            reset7d: rateLimits.reset7d,
+        });
+        this._log("💾 Saved to cache");
+    }
+
+    /**
+     * Build UsageData from cached rate limits.
+     */
+    private _buildUsageDataFromCache(cache: CachedRateLimits): UsageData {
+        return this._buildUsageDataFromRateLimits({
+            session5h: cache.session5h,
+            weekly7d: cache.weekly7d,
+            reset5h: cache.reset5h,
+            reset7d: cache.reset7d,
+        });
     }
 
     // ========================================================================
@@ -110,12 +183,12 @@ export class UsageService implements vscode.Disposable {
 
         this._pollInterval = setInterval(() => {
             if (!this._isDisposed) {
-                this.fetchUsageData();
+                this.fetchUsageDataIfStale();
             }
         }, POLLING_INTERVAL_MS);
 
-        // Initial fetch
-        this.fetchUsageData();
+        // Initial fetch only if cache is stale
+        this.fetchUsageDataIfStale();
     }
 
     public stopPolling(): void {
@@ -130,8 +203,29 @@ export class UsageService implements vscode.Disposable {
     // ========================================================================
 
     /**
-     * Fetch usage data from API rate limit headers.
-     * Uses mutex pattern to prevent duplicate concurrent fetches.
+     * Fetch usage data only if cache is stale.
+     * This is called by polling.
+     */
+    public async fetchUsageDataIfStale(): Promise<void> {
+        if (this._isDisposed) return;
+
+        const cache = readRateLimitCache();
+        if (cache && isCacheFresh(cache)) {
+            this._log("📂 Cache is fresh, skipping API call");
+
+            // Still emit the cached data in case webview needs it
+            const usageData = this._buildUsageDataFromCache(cache);
+            this._usageData = usageData;
+            this._dataEmitter.emit("update", usageData);
+            return;
+        }
+
+        await this.fetchUsageData();
+    }
+
+    /**
+     * Force fetch usage data from API (ignores cache).
+     * Used when user explicitly requests refresh or when Claude session ends.
      */
     public async fetchUsageData(): Promise<void> {
         if (this._isDisposed) return;
@@ -151,12 +245,26 @@ export class UsageService implements vscode.Disposable {
         }
     }
 
+    /**
+     * Called when a Claude CLI session ends.
+     * Triggers a refresh since an API call was made (rate limits may have changed).
+     */
+    public onClaudeSessionEnd(): void {
+        this._log("🔔 Claude session ended, refreshing usage data...");
+        // Small delay to ensure the API call has completed
+        setTimeout(() => {
+            if (!this._isDisposed) {
+                this.fetchUsageData();
+            }
+        }, 1000);
+    }
+
     private async _doFetchUsageData(): Promise<void> {
         if (this._isDisposed) return;
 
         this._log("");
         this._log("🔄 ═══════════════════════════════════════════");
-        this._log("🔄 FETCHING USAGE DATA...");
+        this._log("🔄 FETCHING USAGE DATA FROM API...");
         this._log("🔄 ═══════════════════════════════════════════");
 
         try {
@@ -179,16 +287,26 @@ export class UsageService implements vscode.Disposable {
 
                 this._usageData = usageData;
                 this._errorMessage = undefined;
+                this._lastFetchTime = Date.now();
+
                 this._log("📡 Emitting 'update' event to listeners...");
                 this._dataEmitter.emit("update", this._usageData);
                 this._log(
                     `📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`,
                 );
             } else {
-                // No fallback - emit error
-                this._log("❌ Error getting usage data");
-                this._errorMessage = "Error getting usage";
-                this._dataEmitter.emit("error", this._errorMessage);
+                // API failed - try to use cache as fallback
+                const cache = readRateLimitCache();
+                if (cache) {
+                    this._log("⚠️  API failed, using cached data as fallback");
+                    const cachedData = this._buildUsageDataFromCache(cache);
+                    this._usageData = cachedData;
+                    this._dataEmitter.emit("update", cachedData);
+                } else {
+                    this._log("❌ Error getting usage data (no cache available)");
+                    this._errorMessage = "Error getting usage";
+                    this._dataEmitter.emit("error", this._errorMessage);
+                }
             }
         } catch (error) {
             const errorMsg = error instanceof Error ? error.message : String(error);
@@ -302,6 +420,8 @@ export class UsageService implements vscode.Disposable {
 
                     if (rateLimits) {
                         this._log("✅ Got rate limits from API headers");
+                        // Save to cache
+                        this._saveToCache(rateLimits);
                         safeResolve(this._buildUsageDataFromRateLimits(rateLimits));
                     } else {
                         this._log("⚠️  Could not parse rate limits from output");
