@@ -2,7 +2,7 @@
  * Rate Limit Cache
  *
  * Caches rate limit data to a local file for persistence across extension restarts.
- * This avoids unnecessary API calls by reusing cached data when fresh.
+ * Provides instant display on startup while fresh data is fetched.
  */
 import * as fs from "fs";
 import * as path from "path";
@@ -17,7 +17,6 @@ export interface CachedRateLimits {
 }
 
 const CACHE_FILE_PATH = path.join(os.homedir(), ".claude", "rate-limit-cache.json");
-const CACHE_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes - consider cache stale after this
 
 /**
  * Read cached rate limits from file
@@ -69,14 +68,6 @@ export function writeRateLimitCache(data: Omit<CachedRateLimits, "timestamp">): 
     } catch (error) {
         console.warn("[RateLimitCache] Failed to write cache:", error);
     }
-}
-
-/**
- * Check if cache is fresh (not stale)
- */
-export function isCacheFresh(cache: CachedRateLimits): boolean {
-    const age = Date.now() - cache.timestamp;
-    return age < CACHE_MAX_AGE_MS;
 }
 
 /**

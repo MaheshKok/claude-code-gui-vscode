@@ -6,7 +6,7 @@
  *
  * Caching Strategy:
  * - On startup, load from cache immediately for instant display
- * - If cache is stale (>30 min), fetch fresh data from API
+ * - Fetch fresh data from API every 5 minutes
  * - When Claude CLI sessions end, trigger a refresh (since API was called anyway)
  * - Cache persists to ~/.claude/rate-limit-cache.json
  */
@@ -17,7 +17,6 @@ import { UsageData } from "../../shared/types/usage";
 import {
     readRateLimitCache,
     writeRateLimitCache,
-    isCacheFresh,
     getCacheAgeMinutes,
     CachedRateLimits,
 } from "./RateLimitCache";
@@ -62,7 +61,7 @@ export class UsageService implements vscode.Disposable {
         // Try to load from cache first for instant display
         this._loadFromCache();
 
-        // Start polling (will only fetch from API if cache is stale)
+        // Start polling (fetches fresh data every 5 minutes)
         this.startPolling();
         this._log("✅ Polling started (5-minute intervals)");
     }
@@ -107,12 +106,8 @@ export class UsageService implements vscode.Disposable {
         this._dataEmitter.emit("update", usageData);
         this._log("   ✅ Loaded usage from cache");
 
-        // Return whether cache is fresh
-        const fresh = isCacheFresh(cache);
-        if (!fresh) {
-            this._log("   ⚠️  Cache is stale, will fetch fresh data");
-        }
-        return fresh;
+        // Always return false to ensure fresh data is fetched every polling interval
+        return false;
     }
 
     /**
@@ -202,23 +197,13 @@ export class UsageService implements vscode.Disposable {
     // ========================================================================
 
     /**
-     * Fetch usage data only if cache is stale.
-     * This is called by polling.
+     * Fetch usage data from API.
+     * This is called by polling every 5 minutes.
      */
     public async fetchUsageDataIfStale(): Promise<void> {
         if (this._isDisposed) return;
 
-        const cache = readRateLimitCache();
-        if (cache && isCacheFresh(cache)) {
-            this._log("📂 Cache is fresh, skipping API call");
-
-            // Still emit the cached data in case webview needs it
-            const usageData = this._buildUsageDataFromCache(cache);
-            this._usageData = usageData;
-            this._dataEmitter.emit("update", usageData);
-            return;
-        }
-
+        // Always fetch fresh data on every polling interval (5 minutes)
         await this.fetchUsageData();
     }
 
