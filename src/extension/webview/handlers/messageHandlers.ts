@@ -161,6 +161,22 @@ const handleRequestState = (_message: WebviewMessage, context: MessageHandlerCon
         type: "restoreState",
         state: restoreState,
     });
+
+    const usageData = context.usageService.currentUsage;
+    if (usageData) {
+        context.postMessage({
+            type: "usageData",
+            data: usageData,
+        });
+    } else {
+        const usageError = context.usageService.lastError;
+        if (usageError) {
+            context.postMessage({
+                type: "usageError",
+                error: usageError,
+            });
+        }
+    }
 };
 
 const handleSaveState = async (
