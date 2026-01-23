@@ -46,6 +46,7 @@ export class ClaudeService implements vscode.Disposable {
     private _isWslProcess: boolean = false;
     private _wslDistro: string = DEFAULT_WSL_CONFIG.DISTRO;
     private _pendingPermissionRequests: Map<string, PendingPermissionRequest> = new Map();
+    private _lastDebugOutput: string | undefined;
 
     private _messageEmitter = new EventEmitter();
     private _processEndEmitter = new EventEmitter();
@@ -97,10 +98,18 @@ export class ClaudeService implements vscode.Disposable {
     }
 
     /**
+     * Get the most recent debug output (stderr/stdout capture) from Claude CLI.
+     */
+    public getLastDebugOutput(): string | undefined {
+        return this._lastDebugOutput;
+    }
+
+    /**
      * Send a message to Claude
      */
     public async sendMessage(message: string, options: SendMessageOptions): Promise<void> {
         const config = vscode.workspace.getConfiguration("claudeCodeGui");
+        this._lastDebugOutput = undefined;
 
         // Build command arguments
         const args = [
@@ -174,6 +183,7 @@ export class ClaudeService implements vscode.Disposable {
                     ...process.env,
                     FORCE_COLOR: "0",
                     NO_COLOR: "1",
+                    ANTHROPIC_LOG: "debug",
                 },
             });
         } else {
@@ -189,6 +199,7 @@ export class ClaudeService implements vscode.Disposable {
                     ...process.env,
                     FORCE_COLOR: "0",
                     NO_COLOR: "1",
+                    ANTHROPIC_LOG: "debug",
                 },
             });
         }
@@ -211,12 +222,21 @@ export class ClaudeService implements vscode.Disposable {
 
         let rawOutput = "";
         let errorOutput = "";
+        let debugOutput = "";
+        const MAX_DEBUG_OUTPUT = 200_000;
+        const appendDebugOutput = (chunk: string) => {
+            debugOutput += chunk;
+            if (debugOutput.length > MAX_DEBUG_OUTPUT) {
+                debugOutput = debugOutput.slice(-MAX_DEBUG_OUTPUT);
+            }
+        };
 
         if (claudeProcess.stdout) {
             claudeProcess.stdout.on("data", (data) => {
                 const chunk = data.toString();
                 console.log("[ClaudeService] Received stdout chunk:", chunk.substring(0, 200));
                 rawOutput += chunk;
+                appendDebugOutput(chunk);
 
                 // Process JSON stream line by line
                 const lines = rawOutput.split("\n");
@@ -242,19 +262,26 @@ export class ClaudeService implements vscode.Disposable {
 
         if (claudeProcess.stderr) {
             claudeProcess.stderr.on("data", (data) => {
-                errorOutput += data.toString();
+                const chunk = data.toString();
+                errorOutput += chunk;
+                appendDebugOutput(chunk);
             });
         }
 
         claudeProcess.on("close", (code) => {
             console.log("Claude process closed with code:", code);
-            console.log("Claude stderr output:", errorOutput);
+            if (errorOutput.trim()) {
+                const preview =
+                    errorOutput.length > 2000 ? `${errorOutput.slice(0, 2000)}...` : errorOutput;
+                console.log("Claude stderr output:", preview);
+            }
 
             if (!this._process) {
                 return;
             }
 
             this._process = undefined;
+            this._lastDebugOutput = debugOutput.trim() ? debugOutput : undefined;
             this._cancelPendingPermissionRequests();
             this._processEndEmitter.emit("end");
 
