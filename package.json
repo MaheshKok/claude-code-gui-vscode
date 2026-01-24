@@ -434,7 +434,7 @@
         "@vscode/vsce": "^3.5.0",
         "autoprefixer": "^10.4.20",
         "concurrently": "^9.1.0",
-        "esbuild": "^0.24.0",
+        "esbuild": "^0.27.2",
         "eslint": "^9.25.1",
         "eslint-plugin-react": "^7.37.2",
         "eslint-plugin-react-hooks": "^5.0.0",
@@ -452,9 +452,6 @@
         "lucide-react": "^0.468.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-markdown": "^9.0.1",
-        "react-syntax-highlighter": "^15.6.1",
-        "remark-gfm": "^4.0.0",
         "zustand": "^5.0.2"
     }
 }
