@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, memo, useMemo } from "react";
 import { Message as MessageComponent } from "./Message";
 import type { Message } from "../App";
 
@@ -9,7 +9,7 @@ interface MessageListProps {
     isScrollable?: boolean;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({
+export const MessageList: React.FC<MessageListProps> = memo(({
     messages,
     isProcessing,
     showEmptyState = true,
@@ -21,9 +21,11 @@ export const MessageList: React.FC<MessageListProps> = ({
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         if (bottomRef.current) {
-            bottomRef.current.scrollIntoView({ behavior: "smooth" });
+            requestAnimationFrame(() => {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+            });
         }
-    }, [messages, isProcessing]);
+    }, [messages.length, isProcessing]);
 
     if (messages.length === 0 && showEmptyState) {
         return (
@@ -60,18 +62,21 @@ export const MessageList: React.FC<MessageListProps> = ({
         );
     }
 
-    const containerClasses = isScrollable
-        ? "flex-1 overflow-y-auto px-4 py-4 space-y-4"
-        : "px-4 py-4 space-y-4";
+    const containerClasses = useMemo(() =>
+        isScrollable
+            ? "flex-1 overflow-y-auto px-4 py-4 space-y-4"
+            : "px-4 py-4 space-y-4",
+        [isScrollable]
+    );
 
-    const lastAssistantId = (() => {
+    const lastAssistantId = useMemo(() => {
         for (let i = messages.length - 1; i >= 0; i -= 1) {
             if (messages[i].role === "assistant") {
                 return messages[i].id;
             }
         }
         return null;
-    })();
+    }, [messages]);
 
     return (
         <div ref={containerRef} className={containerClasses}>
@@ -108,7 +113,9 @@ export const MessageList: React.FC<MessageListProps> = ({
             <div ref={bottomRef} />
         </div>
     );
-};
+});
+
+MessageList.displayName = "MessageList";
 
 interface QuickActionProps {
     label: string;
