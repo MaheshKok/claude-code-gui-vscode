@@ -15,21 +15,39 @@ export default defineConfig({
                 main: resolve(__dirname, "src/webview/main.tsx"),
             },
             output: {
-                // Single bundle output - no code splitting for webview compatibility
                 entryFileNames: "main.js",
-                chunkFileNames: "main.js",
-                assetFileNames: "main[extname]",
-                // Disable code splitting
-                manualChunks: undefined,
+                chunkFileNames: "[name].js",
+                assetFileNames: "[name][extname]",
+                // Enable code splitting for vendor chunks
+                manualChunks: (id) => {
+                    if (id.includes('node_modules')) {
+                        // Separate vendor code
+                        if (id.includes('react') || id.includes('react-dom')) {
+                            return 'react-vendor';
+                        }
+                        if (id.includes('zustand')) {
+                            return 'state-vendor';
+                        }
+                        return 'vendor';
+                    }
+                },
+            },
+            treeshake: {
+                moduleSideEffects: false,
+                propertyReadSideEffects: false,
             },
         },
         sourcemap: process.env.NODE_ENV !== "production",
-        minify: process.env.NODE_ENV === "production",
+        minify: process.env.NODE_ENV === "production" ? 'terser' : false,
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true,
+            },
+        },
         target: "es2020",
-        // Inline all CSS into JS to avoid separate file loading issues
-        cssCodeSplit: false,
-        // Inline assets smaller than 1MB (fixes image loading in webview)
-        assetsInlineLimit: 1000000,
+        cssCodeSplit: true,
+        assetsInlineLimit: 4096, // 4KB limit (was 1MB!)
     },
 
     resolve: {
