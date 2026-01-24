@@ -44,7 +44,7 @@ export interface ToolInputFormatOptions {
     escapeHtmlContent?: boolean;
 }
 
-const defaultOptions: ToolInputFormatOptions = {
+const defaultOptions: Required<ToolInputFormatOptions> = {
     maxSummaryLength: 60,
     expandableThreshold: 500,
     includeSyntaxHints: true,
