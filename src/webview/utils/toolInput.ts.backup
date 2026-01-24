@@ -9,7 +9,7 @@
  */
 
 import { formatFilePath, formatBytes, truncateMiddle } from "./format";
-import { escapeHtml } from "./markdown";
+import { escapeHtml, extractCodeBlocks } from "./markdown";
 import type { ToolInput } from "../types/claude-events";
 
 // ============================================================================
@@ -44,7 +44,7 @@ export interface ToolInputFormatOptions {
     escapeHtmlContent?: boolean;
 }
 
-const defaultOptions: Required<ToolInputFormatOptions> = {
+const defaultOptions: ToolInputFormatOptions = {
     maxSummaryLength: 60,
     expandableThreshold: 500,
     includeSyntaxHints: true,
@@ -65,7 +65,7 @@ function formatReadInput(input: ToolInput, options: ToolInputFormatOptions): For
     const offset = input.offset as number | undefined;
     const limit = input.limit as number | undefined;
 
-    let summary = `Read ${formatFilePath(filePath, { maxLength: options.maxSummaryLength ?? defaultOptions.maxSummaryLength - 5 })}`;
+    let summary = `Read ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 5 })}`;
 
     if (startLine !== undefined && endLine !== undefined) {
         summary += ` (lines ${startLine}-${endLine})`;
@@ -131,12 +131,11 @@ function formatWriteInput(input: ToolInput, options: ToolInputFormatOptions): Fo
     const content = (input.content as string) || "";
 
     const lineCount = content.split("\n").length;
-    const summary = `Write ${formatFilePath(filePath, { maxLength: options.maxSummaryLength ?? defaultOptions.maxSummaryLength - 20 })} (${lineCount} lines)`;
+    const summary = `Write ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 20 })} (${lineCount} lines)`;
 
-    const isExpandable =
-        content.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold);
+    const isExpandable = content.length > options.expandableThreshold!;
     const displayContent = isExpandable
-        ? truncateMiddle(content, options.expandableThreshold ?? defaultOptions.expandableThreshold)
+        ? truncateMiddle(content, options.expandableThreshold!)
         : content;
 
     const fullContent = `
@@ -171,28 +170,18 @@ function formatEditInput(input: ToolInput, options: ToolInputFormatOptions): For
     const oldString = (input.old_string as string) || "";
     const newString = (input.new_string as string) || "";
 
-    const summary = `Edit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength ?? defaultOptions.maxSummaryLength - 5 })}`;
+    const summary = `Edit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 5 })}`;
 
-    const isExpandable =
-        oldString.length + newString.length >
-        (options.expandableThreshold ?? defaultOptions.expandableThreshold);
+    const isExpandable = oldString.length + newString.length > options.expandableThreshold!;
 
     const displayOld =
-        isExpandable &&
-        oldString.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold) / 2
-            ? truncateMiddle(
-                  oldString,
-                  (options.expandableThreshold ?? defaultOptions.expandableThreshold) / 2,
-              )
+        isExpandable && oldString.length > options.expandableThreshold! / 2
+            ? truncateMiddle(oldString, options.expandableThreshold! / 2)
             : oldString;
 
     const displayNew =
-        isExpandable &&
-        newString.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold) / 2
-            ? truncateMiddle(
-                  newString,
-                  (options.expandableThreshold ?? defaultOptions.expandableThreshold) / 2,
-              )
+        isExpandable && newString.length > options.expandableThreshold! / 2
+            ? truncateMiddle(newString, options.expandableThreshold! / 2)
             : newString;
 
     const fullContent = `
@@ -236,14 +225,13 @@ function formatMultiEditInput(
     const filePath = (input.file_path as string) || "";
     const edits = (input.edits as Array<{ old_string: string; new_string: string }>) || [];
 
-    const summary = `MultiEdit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength ?? defaultOptions.maxSummaryLength - 20 })} (${edits.length} edits)`;
+    const summary = `MultiEdit ${formatFilePath(filePath, { maxLength: options.maxSummaryLength! - 20 })} (${edits.length} edits)`;
 
     const totalLength = edits.reduce(
         (sum, e) => sum + e.old_string.length + e.new_string.length,
         0,
     );
-    const isExpandable =
-        totalLength > (options.expandableThreshold ?? defaultOptions.expandableThreshold);
+    const isExpandable = totalLength > options.expandableThreshold!;
 
     const editsHtml = edits
         .map((edit, index) => {
@@ -304,13 +292,12 @@ function formatBashInput(input: ToolInput, options: ToolInputFormatOptions): For
     const description = input.description as string | undefined;
 
     const displayCommand =
-        command.length > (options.maxSummaryLength ?? defaultOptions.maxSummaryLength)
-            ? truncateMiddle(command, options.maxSummaryLength ?? defaultOptions.maxSummaryLength)
+        command.length > options.maxSummaryLength!
+            ? truncateMiddle(command, options.maxSummaryLength!)
             : command;
 
     const summary = description || `Run: ${displayCommand}`;
-    const isExpandable =
-        command.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold);
+    const isExpandable = command.length > options.expandableThreshold!;
 
     const fullContent = `
     <div class="tool-input-bash">
@@ -354,10 +341,7 @@ function formatBashInput(input: ToolInput, options: ToolInputFormatOptions): For
   `.trim();
 
     return {
-        summary: truncateMiddle(
-            summary,
-            options.maxSummaryLength ?? defaultOptions.maxSummaryLength,
-        ),
+        summary: truncateMiddle(summary, options.maxSummaryLength!),
         fullContent,
         isExpandable,
         metadata: { command, cwd, timeout },
@@ -393,10 +377,7 @@ function formatGlobInput(input: ToolInput, options: ToolInputFormatOptions): For
   `.trim();
 
     return {
-        summary: truncateMiddle(
-            summary,
-            options.maxSummaryLength ?? defaultOptions.maxSummaryLength,
-        ),
+        summary: truncateMiddle(summary, options.maxSummaryLength!),
         fullContent,
         isExpandable: false,
         metadata: { pattern, path },
@@ -446,10 +427,7 @@ function formatGrepInput(input: ToolInput, options: ToolInputFormatOptions): For
   `.trim();
 
     return {
-        summary: truncateMiddle(
-            summary,
-            options.maxSummaryLength ?? defaultOptions.maxSummaryLength,
-        ),
+        summary: truncateMiddle(summary, options.maxSummaryLength!),
         fullContent,
         isExpandable: false,
         metadata: { pattern, path, glob },
@@ -519,11 +497,8 @@ function formatWebFetchInput(
     const prompt = (input.prompt as string) || "";
 
     const displayUrl =
-        url.length > (options.maxSummaryLength ?? defaultOptions.maxSummaryLength) - 10
-            ? truncateMiddle(
-                  url,
-                  (options.maxSummaryLength ?? defaultOptions.maxSummaryLength) - 10,
-              )
+        url.length > options.maxSummaryLength! - 10
+            ? truncateMiddle(url, options.maxSummaryLength! - 10)
             : url;
 
     const summary = `Fetch: ${displayUrl}`;
@@ -550,8 +525,7 @@ function formatWebFetchInput(
     return {
         summary,
         fullContent,
-        isExpandable:
-            prompt.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold),
+        isExpandable: prompt.length > options.expandableThreshold!,
         metadata: { url, prompt },
     };
 }
@@ -562,7 +536,7 @@ function formatWebFetchInput(
 function formatTaskInput(input: ToolInput, options: ToolInputFormatOptions): FormattedToolInput {
     const description = (input.description as string) || (input.prompt as string) || "";
 
-    const summary = `Task: ${truncateMiddle(description, options.maxSummaryLength ?? defaultOptions.maxSummaryLength - 6)}`;
+    const summary = `Task: ${truncateMiddle(description, options.maxSummaryLength! - 6)}`;
 
     const fullContent = `
     <div class="tool-input-task">
@@ -578,9 +552,7 @@ function formatTaskInput(input: ToolInput, options: ToolInputFormatOptions): For
     return {
         summary,
         fullContent,
-        isExpandable:
-            description.length >
-            (options.expandableThreshold ?? defaultOptions.expandableThreshold),
+        isExpandable: description.length > options.expandableThreshold!,
         metadata: { description },
     };
 }
@@ -594,12 +566,11 @@ function formatGenericInput(
     options: ToolInputFormatOptions,
 ): FormattedToolInput {
     const jsonStr = JSON.stringify(input, null, 2);
-    const summary = `${toolName}: ${truncateMiddle(Object.keys(input).join(", "), options.maxSummaryLength ?? defaultOptions.maxSummaryLength - toolName.length - 2)}`;
+    const summary = `${toolName}: ${truncateMiddle(Object.keys(input).join(", "), options.maxSummaryLength! - toolName.length - 2)}`;
 
-    const isExpandable =
-        jsonStr.length > (options.expandableThreshold ?? defaultOptions.expandableThreshold);
+    const isExpandable = jsonStr.length > options.expandableThreshold!;
     const displayJson = isExpandable
-        ? truncateMiddle(jsonStr, options.expandableThreshold ?? defaultOptions.expandableThreshold)
+        ? truncateMiddle(jsonStr, options.expandableThreshold!)
         : jsonStr;
 
     const fullContent = `

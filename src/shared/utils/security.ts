@@ -21,7 +21,7 @@ export function sanitizeShellPath(path: string): string {
     const dangerousChars = /[;&|`$()]/;
 
     if (dangerousChars.test(path)) {
-        throw new Error('Invalid characters in path');
+        throw new Error("Invalid characters in path");
     }
 
     return path;
@@ -41,7 +41,7 @@ export function sanitizeShellPath(path: string): string {
  */
 export function validateProcessId(pid: number): number {
     if (!Number.isInteger(pid) || pid <= 0) {
-        throw new Error('Invalid process ID');
+        throw new Error("Invalid process ID");
     }
 
     return pid;
@@ -61,16 +61,16 @@ export function validateProcessId(pid: number): number {
  */
 export function isPathInWorkspace(filePath: string, workspacePaths: string[]): boolean {
     // Normalize path separators to forward slashes
-    const normalizedPath = filePath.replace(/\\/g, '/');
+    const normalizedPath = filePath.replace(/\\/g, "/");
 
     // Reject paths with parent directory traversal attempts
-    if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+    if (normalizedPath.includes("../") || normalizedPath.includes("..\\")) {
         return false;
     }
 
     // Check if path starts with any allowed workspace path
-    return workspacePaths.some(wsPath => {
-        const normalizedWsPath = wsPath.replace(/\\/g, '/');
+    return workspacePaths.some((wsPath) => {
+        const normalizedWsPath = wsPath.replace(/\\/g, "/");
         return normalizedPath.startsWith(normalizedWsPath);
     });
 }

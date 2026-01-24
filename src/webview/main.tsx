@@ -32,14 +32,14 @@ window.onerror = function (message, source, lineno, colno, error) {
         }
 
         // Create error display using DOM manipulation (XSS-safe)
-        const errorDiv = document.createElement('div');
-        errorDiv.style.padding = '20px';
-        errorDiv.style.color = 'red';
+        const errorDiv = document.createElement("div");
+        errorDiv.style.padding = "20px";
+        errorDiv.style.color = "red";
 
-        const heading = document.createElement('h3');
-        heading.textContent = 'JavaScript Error';
+        const heading = document.createElement("h3");
+        heading.textContent = "JavaScript Error";
 
-        const pre = document.createElement('pre');
+        const pre = document.createElement("pre");
         pre.textContent = `${message}\nSource: ${source}\nLine: ${lineno}`;
 
         errorDiv.appendChild(heading);
@@ -129,17 +129,17 @@ try {
     console.error("[Webview] Failed to render React app:", error);
 
     // Clear existing content
-    container.innerHTML = '';
+    container.innerHTML = "";
 
     // Create error display using DOM manipulation (XSS-safe)
-    const errorDiv = document.createElement('div');
-    errorDiv.style.padding = '20px';
-    errorDiv.style.color = 'red';
+    const errorDiv = document.createElement("div");
+    errorDiv.style.padding = "20px";
+    errorDiv.style.color = "red";
 
-    const heading = document.createElement('h3');
-    heading.textContent = 'Failed to render application';
+    const heading = document.createElement("h3");
+    heading.textContent = "Failed to render application";
 
-    const pre = document.createElement('pre');
+    const pre = document.createElement("pre");
     pre.textContent = String(error);
 
     errorDiv.appendChild(heading);

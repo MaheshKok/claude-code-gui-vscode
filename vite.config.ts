@@ -20,15 +20,15 @@ export default defineConfig({
                 assetFileNames: "[name][extname]",
                 // Enable code splitting for vendor chunks
                 manualChunks: (id) => {
-                    if (id.includes('node_modules')) {
+                    if (id.includes("node_modules")) {
                         // Separate vendor code
-                        if (id.includes('react') || id.includes('react-dom')) {
-                            return 'react-vendor';
+                        if (id.includes("react") || id.includes("react-dom")) {
+                            return "react-vendor";
                         }
-                        if (id.includes('zustand')) {
-                            return 'state-vendor';
+                        if (id.includes("zustand")) {
+                            return "state-vendor";
                         }
-                        return 'vendor';
+                        return "vendor";
                     }
                 },
             },
@@ -38,7 +38,7 @@ export default defineConfig({
             },
         },
         sourcemap: process.env.NODE_ENV !== "production",
-        minify: process.env.NODE_ENV === "production" ? 'terser' : false,
+        minify: process.env.NODE_ENV === "production" ? "terser" : false,
         terserOptions: {
             compress: {
                 drop_console: true,

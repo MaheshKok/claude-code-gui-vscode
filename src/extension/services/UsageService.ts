@@ -426,11 +426,16 @@ export class UsageService implements vscode.Disposable {
                 // Use haiku model for cheapest/fastest API call
                 // Cross-platform: use args array and env option instead of shell command string
                 const args = [
-                    "-p", ".",
-                    "--output-format", "json",
-                    "--model", "claude-haiku-4-5-20251001",
+                    "-p",
+                    ".",
+                    "--output-format",
+                    "json",
+                    "--model",
+                    "claude-haiku-4-5-20251001",
                 ];
-                this._log(`🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`);
+                this._log(
+                    `🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
+                );
 
                 this._currentProcess = spawn("claude", args, {
                     stdio: ["ignore", "pipe", "pipe"],
@@ -461,8 +466,7 @@ export class UsageService implements vscode.Disposable {
                         `🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`,
                     );
                     if (code !== 0 && stderr.trim()) {
-                        const preview =
-                            stderr.length > 500 ? `${stderr.slice(0, 500)}...` : stderr;
+                        const preview = stderr.length > 500 ? `${stderr.slice(0, 500)}...` : stderr;
                         this._log("⚠️  claude stderr:", preview);
                     }
 

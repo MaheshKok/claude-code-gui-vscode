@@ -53,7 +53,7 @@ export class ClaudeService implements vscode.Disposable {
     private _processEndEmitter = new EventEmitter();
     private _errorEmitter = new EventEmitter();
     private _permissionRequestEmitter = new EventEmitter();
-    private _listenerRegistry = new Map<string, Set<Function>>();
+    private _listenerRegistry = new Map<string, Set<(...args: any[]) => void>>();
 
     constructor(private readonly _context: vscode.ExtensionContext) {}
 
@@ -63,14 +63,14 @@ export class ClaudeService implements vscode.Disposable {
     public onMessage(callback: (message: any) => void): vscode.Disposable {
         this._messageEmitter.on("message", callback);
 
-        if (!this._listenerRegistry.has('message')) {
-            this._listenerRegistry.set('message', new Set());
+        if (!this._listenerRegistry.has("message")) {
+            this._listenerRegistry.set("message", new Set());
         }
-        this._listenerRegistry.get('message')!.add(callback);
+        this._listenerRegistry.get("message")!.add(callback);
 
         return new vscode.Disposable(() => {
             this._messageEmitter.off("message", callback);
-            this._listenerRegistry.get('message')?.delete(callback);
+            this._listenerRegistry.get("message")?.delete(callback);
         });
     }
 
@@ -80,14 +80,14 @@ export class ClaudeService implements vscode.Disposable {
     public onProcessEnd(callback: (exitCode: number | null) => void): vscode.Disposable {
         this._processEndEmitter.on("end", callback);
 
-        if (!this._listenerRegistry.has('end')) {
-            this._listenerRegistry.set('end', new Set());
+        if (!this._listenerRegistry.has("end")) {
+            this._listenerRegistry.set("end", new Set());
         }
-        this._listenerRegistry.get('end')!.add(callback);
+        this._listenerRegistry.get("end")!.add(callback);
 
         return new vscode.Disposable(() => {
             this._processEndEmitter.off("end", callback);
-            this._listenerRegistry.get('end')?.delete(callback);
+            this._listenerRegistry.get("end")?.delete(callback);
         });
     }
 
@@ -97,14 +97,14 @@ export class ClaudeService implements vscode.Disposable {
     public onError(callback: (error: Error) => void): vscode.Disposable {
         this._errorEmitter.on("error", callback);
 
-        if (!this._listenerRegistry.has('error')) {
-            this._listenerRegistry.set('error', new Set());
+        if (!this._listenerRegistry.has("error")) {
+            this._listenerRegistry.set("error", new Set());
         }
-        this._listenerRegistry.get('error')!.add(callback);
+        this._listenerRegistry.get("error")!.add(callback);
 
         return new vscode.Disposable(() => {
             this._errorEmitter.off("error", callback);
-            this._listenerRegistry.get('error')?.delete(callback);
+            this._listenerRegistry.get("error")?.delete(callback);
         });
     }
 
@@ -114,14 +114,14 @@ export class ClaudeService implements vscode.Disposable {
     public onPermissionRequest(callback: (request: any) => void): vscode.Disposable {
         this._permissionRequestEmitter.on("request", callback);
 
-        if (!this._listenerRegistry.has('permissionRequest')) {
-            this._listenerRegistry.set('permissionRequest', new Set());
+        if (!this._listenerRegistry.has("permissionRequest")) {
+            this._listenerRegistry.set("permissionRequest", new Set());
         }
-        this._listenerRegistry.get('permissionRequest')!.add(callback);
+        this._listenerRegistry.get("permissionRequest")!.add(callback);
 
         return new vscode.Disposable(() => {
             this._permissionRequestEmitter.off("request", callback);
-            this._listenerRegistry.get('permissionRequest')?.delete(callback);
+            this._listenerRegistry.get("permissionRequest")?.delete(callback);
         });
     }
 
