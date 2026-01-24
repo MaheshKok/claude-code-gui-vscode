@@ -12,6 +12,7 @@ import {
     ToolName,
 } from "../../shared/constants";
 import { convertToWSLPath } from "../utils";
+import { sanitizeShellPath, validateProcessId } from "../../shared/utils/security";
 
 /**
  * Options for sending a message to Claude
@@ -169,7 +170,17 @@ export class ClaudeService implements vscode.Disposable {
                 nodePath,
                 claudePath,
             });
-            const wslCommand = `"${nodePath}" --no-warnings --enable-source-maps "${claudePath}" ${args.join(" ")}`;
+
+            // Sanitize paths to prevent command injection attacks
+            const sanitizedNodePath = sanitizeShellPath(nodePath);
+            const sanitizedClaudePath = sanitizeShellPath(claudePath);
+
+            console.log("[ClaudeService] Starting WSL process with sanitized paths:", {
+                node: sanitizedNodePath,
+                claude: sanitizedClaudePath,
+            });
+
+            const wslCommand = `"${sanitizedNodePath}" --no-warnings --enable-source-maps "${sanitizedClaudePath}" ${args.join(" ")}`;
 
             this._isWslProcess = true;
             this._wslDistro = wslDistro;
