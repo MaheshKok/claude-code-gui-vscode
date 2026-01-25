@@ -461,7 +461,7 @@ function formatGrepInput(input: ToolInput, options: ToolInputFormatOptions): For
  */
 function formatTodoWriteInput(
     input: ToolInput,
-    options: ToolInputFormatOptions,
+    _options: ToolInputFormatOptions,
 ): FormattedToolInput {
     const todos =
         (input.todos as Array<{
