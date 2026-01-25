@@ -14,6 +14,8 @@ import * as vscode from "vscode";
 import { EventEmitter } from "events";
 import { spawn, ChildProcess } from "child_process";
 import { UsageData } from "../../shared/types/usage";
+import { DEFAULT_WSL_CONFIG } from "../../shared/constants";
+import { resolveClaudeExecutable, ClaudeExecutableResolution } from "../utils/claudeExecutable";
 import {
     readRateLimitCache,
     writeRateLimitCache,
@@ -52,6 +54,7 @@ export class UsageService implements vscode.Disposable {
     private _currentProcess: ChildProcess | null = null;
     private _isDisposed = false;
     private _lastFetchTime: number = 0;
+    private _cachedClaudeExecutable?: ClaudeExecutableResolution;
 
     constructor(private readonly _outputChannel?: vscode.OutputChannel) {
         this._log("╔════════════════════════════════════════════╗");
@@ -367,19 +370,69 @@ export class UsageService implements vscode.Disposable {
                 // Use haiku model for cheapest/fastest API call
                 // Cross-platform: use args array and env option instead of shell command string
                 const args = [
-                    "-p", ".",
-                    "--output-format", "json",
-                    "--model", "claude-haiku-4-5-20251001",
+                    "-p",
+                    ".",
+                    "--output-format",
+                    "json",
+                    "--model",
+                    "claude-haiku-4-5-20251001",
                 ];
-                this._log(`🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`);
+                const config = vscode.workspace.getConfiguration("claudeCodeGui");
+                const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
+                const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
+                const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
+                const claudePath = config.get<string>(
+                    "wsl.claudePath",
+                    DEFAULT_WSL_CONFIG.CLAUDE_PATH,
+                );
+                const resolved = resolveClaudeExecutable(config);
+                if (resolved.source === "explicit") {
+                    this._cachedClaudeExecutable = resolved;
+                }
+                const effective =
+                    this._cachedClaudeExecutable?.source === "explicit"
+                        ? this._cachedClaudeExecutable
+                        : resolved;
 
-                this._currentProcess = spawn("claude", args, {
-                    stdio: ["ignore", "pipe", "pipe"],
-                    env: {
-                        ...process.env,
-                        ANTHROPIC_LOG: "debug",
-                    },
-                });
+                this._log(
+                    `🔍 Claude executable setting: ${effective.rawSetting ?? "undefined"}`,
+                );
+                this._log(
+                    `🔍 Resolved Claude executable: ${effective.executable} (${effective.source})`,
+                );
+
+                if (wslEnabled) {
+                    const wslCommand = `"${nodePath}" --no-warnings --enable-source-maps "${claudePath}" ${args.join(" ")}`;
+
+                    this._log(
+                        `🔍 Running command: wsl -d ${wslDistro} bash -ic "${wslCommand}" (with ANTHROPIC_LOG=debug)`,
+                    );
+
+                    this._currentProcess = spawn(
+                        "wsl",
+                        ["-d", wslDistro, "bash", "-ic", wslCommand],
+                        {
+                            stdio: ["ignore", "pipe", "pipe"],
+                            env: {
+                                ...process.env,
+                                ANTHROPIC_LOG: "debug",
+                            },
+                        },
+                    );
+                } else {
+                    this._log(
+                        `🔍 Running command: ${effective.executable} ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
+                    );
+
+                    this._currentProcess = spawn(effective.executable, args, {
+                        stdio: ["ignore", "pipe", "pipe"],
+                        shell: process.platform === "win32",
+                        env: {
+                            ...process.env,
+                            ANTHROPIC_LOG: "debug",
+                        },
+                    });
+                }
 
                 // Capture stdout
                 const onStdoutData = (data: Buffer) => {

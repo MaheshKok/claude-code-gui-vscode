@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { Header } from "./components/Header";
 import { ChatContainer } from "./components/Chat/ChatContainer";
@@ -136,6 +136,11 @@ export const App: React.FC = () => {
     const totalTokens =
         chat.tokens.cumulative.totalInputTokens + chat.tokens.cumulative.totalOutputTokens;
 
+    const messageProps = useMemo(
+        () => chat.messages.map(mapMessageToProps),
+        [chat.messages]
+    );
+
     return (
         <div className="flex flex-col h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e1e2e] via-[#09090b] to-[#000000] text-white font-sans selection:bg-orange-500/30">
             {local.showWSLAlert && (
@@ -164,7 +169,7 @@ export const App: React.FC = () => {
             />
 
             <ChatContainer
-                messages={chat.messages.map(mapMessageToProps)}
+                messages={messageProps}
                 isProcessing={chat.isProcessing}
                 todos={chat.todos}
                 currentModel={settings.selectedModel}

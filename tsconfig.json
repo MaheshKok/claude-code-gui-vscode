@@ -20,16 +20,15 @@
         "noUncheckedIndexedAccess": false,
         "exactOptionalPropertyTypes": false,
         "allowSyntheticDefaultImports": true,
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"],
-            "@extension/*": ["src/extension/*"],
-            "@webview/*": ["src/webview/*"],
-            "@shared/*": ["src/shared/*"],
-            "@components/*": ["src/webview/components/*"],
-            "@hooks/*": ["src/webview/hooks/*"],
-            "@utils/*": ["src/shared/utils/*"],
-            "@types/*": ["src/shared/types/*"]
+            "@/*": ["./src/*"],
+            "@extension/*": ["./src/extension/*"],
+            "@webview/*": ["./src/webview/*"],
+            "@shared/*": ["./src/shared/*"],
+            "@components/*": ["./src/webview/components/*"],
+            "@hooks/*": ["./src/webview/hooks/*"],
+            "@utils/*": ["./src/shared/utils/*"],
+            "@types/*": ["./src/shared/types/*"]
         },
         "types": ["node", "vscode"]
     },

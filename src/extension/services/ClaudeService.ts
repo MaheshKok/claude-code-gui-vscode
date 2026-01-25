@@ -12,6 +12,8 @@ import {
     ToolName,
 } from "../../shared/constants";
 import { convertToWSLPath } from "../utils";
+import { sanitizeShellPath, validateProcessId } from "../../shared/utils/security";
+import { resolveClaudeExecutable, ClaudeExecutableResolution } from "../utils/claudeExecutable";
 
 /**
  * Options for sending a message to Claude
@@ -46,40 +48,83 @@ export class ClaudeService implements vscode.Disposable {
     private _isWslProcess: boolean = false;
     private _wslDistro: string = DEFAULT_WSL_CONFIG.DISTRO;
     private _pendingPermissionRequests: Map<string, PendingPermissionRequest> = new Map();
+    private _lastDebugOutput: string | undefined;
+    private _cachedClaudeExecutable?: ClaudeExecutableResolution;
 
     private _messageEmitter = new EventEmitter();
     private _processEndEmitter = new EventEmitter();
     private _errorEmitter = new EventEmitter();
     private _permissionRequestEmitter = new EventEmitter();
+    private _listenerRegistry = new Map<string, Set<(...args: any[]) => void>>();
 
     constructor(private readonly _context: vscode.ExtensionContext) {}
 
     /**
      * Register a callback for Claude messages
      */
-    public onMessage(callback: (message: any) => void): void {
+    public onMessage(callback: (message: any) => void): vscode.Disposable {
         this._messageEmitter.on("message", callback);
+
+        if (!this._listenerRegistry.has("message")) {
+            this._listenerRegistry.set("message", new Set());
+        }
+        this._listenerRegistry.get("message")!.add(callback);
+
+        return new vscode.Disposable(() => {
+            this._messageEmitter.off("message", callback);
+            this._listenerRegistry.get("message")?.delete(callback);
+        });
     }
 
     /**
      * Register a callback for process end
      */
-    public onProcessEnd(callback: () => void): void {
+    public onProcessEnd(callback: (exitCode: number | null) => void): vscode.Disposable {
         this._processEndEmitter.on("end", callback);
+
+        if (!this._listenerRegistry.has("end")) {
+            this._listenerRegistry.set("end", new Set());
+        }
+        this._listenerRegistry.get("end")!.add(callback);
+
+        return new vscode.Disposable(() => {
+            this._processEndEmitter.off("end", callback);
+            this._listenerRegistry.get("end")?.delete(callback);
+        });
     }
 
     /**
      * Register a callback for errors
      */
-    public onError(callback: (error: string) => void): void {
+    public onError(callback: (error: Error) => void): vscode.Disposable {
         this._errorEmitter.on("error", callback);
+
+        if (!this._listenerRegistry.has("error")) {
+            this._listenerRegistry.set("error", new Set());
+        }
+        this._listenerRegistry.get("error")!.add(callback);
+
+        return new vscode.Disposable(() => {
+            this._errorEmitter.off("error", callback);
+            this._listenerRegistry.get("error")?.delete(callback);
+        });
     }
 
     /**
      * Register a callback for permission requests
      */
-    public onPermissionRequest(callback: (request: any) => void): void {
+    public onPermissionRequest(callback: (request: any) => void): vscode.Disposable {
         this._permissionRequestEmitter.on("request", callback);
+
+        if (!this._listenerRegistry.has("permissionRequest")) {
+            this._listenerRegistry.set("permissionRequest", new Set());
+        }
+        this._listenerRegistry.get("permissionRequest")!.add(callback);
+
+        return new vscode.Disposable(() => {
+            this._permissionRequestEmitter.off("request", callback);
+            this._listenerRegistry.get("permissionRequest")?.delete(callback);
+        });
     }
 
     /**
@@ -97,10 +142,30 @@ export class ClaudeService implements vscode.Disposable {
     }
 
     /**
+     * Get the most recent debug output (stderr/stdout capture) from Claude CLI.
+     */
+    public getLastDebugOutput(): string | undefined {
+        return this._lastDebugOutput;
+    }
+
+    private _getClaudeExecutable(
+        config: vscode.WorkspaceConfiguration,
+    ): ClaudeExecutableResolution {
+        const resolved = resolveClaudeExecutable(config);
+        if (resolved.source === "explicit") {
+            this._cachedClaudeExecutable = resolved;
+        }
+        return this._cachedClaudeExecutable?.source === "explicit"
+            ? this._cachedClaudeExecutable
+            : resolved;
+    }
+
+    /**
      * Send a message to Claude
      */
     public async sendMessage(message: string, options: SendMessageOptions): Promise<void> {
         const config = vscode.workspace.getConfiguration("claudeCodeGui");
+        this._lastDebugOutput = undefined;
 
         // Build command arguments
         const args = [
@@ -148,6 +213,7 @@ export class ClaudeService implements vscode.Disposable {
         const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
         const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
         const claudePath = config.get<string>("wsl.claudePath", DEFAULT_WSL_CONFIG.CLAUDE_PATH);
+        const resolvedExecutable = this._getClaudeExecutable(config);
 
         // Create new AbortController for this request
         this._abortController = new AbortController();
@@ -160,7 +226,17 @@ export class ClaudeService implements vscode.Disposable {
                 nodePath,
                 claudePath,
             });
-            const wslCommand = `"${nodePath}" --no-warnings --enable-source-maps "${claudePath}" ${args.join(" ")}`;
+
+            // Sanitize paths to prevent command injection attacks
+            const sanitizedNodePath = sanitizeShellPath(nodePath);
+            const sanitizedClaudePath = sanitizeShellPath(claudePath);
+
+            console.log("[ClaudeService] Starting WSL process with sanitized paths:", {
+                node: sanitizedNodePath,
+                claude: sanitizedClaudePath,
+            });
+
+            const wslCommand = `"${sanitizedNodePath}" --no-warnings --enable-source-maps "${sanitizedClaudePath}" ${args.join(" ")}`;
 
             this._isWslProcess = true;
             this._wslDistro = wslDistro;
@@ -174,12 +250,18 @@ export class ClaudeService implements vscode.Disposable {
                     ...process.env,
                     FORCE_COLOR: "0",
                     NO_COLOR: "1",
+                    ANTHROPIC_LOG: "debug",
                 },
             });
         } else {
             this._isWslProcess = false;
 
-            claudeProcess = cp.spawn("claude", args, {
+            console.log("[ClaudeService] Using Claude executable:", {
+                executable: resolvedExecutable.executable,
+                source: resolvedExecutable.source,
+            });
+
+            claudeProcess = cp.spawn(resolvedExecutable.executable, args, {
                 signal: this._abortController.signal,
                 shell: process.platform === "win32",
                 detached: process.platform !== "win32",
@@ -189,6 +271,7 @@ export class ClaudeService implements vscode.Disposable {
                     ...process.env,
                     FORCE_COLOR: "0",
                     NO_COLOR: "1",
+                    ANTHROPIC_LOG: "debug",
                 },
             });
         }
@@ -211,12 +294,21 @@ export class ClaudeService implements vscode.Disposable {
 
         let rawOutput = "";
         let errorOutput = "";
+        let debugOutput = "";
+        const MAX_DEBUG_OUTPUT = 200_000;
+        const appendDebugOutput = (chunk: string) => {
+            debugOutput += chunk;
+            if (debugOutput.length > MAX_DEBUG_OUTPUT) {
+                debugOutput = debugOutput.slice(-MAX_DEBUG_OUTPUT);
+            }
+        };
 
         if (claudeProcess.stdout) {
             claudeProcess.stdout.on("data", (data) => {
                 const chunk = data.toString();
                 console.log("[ClaudeService] Received stdout chunk:", chunk.substring(0, 200));
                 rawOutput += chunk;
+                appendDebugOutput(chunk);
 
                 // Process JSON stream line by line
                 const lines = rawOutput.split("\n");
@@ -242,19 +334,26 @@ export class ClaudeService implements vscode.Disposable {
 
         if (claudeProcess.stderr) {
             claudeProcess.stderr.on("data", (data) => {
-                errorOutput += data.toString();
+                const chunk = data.toString();
+                errorOutput += chunk;
+                appendDebugOutput(chunk);
             });
         }
 
         claudeProcess.on("close", (code) => {
             console.log("Claude process closed with code:", code);
-            console.log("Claude stderr output:", errorOutput);
+            if (errorOutput.trim()) {
+                const preview =
+                    errorOutput.length > 2000 ? `${errorOutput.slice(0, 2000)}...` : errorOutput;
+                console.log("Claude stderr output:", preview);
+            }
 
             if (!this._process) {
                 return;
             }
 
             this._process = undefined;
+            this._lastDebugOutput = debugOutput.trim() ? debugOutput : undefined;
             this._cancelPendingPermissionRequests();
             this._processEndEmitter.emit("end");
 
@@ -399,6 +498,19 @@ export class ClaudeService implements vscode.Disposable {
      */
     public dispose(): void {
         this.stopProcess();
+
+        // Clean up tracked listeners
+        for (const [event, listeners] of this._listenerRegistry) {
+            for (const listener of listeners) {
+                this._messageEmitter.off(event, listener);
+                this._processEndEmitter.off(event, listener);
+                this._errorEmitter.off(event, listener);
+                this._permissionRequestEmitter.off(event, listener);
+            }
+        }
+        this._listenerRegistry.clear();
+
+        // Remove all remaining listeners
         this._messageEmitter.removeAllListeners();
         this._processEndEmitter.removeAllListeners();
         this._errorEmitter.removeAllListeners();

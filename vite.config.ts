@@ -15,21 +15,29 @@ export default defineConfig({
                 main: resolve(__dirname, "src/webview/main.tsx"),
             },
             output: {
-                // Single bundle output - no code splitting for webview compatibility
                 entryFileNames: "main.js",
-                chunkFileNames: "main.js",
-                assetFileNames: "main[extname]",
-                // Disable code splitting
+                chunkFileNames: "[name].js",
+                assetFileNames: "[name][extname]",
+                // Disable code splitting for VS Code webview
+                // VS Code webviews have CSP restrictions that make dynamic imports difficult
                 manualChunks: undefined,
+            },
+            treeshake: {
+                moduleSideEffects: false,
+                propertyReadSideEffects: false,
             },
         },
         sourcemap: process.env.NODE_ENV !== "production",
-        minify: process.env.NODE_ENV === "production",
+        minify: process.env.NODE_ENV === "production" ? "terser" : false,
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true,
+            },
+        },
         target: "es2020",
-        // Inline all CSS into JS to avoid separate file loading issues
-        cssCodeSplit: false,
-        // Inline assets smaller than 1MB (fixes image loading in webview)
-        assetsInlineLimit: 1000000,
+        cssCodeSplit: true,
+        assetsInlineLimit: 4096, // 4KB - inline small assets, keep larger ones external
     },
 
     resolve: {

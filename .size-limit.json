@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Webview Main Bundle",
+        "path": "dist/webview/main.js",
+        "limit": "150 KB"
+    },
+    {
+        "name": "React Vendor Bundle",
+        "path": "dist/webview/react-vendor.js",
+        "limit": "150 KB"
+    },
+    {
+        "name": "Vendor Bundle",
+        "path": "dist/webview/vendor.js",
+        "limit": "10 KB"
+    }
+]

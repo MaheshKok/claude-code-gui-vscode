@@ -8,7 +8,7 @@
  * @module components/History/ConversationItem
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { Trash2 } from "lucide-react";
 import type { ConversationListItem } from "../../types/history";
 
@@ -43,13 +43,14 @@ const formatRelativeTime = (timestamp: number): string => {
     return "Just now";
 };
 
-export const ConversationItem: React.FC<ConversationItemProps> = ({
-    conversation,
-    isActive = false,
-    onClick,
-    onDelete,
-    cost,
-}) => {
+export const ConversationItem = memo<ConversationItemProps>(
+    ({
+        conversation,
+        isActive = false,
+        onClick,
+        onDelete,
+        cost,
+    }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleClick = useCallback(() => {
@@ -154,6 +155,23 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             </div>
         </div>
     );
-};
+    },
+    (prevProps, nextProps) => {
+        // Return true if props are equal (skip re-render)
+        return (
+            prevProps.conversation.id === nextProps.conversation.id &&
+            prevProps.conversation.updatedAt === nextProps.conversation.updatedAt &&
+            prevProps.conversation.title === nextProps.conversation.title &&
+            prevProps.conversation.preview === nextProps.conversation.preview &&
+            prevProps.conversation.messageCount === nextProps.conversation.messageCount &&
+            prevProps.isActive === nextProps.isActive &&
+            prevProps.cost === nextProps.cost &&
+            prevProps.onClick === nextProps.onClick &&
+            prevProps.onDelete === nextProps.onDelete
+        );
+    },
+);
+
+ConversationItem.displayName = "ConversationItem";
 
 export default ConversationItem;

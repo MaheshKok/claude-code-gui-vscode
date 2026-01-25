@@ -7,6 +7,7 @@ import type { TodoItem } from "../Tools";
 import { ThinkingIntensity } from "../../../shared/constants";
 import { formatDuration, formatTokenCount } from "../../utils";
 import { Clock, Zap, DollarSign } from "lucide-react";
+import { ElapsedTimer } from "./ElapsedTimer";
 
 interface ChatContainerProps {
     messages: Message[];
@@ -69,9 +70,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // Initialize local duration from localStorage
     const [localDurationMs, setLocalDurationMs] = React.useState<number | null>(null);
 
-    // Track elapsed time while processing
-    const [elapsedMs, setElapsedMs] = React.useState(0);
-
     // Reload duration when session changes or when sessionId becomes available
     React.useEffect(() => {
         try {
@@ -82,22 +80,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             setLocalDurationMs(null);
         }
     }, [DURATION_STORAGE_KEY]);
-
-    // Track elapsed time while processing
-    React.useEffect(() => {
-        if (!isProcessing || !requestStartTime) {
-            setElapsedMs(0);
-            return;
-        }
-
-        const tick = () => {
-            setElapsedMs(Date.now() - requestStartTime);
-        };
-
-        tick();
-        const interval = setInterval(tick, 200);
-        return () => clearInterval(interval);
-    }, [isProcessing, requestStartTime]);
 
     // When processing starts, save the start time
     React.useEffect(() => {
@@ -159,12 +141,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                 </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-white/50">
-                                {elapsedMs > 0 && (
+                                {requestStartTime && (
                                     <div className="flex items-center gap-1" title="Elapsed Time">
                                         <Clock className="w-3 h-3" />
-                                        <span>
-                                            {formatDuration(elapsedMs, { abbreviated: true })}
-                                        </span>
+                                        <ElapsedTimer startTime={requestStartTime} />
                                     </div>
                                 )}
                                 {totalTokens > 0 && (

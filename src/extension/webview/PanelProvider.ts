@@ -136,10 +136,11 @@ export class PanelProvider {
             this._postMessage({ type: "clearLoading" });
             this._postMessage({ type: "setProcessing", isProcessing: false });
 
-            if (error.includes("ENOENT") || error.includes("command not found")) {
+            const errorMessage = String(error);
+            if (errorMessage.includes("ENOENT") || errorMessage.includes("command not found")) {
                 this._postMessage({ type: "showInstallModal" });
             } else {
-                this._postMessage({ type: "error", message: error });
+                this._postMessage({ type: "error", message: errorMessage });
             }
         });
 

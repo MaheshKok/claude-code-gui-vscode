@@ -9,6 +9,11 @@ out/
 
 docs/
 
+# Backups
+@backups/
+backups/
+*.backup
+
 # Environment files
 .env
 .env.local

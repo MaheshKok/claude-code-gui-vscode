@@ -26,12 +26,25 @@ window.onerror = function (message, source, lineno, colno, error) {
     });
     const rootEl = document.getElementById("root");
     if (rootEl) {
-        rootEl.innerHTML = `
-      <div style="padding: 20px; color: red;">
-        <h3>JavaScript Error</h3>
-        <pre>${message}\nSource: ${source}\nLine: ${lineno}</pre>
-      </div>
-    `;
+        // Clear existing content safely
+        while (rootEl.firstChild) {
+            rootEl.removeChild(rootEl.firstChild);
+        }
+
+        // Create error display using DOM manipulation (XSS-safe)
+        const errorDiv = document.createElement("div");
+        errorDiv.style.padding = "20px";
+        errorDiv.style.color = "red";
+
+        const heading = document.createElement("h3");
+        heading.textContent = "JavaScript Error";
+
+        const pre = document.createElement("pre");
+        pre.textContent = `${message}\nSource: ${source}\nLine: ${lineno}`;
+
+        errorDiv.appendChild(heading);
+        errorDiv.appendChild(pre);
+        rootEl.appendChild(errorDiv);
     }
     return false;
 };
@@ -114,12 +127,24 @@ try {
     console.log("[Webview] App render initiated");
 } catch (error) {
     console.error("[Webview] Failed to render React app:", error);
-    container.innerHTML = `
-    <div style="padding: 20px; color: red;">
-      <h3>Failed to render application</h3>
-      <pre>${error}</pre>
-    </div>
-  `;
+
+    // Clear existing content
+    container.innerHTML = "";
+
+    // Create error display using DOM manipulation (XSS-safe)
+    const errorDiv = document.createElement("div");
+    errorDiv.style.padding = "20px";
+    errorDiv.style.color = "red";
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Failed to render application";
+
+    const pre = document.createElement("pre");
+    pre.textContent = String(error);
+
+    errorDiv.appendChild(heading);
+    errorDiv.appendChild(pre);
+    container.appendChild(errorDiv);
 }
 
 // ============================================================================
