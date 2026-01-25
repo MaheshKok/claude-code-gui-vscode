@@ -18,19 +18,9 @@ export default defineConfig({
                 entryFileNames: "main.js",
                 chunkFileNames: "[name].js",
                 assetFileNames: "[name][extname]",
-                // Enable code splitting for vendor chunks
-                manualChunks: (id) => {
-                    if (id.includes("node_modules")) {
-                        // Separate vendor code
-                        if (id.includes("react") || id.includes("react-dom")) {
-                            return "react-vendor";
-                        }
-                        if (id.includes("zustand")) {
-                            return "state-vendor";
-                        }
-                        return "vendor";
-                    }
-                },
+                // Disable code splitting for VS Code webview
+                // VS Code webviews have CSP restrictions that make dynamic imports difficult
+                manualChunks: undefined,
             },
             treeshake: {
                 moduleSideEffects: false,
