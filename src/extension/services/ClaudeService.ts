@@ -13,6 +13,7 @@ import {
 } from "../../shared/constants";
 import { convertToWSLPath } from "../utils";
 import { sanitizeShellPath, validateProcessId } from "../../shared/utils/security";
+import { resolveClaudeExecutable, ClaudeExecutableResolution } from "../utils/claudeExecutable";
 
 /**
  * Options for sending a message to Claude
@@ -48,6 +49,7 @@ export class ClaudeService implements vscode.Disposable {
     private _wslDistro: string = DEFAULT_WSL_CONFIG.DISTRO;
     private _pendingPermissionRequests: Map<string, PendingPermissionRequest> = new Map();
     private _lastDebugOutput: string | undefined;
+    private _cachedClaudeExecutable?: ClaudeExecutableResolution;
 
     private _messageEmitter = new EventEmitter();
     private _processEndEmitter = new EventEmitter();
@@ -146,6 +148,18 @@ export class ClaudeService implements vscode.Disposable {
         return this._lastDebugOutput;
     }
 
+    private _getClaudeExecutable(
+        config: vscode.WorkspaceConfiguration,
+    ): ClaudeExecutableResolution {
+        const resolved = resolveClaudeExecutable(config);
+        if (resolved.source === "explicit") {
+            this._cachedClaudeExecutable = resolved;
+        }
+        return this._cachedClaudeExecutable?.source === "explicit"
+            ? this._cachedClaudeExecutable
+            : resolved;
+    }
+
     /**
      * Send a message to Claude
      */
@@ -199,6 +213,7 @@ export class ClaudeService implements vscode.Disposable {
         const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
         const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
         const claudePath = config.get<string>("wsl.claudePath", DEFAULT_WSL_CONFIG.CLAUDE_PATH);
+        const resolvedExecutable = this._getClaudeExecutable(config);
 
         // Create new AbortController for this request
         this._abortController = new AbortController();
@@ -241,7 +256,12 @@ export class ClaudeService implements vscode.Disposable {
         } else {
             this._isWslProcess = false;
 
-            claudeProcess = cp.spawn("claude", args, {
+            console.log("[ClaudeService] Using Claude executable:", {
+                executable: resolvedExecutable.executable,
+                source: resolvedExecutable.source,
+            });
+
+            claudeProcess = cp.spawn(resolvedExecutable.executable, args, {
                 signal: this._abortController.signal,
                 shell: process.platform === "win32",
                 detached: process.platform !== "win32",

@@ -11,12 +11,11 @@
  * - Cache persists to ~/.claude/rate-limit-cache.json
  */
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
 import { EventEmitter } from "events";
 import { spawn, ChildProcess } from "child_process";
 import { UsageData } from "../../shared/types/usage";
 import { DEFAULT_WSL_CONFIG } from "../../shared/constants";
+import { resolveClaudeExecutable, ClaudeExecutableResolution } from "../utils/claudeExecutable";
 import {
     readRateLimitCache,
     writeRateLimitCache,
@@ -55,6 +54,7 @@ export class UsageService implements vscode.Disposable {
     private _currentProcess: ChildProcess | null = null;
     private _isDisposed = false;
     private _lastFetchTime: number = 0;
+    private _cachedClaudeExecutable?: ClaudeExecutableResolution;
 
     constructor(private readonly _outputChannel?: vscode.OutputChannel) {
         this._log("╔════════════════════════════════════════════╗");
@@ -378,7 +378,6 @@ export class UsageService implements vscode.Disposable {
                     "claude-haiku-4-5-20251001",
                 ];
                 const config = vscode.workspace.getConfiguration("claudeCodeGui");
-                const rootConfig = vscode.workspace.getConfiguration();
                 const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
                 const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
                 const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
@@ -386,19 +385,21 @@ export class UsageService implements vscode.Disposable {
                     "wsl.claudePath",
                     DEFAULT_WSL_CONFIG.CLAUDE_PATH,
                 );
-                const claudeExecutableSetting =
-                    config.get<string>("claude.executable") ??
-                    rootConfig.get<string>("claudeCodeGui.claude.executable");
-                const claudeExecutable = this._resolveClaudeExecutable(claudeExecutableSetting);
-                this._log(
-                    `🔍 Claude executable setting: ${claudeExecutableSetting ?? "undefined"}`,
-                );
-                this._log(`🔍 Resolved Claude executable: ${claudeExecutable}`);
-                if (path.isAbsolute(claudeExecutable)) {
-                    this._log(`🔍 Executable exists: ${fs.existsSync(claudeExecutable)}`);
-                } else {
-                    this._log("🔍 Executable resolved via PATH lookup");
+                const resolved = resolveClaudeExecutable(config);
+                if (resolved.source === "explicit") {
+                    this._cachedClaudeExecutable = resolved;
                 }
+                const effective =
+                    this._cachedClaudeExecutable?.source === "explicit"
+                        ? this._cachedClaudeExecutable
+                        : resolved;
+
+                this._log(
+                    `🔍 Claude executable setting: ${effective.rawSetting ?? "undefined"}`,
+                );
+                this._log(
+                    `🔍 Resolved Claude executable: ${effective.executable} (${effective.source})`,
+                );
 
                 if (wslEnabled) {
                     const wslCommand = `"${nodePath}" --no-warnings --enable-source-maps "${claudePath}" ${args.join(" ")}`;
@@ -420,10 +421,10 @@ export class UsageService implements vscode.Disposable {
                     );
                 } else {
                     this._log(
-                        `🔍 Running command: ${claudeExecutable} ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
+                        `🔍 Running command: ${effective.executable} ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
                     );
 
-                    this._currentProcess = spawn(claudeExecutable, args, {
+                    this._currentProcess = spawn(effective.executable, args, {
                         stdio: ["ignore", "pipe", "pipe"],
                         shell: process.platform === "win32",
                         env: {
@@ -483,43 +484,6 @@ export class UsageService implements vscode.Disposable {
                 safeResolve(null);
             }
         });
-    }
-
-    private _resolveClaudeExecutable(rawSetting?: string): string {
-        const trimmed = rawSetting?.trim();
-        if (trimmed) {
-            return trimmed;
-        }
-
-        if (process.platform === "darwin") {
-            const macCandidates = ["/opt/homebrew/bin/claude", "/usr/local/bin/claude"];
-            const resolved = this._pickFirstExisting(macCandidates);
-            if (resolved) {
-                return resolved;
-            }
-        }
-
-        if (process.platform === "linux") {
-            const linuxCandidates = ["/usr/local/bin/claude", "/usr/bin/claude"];
-            const resolved = this._pickFirstExisting(linuxCandidates);
-            if (resolved) {
-                return resolved;
-            }
-        }
-
-        return "claude";
-    }
-
-    private _pickFirstExisting(candidates: string[]): string | undefined {
-        for (const candidate of candidates) {
-            try {
-                fs.accessSync(candidate, fs.constants.X_OK);
-                return candidate;
-            } catch {
-                // Ignore missing or non-executable paths
-            }
-        }
-        return undefined;
     }
 
     /**
