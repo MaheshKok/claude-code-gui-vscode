@@ -37,7 +37,7 @@ export default defineConfig({
         },
         target: "es2020",
         cssCodeSplit: true,
-        assetsInlineLimit: 4096, // 4KB limit (was 1MB!)
+        assetsInlineLimit: 200000, // 200KB - inlines logo and small assets
     },
 
     resolve: {
