@@ -11,9 +11,12 @@
  * - Cache persists to ~/.claude/rate-limit-cache.json
  */
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { EventEmitter } from "events";
 import { spawn, ChildProcess } from "child_process";
 import { UsageData } from "../../shared/types/usage";
+import { DEFAULT_WSL_CONFIG } from "../../shared/constants";
 import {
     readRateLimitCache,
     writeRateLimitCache,
@@ -46,7 +49,7 @@ interface RateLimitData {
 export class UsageService implements vscode.Disposable {
     private _usageData: UsageData | undefined;
     private _errorMessage: string | undefined;
-    private _pollTimeout: NodeJS.Timeout | undefined;
+    private _pollInterval: NodeJS.Timeout | undefined;
     private _dataEmitter = new EventEmitter();
     private _fetchInFlight: Promise<void> | null = null;
     private _currentProcess: ChildProcess | null = null;
@@ -59,10 +62,10 @@ export class UsageService implements vscode.Disposable {
         this._log("╚════════════════════════════════════════════╝");
 
         // Try to load from cache first for instant display
-        const hasCache = this._loadFromCache();
+        this._loadFromCache();
 
         // Start polling (fetches fresh data every 5 minutes)
-        this.startPolling(hasCache);
+        this.startPolling();
         this._log("✅ Polling started (5-minute intervals)");
     }
 
@@ -84,7 +87,7 @@ export class UsageService implements vscode.Disposable {
 
     /**
      * Load usage data from cache file.
-     * Returns true if cache was loaded.
+     * Returns true if cache was loaded and is fresh.
      */
     private _loadFromCache(): boolean {
         this._log("📂 Checking rate limit cache...");
@@ -106,7 +109,8 @@ export class UsageService implements vscode.Disposable {
         this._dataEmitter.emit("update", usageData);
         this._log("   ✅ Loaded usage from cache");
 
-        return true;
+        // Always return false to ensure fresh data is fetched every polling interval
+        return false;
     }
 
     /**
@@ -132,28 +136,6 @@ export class UsageService implements vscode.Disposable {
             reset5h: cache.reset5h,
             reset7d: cache.reset7d,
         });
-    }
-
-    private _setUsageData(usageData: UsageData): void {
-        this._usageData = usageData;
-        this._errorMessage = undefined;
-        this._lastFetchTime = Date.now();
-        this._log("📡 Emitting 'update' event to listeners...");
-        this._dataEmitter.emit("update", usageData);
-        this._log(
-            `📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`,
-        );
-    }
-
-    private _setUsageDataFromCache(): boolean {
-        const cache = readRateLimitCache();
-        if (!cache) {
-            return false;
-        }
-
-        const usageData = this._buildUsageDataFromCache(cache);
-        this._setUsageData(usageData);
-        return true;
     }
 
     // ========================================================================
@@ -190,44 +172,27 @@ export class UsageService implements vscode.Disposable {
     // Polling (Prevents duplicate intervals)
     // ========================================================================
 
-    public startPolling(hasCache: boolean): void {
+    public startPolling(): void {
         if (this._isDisposed) return;
 
-        // Clear any existing timeout first to prevent duplicates
+        // Clear any existing interval first to prevent duplicates
         this.stopPolling();
 
-        this._scheduleNextPoll();
+        this._pollInterval = setInterval(() => {
+            if (!this._isDisposed) {
+                this.fetchUsageDataIfStale();
+            }
+        }, POLLING_INTERVAL_MS);
 
-        // Initial fetch only if cache is missing
-        if (!hasCache) {
-            void this.fetchUsageData();
-        }
+        // Initial fetch only if cache is stale
+        this.fetchUsageDataIfStale();
     }
 
     public stopPolling(): void {
-        if (this._pollTimeout) {
-            clearTimeout(this._pollTimeout);
-            this._pollTimeout = undefined;
+        if (this._pollInterval) {
+            clearInterval(this._pollInterval);
+            this._pollInterval = undefined;
         }
-    }
-
-    private _scheduleNextPoll(): void {
-        if (this._isDisposed) return;
-
-        const now = Date.now();
-        let delay = POLLING_INTERVAL_MS - (now % POLLING_INTERVAL_MS);
-        if (delay === 0) {
-            delay = POLLING_INTERVAL_MS;
-        }
-
-        const nextPollTime = new Date(now + delay);
-        this._log(`⏲️  Next poll scheduled at ${nextPollTime.toLocaleTimeString()}`);
-
-        this._pollTimeout = setTimeout(async () => {
-            if (this._isDisposed) return;
-            await this.fetchUsageData();
-            this._scheduleNextPoll();
-        }, delay);
     }
 
     // ========================================================================
@@ -241,14 +206,7 @@ export class UsageService implements vscode.Disposable {
     public async fetchUsageDataIfStale(): Promise<void> {
         if (this._isDisposed) return;
 
-        const cache = readRateLimitCache();
-        if (cache) {
-            const cacheAgeMs = Date.now() - cache.timestamp;
-            if (cacheAgeMs < POLLING_INTERVAL_MS) {
-                return;
-            }
-        }
-
+        // Always fetch fresh data on every polling interval (5 minutes)
         await this.fetchUsageData();
     }
 
@@ -283,33 +241,9 @@ export class UsageService implements vscode.Disposable {
         // Small delay to ensure the API call has completed
         setTimeout(() => {
             if (!this._isDisposed) {
-                this.fetchUsageDataIfStale();
+                this.fetchUsageData();
             }
         }, 1000);
-    }
-
-    /**
-     * Update usage data from Claude CLI debug output (rate limit headers).
-     * Returns true if rate limits were found and applied.
-     */
-    public updateFromRateLimitOutput(output: string): boolean {
-        if (this._isDisposed) return false;
-
-        if (!output.trim()) {
-            return false;
-        }
-
-        const rateLimits = this._parseRateLimitHeaders(output, { logMissing: false });
-        if (!rateLimits) {
-            return false;
-        }
-
-        this._log("✅ Got rate limits from Claude session output");
-        this._saveToCache(rateLimits);
-        if (!this._setUsageDataFromCache()) {
-            this._setUsageData(this._buildUsageDataFromRateLimits(rateLimits));
-        }
-        return true;
     }
 
     private async _doFetchUsageData(): Promise<void> {
@@ -338,13 +272,23 @@ export class UsageService implements vscode.Disposable {
                 this._log("✅ ═══════════════════════════════════════════");
                 this._log("");
 
-                if (!this._setUsageDataFromCache()) {
-                    this._setUsageData(usageData);
-                }
+                this._usageData = usageData;
+                this._errorMessage = undefined;
+                this._lastFetchTime = Date.now();
+
+                this._log("📡 Emitting 'update' event to listeners...");
+                this._dataEmitter.emit("update", this._usageData);
+                this._log(
+                    `📡 Emitted update event - listener count: ${this._dataEmitter.listenerCount("update")}`,
+                );
             } else {
                 // API failed - try to use cache as fallback
-                if (this._setUsageDataFromCache()) {
+                const cache = readRateLimitCache();
+                if (cache) {
                     this._log("⚠️  API failed, using cached data as fallback");
+                    const cachedData = this._buildUsageDataFromCache(cache);
+                    this._usageData = cachedData;
+                    this._dataEmitter.emit("update", cachedData);
                 } else {
                     this._log("❌ Error getting usage data (no cache available)");
                     this._errorMessage = "Error getting usage";
@@ -433,17 +377,61 @@ export class UsageService implements vscode.Disposable {
                     "--model",
                     "claude-haiku-4-5-20251001",
                 ];
-                this._log(
-                    `🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
+                const config = vscode.workspace.getConfiguration("claudeCodeGui");
+                const rootConfig = vscode.workspace.getConfiguration();
+                const wslEnabled = config.get<boolean>("wsl.enabled", DEFAULT_WSL_CONFIG.ENABLED);
+                const wslDistro = config.get<string>("wsl.distro", DEFAULT_WSL_CONFIG.DISTRO);
+                const nodePath = config.get<string>("wsl.nodePath", DEFAULT_WSL_CONFIG.NODE_PATH);
+                const claudePath = config.get<string>(
+                    "wsl.claudePath",
+                    DEFAULT_WSL_CONFIG.CLAUDE_PATH,
                 );
+                const claudeExecutableSetting =
+                    config.get<string>("claude.executable") ??
+                    rootConfig.get<string>("claudeCodeGui.claude.executable");
+                const claudeExecutable = this._resolveClaudeExecutable(claudeExecutableSetting);
+                this._log(
+                    `🔍 Claude executable setting: ${claudeExecutableSetting ?? "undefined"}`,
+                );
+                this._log(`🔍 Resolved Claude executable: ${claudeExecutable}`);
+                if (path.isAbsolute(claudeExecutable)) {
+                    this._log(`🔍 Executable exists: ${fs.existsSync(claudeExecutable)}`);
+                } else {
+                    this._log("🔍 Executable resolved via PATH lookup");
+                }
 
-                this._currentProcess = spawn("claude", args, {
-                    stdio: ["ignore", "pipe", "pipe"],
-                    env: {
-                        ...process.env,
-                        ANTHROPIC_LOG: "debug",
-                    },
-                });
+                if (wslEnabled) {
+                    const wslCommand = `"${nodePath}" --no-warnings --enable-source-maps "${claudePath}" ${args.join(" ")}`;
+
+                    this._log(
+                        `🔍 Running command: wsl -d ${wslDistro} bash -ic "${wslCommand}" (with ANTHROPIC_LOG=debug)`,
+                    );
+
+                    this._currentProcess = spawn(
+                        "wsl",
+                        ["-d", wslDistro, "bash", "-ic", wslCommand],
+                        {
+                            stdio: ["ignore", "pipe", "pipe"],
+                            env: {
+                                ...process.env,
+                                ANTHROPIC_LOG: "debug",
+                            },
+                        },
+                    );
+                } else {
+                    this._log(
+                        `🔍 Running command: ${claudeExecutable} ${args.join(" ")} (with ANTHROPIC_LOG=debug)`,
+                    );
+
+                    this._currentProcess = spawn(claudeExecutable, args, {
+                        stdio: ["ignore", "pipe", "pipe"],
+                        shell: process.platform === "win32",
+                        env: {
+                            ...process.env,
+                            ANTHROPIC_LOG: "debug",
+                        },
+                    });
+                }
 
                 // Capture stdout
                 const onStdoutData = (data: Buffer) => {
@@ -465,10 +453,6 @@ export class UsageService implements vscode.Disposable {
                     this._log(
                         `🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`,
                     );
-                    if (code !== 0 && stderr.trim()) {
-                        const preview = stderr.length > 500 ? `${stderr.slice(0, 500)}...` : stderr;
-                        this._log("⚠️  claude stderr:", preview);
-                    }
 
                     // Parse rate limit headers
                     const combinedOutput = stdout + "\n" + stderr;
@@ -501,24 +485,55 @@ export class UsageService implements vscode.Disposable {
         });
     }
 
+    private _resolveClaudeExecutable(rawSetting?: string): string {
+        const trimmed = rawSetting?.trim();
+        if (trimmed) {
+            return trimmed;
+        }
+
+        if (process.platform === "darwin") {
+            const macCandidates = ["/opt/homebrew/bin/claude", "/usr/local/bin/claude"];
+            const resolved = this._pickFirstExisting(macCandidates);
+            if (resolved) {
+                return resolved;
+            }
+        }
+
+        if (process.platform === "linux") {
+            const linuxCandidates = ["/usr/local/bin/claude", "/usr/bin/claude"];
+            const resolved = this._pickFirstExisting(linuxCandidates);
+            if (resolved) {
+                return resolved;
+            }
+        }
+
+        return "claude";
+    }
+
+    private _pickFirstExisting(candidates: string[]): string | undefined {
+        for (const candidate of candidates) {
+            try {
+                fs.accessSync(candidate, fs.constants.X_OK);
+                return candidate;
+            } catch {
+                // Ignore missing or non-executable paths
+            }
+        }
+        return undefined;
+    }
+
     /**
      * Parse rate limit headers from debug output.
      */
-    private _parseRateLimitHeaders(
-        output: string,
-        options?: { logMissing?: boolean },
-    ): RateLimitData | null {
+    private _parseRateLimitHeaders(output: string): RateLimitData | null {
         let session5h: number | undefined;
         let weekly7d: number | undefined;
         let reset5h: number | undefined;
         let reset7d: number | undefined;
 
-        // Check if output contains rate limit data (case-insensitive)
-        const hasRateLimitData = /rate.?limit|utilization/i.test(output);
-        if (!hasRateLimitData) {
-            if (options?.logMissing !== false) {
-                this._log("⚠️  No rate limit data in output");
-            }
+        // Check if output contains rate limit data
+        if (!output.includes("ratelimit") && !output.includes("utilization")) {
+            this._log("⚠️  No rate limit data in output");
             return null;
         }
 
