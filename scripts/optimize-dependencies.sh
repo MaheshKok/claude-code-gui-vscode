@@ -14,21 +14,22 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Function to check if command succeeded
-check_status() {
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ $1${NC}"
+# Function to run a command and check status
+run_step() {
+    local message="$1"
+    shift
+    if "$@"; then
+        echo -e "${GREEN}✓ ${message}${NC}"
     else
-        echo -e "${RED}✗ $1 failed${NC}"
+        echo -e "${RED}✗ ${message} failed${NC}"
         exit 1
     fi
 }
 
 # Backup package.json
 echo "📦 Creating backup..."
-cp package.json package.json.backup
+run_step "Backup created" cp package.json package.json.backup
 cp package-lock.json package-lock.json.backup 2>/dev/null || true
-check_status "Backup created"
 
 echo ""
 echo "Phase 1: Remove unused production dependencies"
@@ -42,22 +43,16 @@ echo ""
 echo "Removing unused packages..."
 
 # Remove unused production dependencies
-npm uninstall react-markdown
-check_status "Removed react-markdown"
-
-npm uninstall react-syntax-highlighter
-check_status "Removed react-syntax-highlighter"
-
-npm uninstall remark-gfm
-check_status "Removed remark-gfm"
+run_step "Removed react-markdown" npm uninstall react-markdown
+run_step "Removed react-syntax-highlighter" npm uninstall react-syntax-highlighter
+run_step "Removed remark-gfm" npm uninstall remark-gfm
 
 echo ""
 echo "Phase 2: Fix security vulnerabilities"
 echo "--------------------------------------"
 
 # Upgrade esbuild
-npm install -D esbuild@latest
-check_status "Upgraded esbuild"
+run_step "Upgraded esbuild" npm install -D esbuild@latest
 
 # Run audit fix
 npm audit fix --force || echo -e "${YELLOW}⚠ Some vulnerabilities could not be auto-fixed${NC}"
@@ -68,13 +63,11 @@ echo "---------------------"
 
 # TypeScript check
 echo "Checking TypeScript..."
-npm run typecheck
-check_status "TypeScript compilation"
+run_step "TypeScript compilation" npm run typecheck
 
 # Build
 echo "Building project..."
-npm run build
-check_status "Build successful"
+run_step "Build successful" npm run build
 
 # Show new sizes
 echo ""

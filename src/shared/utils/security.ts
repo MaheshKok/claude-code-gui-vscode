@@ -60,17 +60,29 @@ export function validateProcessId(pid: number): number {
  * isPathInWorkspace('/workspace/../etc/passwd', ['/workspace']) // false
  */
 export function isPathInWorkspace(filePath: string, workspacePaths: string[]): boolean {
-    // Normalize path separators to forward slashes
-    const normalizedPath = filePath.replace(/\\/g, "/");
+    // Use Node.js path module for proper path resolution
+    const path = require("path");
 
-    // Reject paths with parent directory traversal attempts
-    if (normalizedPath.includes("../") || normalizedPath.includes("..\\")) {
+    // Normalize and resolve the file path
+    const normalizedPath = path.normalize(filePath).replace(/\\/g, "/");
+    const resolvedPath = path.resolve(filePath).replace(/\\/g, "/");
+
+    // Reject paths containing ".." segments after normalization
+    if (normalizedPath.includes("/..") || normalizedPath.startsWith("..")) {
         return false;
     }
 
-    // Check if path starts with any allowed workspace path
+    // Check if path is within any allowed workspace path
     return workspacePaths.some((wsPath) => {
-        const normalizedWsPath = wsPath.replace(/\\/g, "/");
-        return normalizedPath.startsWith(normalizedWsPath);
+        const normalizedWsPath = path.normalize(wsPath).replace(/\\/g, "/");
+        const resolvedWsPath = path.resolve(wsPath).replace(/\\/g, "/");
+
+        // Ensure proper boundary check to prevent prefix collision
+        // Path must either match exactly or start with workspace path + "/"
+        return (
+            resolvedPath === resolvedWsPath ||
+            resolvedPath.startsWith(resolvedWsPath + "/") ||
+            resolvedPath.startsWith(resolvedWsPath + "\\")
+        );
     });
 }

@@ -476,7 +476,7 @@ function formatTodoWriteInput(
     const todosHtml = todos
         .map((todo) => {
             const statusIcon =
-                todo.status === "completed" ? "[ ]" : todo.status === "in_progress" ? "[-]" : "[ ]";
+                todo.status === "completed" ? "[x]" : todo.status === "in_progress" ? "[-]" : "[ ]";
             const priorityClass = todo.priority || "medium";
 
             return `

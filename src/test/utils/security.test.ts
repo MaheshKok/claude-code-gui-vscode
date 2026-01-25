@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeShellPath, validateProcessId } from "@shared/utils/security";
+import { sanitizeShellPath, validateProcessId, isPathInWorkspace } from "@shared/utils/security";
 
 describe("Security: Command Injection Prevention", () => {
     describe("sanitizeShellPath", () => {
@@ -53,6 +53,50 @@ describe("Security: Command Injection Prevention", () => {
 
         it("should accept valid large PIDs", () => {
             expect(validateProcessId(99999)).toBe(99999);
+        });
+    });
+
+    describe("isPathInWorkspace", () => {
+        it("should return true for path inside workspace", () => {
+            const filePath = "/workspace/file.txt";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(true);
+        });
+
+        it("should return false for path outside workspace", () => {
+            const filePath = "/etc/passwd";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(false);
+        });
+
+        it("should return false for path traversal attempt", () => {
+            const filePath = "/workspace/../etc/passwd";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(false);
+        });
+
+        it("should return true for Windows-style paths in workspace", () => {
+            const filePath = "C:\\workspace\\file.txt";
+            const workspacePaths = ["C:\\workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(true);
+        });
+
+        it("should avoid prefix collision attacks", () => {
+            const filePath = "/workspace-other/file.txt";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(false);
+        });
+
+        it("should return false for path with .. segments", () => {
+            const filePath = "../../../etc/passwd";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(false);
+        });
+
+        it("should return true for nested paths in workspace", () => {
+            const filePath = "/workspace/src/test/file.txt";
+            const workspacePaths = ["/workspace"];
+            expect(isPathInWorkspace(filePath, workspacePaths)).toBe(true);
         });
     });
 });

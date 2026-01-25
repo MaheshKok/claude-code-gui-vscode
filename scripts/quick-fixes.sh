@@ -97,7 +97,14 @@ echo ""
 # 4. Fix unused import in toolInput.ts
 print_step "Step 4/7: Fixing unused import in toolInput.ts..."
 if grep -q "extractCodeBlocks" src/webview/utils/toolInput.ts; then
-    sed -i '' 's/{ escapeHtml, extractCodeBlocks }/{ escapeHtml }/' src/webview/utils/toolInput.ts
+    # Cross-platform sed: detect OS and set appropriate flags
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS requires empty string for in-place edit
+        sed -i '' 's/{ escapeHtml, extractCodeBlocks }/{ escapeHtml }/' src/webview/utils/toolInput.ts
+    else
+        # Linux uses no argument for in-place edit
+        sed -i 's/{ escapeHtml, extractCodeBlocks }/{ escapeHtml }/' src/webview/utils/toolInput.ts
+    fi
     print_success "Removed unused extractCodeBlocks import"
 else
     print_warning "extractCodeBlocks import not found (may already be fixed)"
@@ -107,18 +114,30 @@ echo ""
 # 5. Fix non-null assertions in toolInput.ts (replace ! with ?? defaults)
 print_step "Step 5/7: Fixing non-null assertions in toolInput.ts..."
 # This is a simplified fix - for production, manual review recommended
-sed -i '' 's/options\.maxSummaryLength!/options.maxSummaryLength ?? defaultOptions.maxSummaryLength/g' src/webview/utils/toolInput.ts
-sed -i '' 's/options\.expandableThreshold!/options.expandableThreshold ?? defaultOptions.expandableThreshold/g' src/webview/utils/toolInput.ts
-sed -i '' 's/options\.includeSyntaxHints!/options.includeSyntaxHints ?? defaultOptions.includeSyntaxHints/g' src/webview/utils/toolInput.ts
-sed -i '' 's/options\.escapeHtmlContent!/options.escapeHtmlContent ?? defaultOptions.escapeHtmlContent/g' src/webview/utils/toolInput.ts
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS sed syntax
+    sed -i '' 's/options\.maxSummaryLength!/options.maxSummaryLength ?? defaultOptions.maxSummaryLength/g' src/webview/utils/toolInput.ts
+    sed -i '' 's/options\.expandableThreshold!/options.expandableThreshold ?? defaultOptions.expandableThreshold/g' src/webview/utils/toolInput.ts
+    sed -i '' 's/options\.includeSyntaxHints!/options.includeSyntaxHints ?? defaultOptions.includeSyntaxHints/g' src/webview/utils/toolInput.ts
+    sed -i '' 's/options\.escapeHtmlContent!/options.escapeHtmlContent ?? defaultOptions.escapeHtmlContent/g' src/webview/utils/toolInput.ts
+else
+    # Linux sed syntax
+    sed -i 's/options\.maxSummaryLength!/options.maxSummaryLength ?? defaultOptions.maxSummaryLength/g' src/webview/utils/toolInput.ts
+    sed -i 's/options\.expandableThreshold!/options.expandableThreshold ?? defaultOptions.expandableThreshold/g' src/webview/utils/toolInput.ts
+    sed -i 's/options\.includeSyntaxHints!/options.includeSyntaxHints ?? defaultOptions.includeSyntaxHints/g' src/webview/utils/toolInput.ts
+    sed -i 's/options\.escapeHtmlContent!/options.escapeHtmlContent ?? defaultOptions.escapeHtmlContent/g' src/webview/utils/toolInput.ts
+fi
 print_success "Replaced non-null assertions with nullish coalescing"
 print_warning "Note: This is an automated fix. Manual review recommended for complex cases."
 echo ""
 
 # 6. Rebuild project
 print_step "Step 6/7: Rebuilding project..."
+# Temporarily disable errexit to capture build exit code
+set +e
 npm run build
 BUILD_EXIT_CODE=$?
+set -e
 if [ $BUILD_EXIT_CODE -eq 0 ]; then
     print_success "Build completed successfully"
 else
@@ -130,8 +149,11 @@ echo ""
 
 # 7. Run tests
 print_step "Step 7/7: Running tests..."
+# Temporarily disable errexit to capture test exit code
+set +e
 npm test
 TEST_EXIT_CODE=$?
+set -e
 if [ $TEST_EXIT_CODE -eq 0 ]; then
     print_success "All tests passed"
 else
